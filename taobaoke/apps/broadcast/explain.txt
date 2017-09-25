@@ -1,0 +1,7 @@
+
+2. product/insert/
+    view: entry_views.insert_product
+    接受请求包，整理之后入库。
+3. search_product
+    由ipad_weixin/rule/action_rule.py进行调用，整体流程为:
+        若消息中含有“找”、“买”等关键字，那么对信息进行分割后将 keywrod 传给search_product，根据keyword在数据库中进行模糊搜索并返回
