@@ -92,13 +92,10 @@ def char_to_str(char_lst):
 
 def check_buffer_16_is_191(buffers):
     if buffers is None:
-        # print('------buffer is None------')
         return 0
     if ord(buffers[16]) is not 191:
-        # print("------wrong wx return------")
         return 1
     else:
-        # print("------right wx return------")
         return 2
 
 

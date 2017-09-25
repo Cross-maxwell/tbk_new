@@ -56,6 +56,9 @@ class WXBot(object):
         self.__is_async_check = False
         self.__lock = threading.Lock()
 
+        #二次登陆重试次数
+        self.__retry_num = 1
+
     def set_user_context(self, wx_username):
         # TODO：self.wx_username 不该在这初始化，待修改
         """为什么不应该在这里初始化？"""
@@ -414,7 +417,7 @@ class WXBot(object):
         :param new_socket:
         :return:
         """
-
+        self.__retry_num += 1
         bot_param = BotParam.objects.filter(username=v_user.userame).first()
         if bot_param:
             self.long_host = bot_param.long_host
@@ -442,6 +445,11 @@ class WXBot(object):
         check_num = self.wechat_client.check_buffer_16_is_191(buffers)
         if check_num == False:
             print('%s 二次登陆:wrong weixin return' % v_user.nickname)
+            print('%s 二次登陆重试' % v_user.nickname)
+
+            #最多重试1次
+            if self.__retry_num <= 2:
+                self.auto_auth(v_user, uuid, device_type, new_socket=True)
         if check_num == True:
             print('%s 二次登陆:right weixin return' % v_user.nickname)
 
@@ -666,13 +674,10 @@ class WXBot(object):
         if check_num == 0 or check_num == 1:
             if read_int(buffers, 18) == -13:
                 print("Session Time out %s: 离线或取消登陆 需执行二次登录" % v_user.nickname)
+        else:
+            print('{0} 向 {1} 发送文字信息:成功'.format(v_user.nickname, user_name, content))
 
 
-
-        # if not check_buffer_16_is_191(buffers):
-        #     if read_int(buffers, 18) == -13:
-        #         print("Session Time out 离线或用户取消登陆 需执行二次登录")
-        #     return False
         self.wechat_client.close_when_done()
         return True
 
@@ -765,7 +770,7 @@ class WXBot(object):
                 'Data': upload_data
             }
             pay_load_json = json.dumps(payLoadJson)
-            start_pos = start_pos + count
+
             print("Send Img Block {}".format(count))
             print("start_pos is {}".format(start_pos))
             print("data_total_length is {}".format(data_total_length))
@@ -788,15 +793,64 @@ class WXBot(object):
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次的buffer 为 None'.format(v_user.nickname, user_name, total_send_nums, send_num))
+                """
+                当我得到了 buffers is None 或者 wrong wexin return 之后，重发这个字节包
+                当重发2次依然得到wrong的时候，从最开始进行重发。
+                """
+                print('进行重发')
+                self.retry_send_img(user_name, data, start_pos, count)
             if check_num == 1:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次得到错误的微信返回值'.format(v_user.nickname, user_name, total_send_nums, send_num))
             if check_num == 2:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发送成功'.format(v_user.nickname, user_name, total_send_nums, send_num))
 
+            start_pos = start_pos + count
             send_num += 1
             # check_buffer_16_is_191(buffers)
         self.wechat_client.close_when_done()
         return True
+
+    def retry_send_img(self, user_name, data, start_pos, count):
+        upload_data = base64.b64encode(data[start_pos:start_pos + count])
+        client_img_id = v_user.userame + "_" + str(get_time_stamp())
+        data_total_length = len(data)
+
+        payLoadJson = {
+            'ClientImgId': client_img_id.encode('utf-8'),
+            'ToUserName': user_name.encode('utf-8'),
+            'StartPos': start_pos,
+            'TotalLen': data_total_length,
+            'DataLen': len(data[start_pos:start_pos + count]),
+            'Data': upload_data
+        }
+        pay_load_json = json.dumps(payLoadJson)
+        start_pos = start_pos + count
+        print("Send Img Block {}".format(count))
+        print("start_pos is {}".format(start_pos))
+        print("data_total_length is {}".format(data_total_length))
+        img_msg_req = WechatMsg(
+            token=CONST_PROTOCOL_DICT['machine_code'],
+            version=CONST_PROTOCOL_DICT['version'],
+            timeStamp=get_time_stamp(),
+            iP=get_public_ip(),
+            baseMsg=BaseMsg(
+                cmd=110,
+                user=v_user,
+                payloads=pay_load_json.encode('utf-8'),
+            )
+        )
+        img_msg_rsp = grpc_client.send(img_msg_req)
+        (buffers, seq) = grpc_utils.get_seq_buffer(img_msg_rsp)
+        buffers = self.wechat_client.sync_send_and_return(buffers, time_out=3)
+
+        check_num = check_buffer_16_is_191(buffers)
+
+        if check_num == 2:
+            print('重发成功')
+        else:
+            print('重发失败')
+
+
 
     def search_contact(self, user_name, v_user):
         payLoadJson = "{\"Username\":\"" + user_name + "\"}"
@@ -1216,9 +1270,6 @@ if __name__ == "__main__":
             print "**************************"
             cmd = input()
             if cmd == 0:
-                """
-                A～玲
-                """
                 wx_user = 'wxid_mynvgzqgnb5x22'
 
                 wx_bot.set_user_context(wx_user)

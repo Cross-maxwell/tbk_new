@@ -68,8 +68,6 @@ def post_taobaoke_url(wx_id, group_id, md_username):
             print exc.message
 
     # img or text
-    text = p.get_text_msg(pid)
-
     text_msg_dict = {
         #群主 id
         "uin": wx_id,
@@ -94,9 +92,6 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     print "Push img %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id'])
     send_msg_type(text_msg_dict)
     print "Push text %s to group %s." % (text_msg_dict['text'], text_msg_dict['group_id'])
-
-    # print(text)
-
 
 
 def select():

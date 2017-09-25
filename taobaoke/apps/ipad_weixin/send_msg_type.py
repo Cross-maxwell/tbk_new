@@ -11,7 +11,7 @@ def send_msg_type(msg_dict):
     # img or text
     type = msg_dict['type']
     delay_time = msg_dict.get('delay_time', 0)
-    print(text)
+
 
     v_user_pickle = weixin_bot.red.get('v_user_' + uin)
 
