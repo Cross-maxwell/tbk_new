@@ -56,6 +56,9 @@ class WXBot(object):
         self.__is_async_check = False
         self.__lock = threading.Lock()
 
+        # 图片重试次数
+        self.__retry_num = 1
+
 
     def set_user_context(self, wx_username):
         # TODO：self.wx_username 不该在这初始化，待修改
@@ -726,23 +729,10 @@ class WXBot(object):
         data = urllib2.urlopen(url).read()
 
 
-
-        # print(data[-1])
-        # request_data = requests.get(url).content
-        # print(request_data)
-        # print(data[-1])
-        # print(len(data[-1]))
-        #
         import random
         random_str = str(random.randint(0, 999))
         data = data + random_str
 
-
-        # img_path = 'img/no.png'
-        # with codecs.open(img_path, 'rb') as img_file:
-        #     data = img_file.read()
-        # with open(img_path, 'rb') as img_file:
-        #     data = img_file.read()
         # 起始位置
         start_pos = 0
         # 数据分块长度
@@ -797,14 +787,9 @@ class WXBot(object):
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0 or check_num == 1:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发生未知错误'.format(v_user.nickname, user_name, total_send_nums, send_num))
-                """
-                当我得到了 buffers is None 或者 wrong wexin return 之后，重发这个字节包
-                当重发2次依然得到wrong的时候，从最开始进行重发。
-                """
+                # 当我得到了 buffers is None 或者 wrong wexin return 之后，重发这个字节包
                 print('进行重发')
-                self.retry_send_img(user_name, data, start_pos, count)
-            # if check_num == 1:
-            #     print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次得到错误的微信返回值'.format(v_user.nickname, user_name, total_send_nums, send_num))
+                self.retry_send_img(img_msg_req)
             if check_num == 2:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发送成功'.format(v_user.nickname, user_name, total_send_nums, send_num))
 
@@ -813,44 +798,11 @@ class WXBot(object):
         self.wechat_client.close_when_done()
         return True
 
-    """
-    这里看能不能再封装一层
-    """
-    def retry_send_img(self, user_name, data, start_pos, count):
-        upload_data = base64.b64encode(data[start_pos:start_pos + count])
-        client_img_id = v_user.userame + "_" + str(get_time_stamp())
-        data_total_length = len(data)
-
-        payLoadJson = {
-            'ClientImgId': client_img_id.encode('utf-8'),
-            'ToUserName': user_name.encode('utf-8'),
-            'StartPos': start_pos,
-            'TotalLen': data_total_length,
-            'DataLen': len(data[start_pos:start_pos + count]),
-            'Data': upload_data
-        }
-        pay_load_json = json.dumps(payLoadJson)
-        start_pos = start_pos + count
-        print("Send Img Block {}".format(count))
-        print("start_pos is {}".format(start_pos))
-        print("data_total_length is {}".format(data_total_length))
-        img_msg_req = WechatMsg(
-            token=CONST_PROTOCOL_DICT['machine_code'],
-            version=CONST_PROTOCOL_DICT['version'],
-            timeStamp=get_time_stamp(),
-            iP=get_public_ip(),
-            baseMsg=BaseMsg(
-                cmd=110,
-                user=v_user,
-                payloads=pay_load_json.encode('utf-8'),
-            )
-        )
+    def retry_send_img(self, img_msg_req):
         img_msg_rsp = grpc_client.send(img_msg_req)
         (buffers, seq) = grpc_utils.get_seq_buffer(img_msg_rsp)
         buffers = self.wechat_client.sync_send_and_return(buffers, time_out=3)
-
         check_num = check_buffer_16_is_191(buffers)
-
         if check_num == 2:
             print('重发成功')
         else:
