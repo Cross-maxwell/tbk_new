@@ -602,12 +602,6 @@ class WXBot(object):
         if check_num == 2:
             print('%s 初始化: 成功' % v_user.nickname)
 
-
-        # if not check_buffer_16_is_191(buffers):
-        #     print("未知包 init")
-        #     self.wechat_client.close_when_done()
-        #     return False
-        # else:
             new_init_rsp.baseMsg.cmd = -1002
             new_init_rsp.baseMsg.payloads = char_to_str(buffers)
             new_init_rsp = grpc_client.send(new_init_rsp)
@@ -1245,7 +1239,6 @@ if __name__ == "__main__":
 
             elif cmd == 2:
                 v_user_pickle = red.get('v_user_' + wx_user)
-                # v_user_pickle = red.get('v_user_' + 'wxid_3cimlsancyfg22')
                 v_user = pickle.loads(v_user_pickle)
                 #给谁发，谁发的，图片url
                 wx_bot.send_img_msg('wxid_9zoigugzqipj21', v_user,
@@ -1253,13 +1246,11 @@ if __name__ == "__main__":
 
             elif cmd == 3:
                 v_user_pickle = red.get('v_user_' + wx_user)
-                # v_user_pickle = red.get('v_user_' + 'wxid_3cimlsancyfg22')
                 v_user = pickle.loads(v_user_pickle)
                 wx_bot.async_check(v_user, False)
 
             elif cmd == 4:
                 v_user_pickle = red.get('v_user_' + wx_user)
-                # v_user_pickle = red.get('v_user_' + 'wxid_3cimlsancyfg22')
                 v_user = pickle.loads(v_user_pickle)
                 wx_bot.heart_beat(v_user)
                 # break
@@ -1271,7 +1262,6 @@ if __name__ == "__main__":
 
             elif cmd == 6:
                 v_user = pickle.loads(red.get('v_user_' + wx_user))
-                # # wx_bot.invite_chatroom(v_user, '8043482794@chatroom', 'wxid_e1kvkvgi873521')
                 wx_bot.get_chatroom_detail(v_user, '8043482794@chatroom')
                 print "socket status:{0}".format(wx_bot.wechat_client.connected)
 

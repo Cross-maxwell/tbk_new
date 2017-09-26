@@ -1,8 +1,8 @@
 # _*_ coding:utf-8 _*_
 import redis
 
-APP_ID = "dabaiceo"
-APP_KEY = "a4d230c750c5116a65a07ad976e5d6d5"
+APP_ID = "dabaiceo888"
+APP_KEY = "80b3c4d707852ec284af4e0a8523a074"
 
 # REMOTE_SERVER = ["115.159.69.236:12580", "122.114.187.166:10086", "122.114.187.166:12580"]"122.112.211.25:12580",
 # REMOTE_SERVER = ["123.58.7.124:12580", "115.159.69.236:12580"]
@@ -49,7 +49,7 @@ gwxovjAkCy0J1v8ik0z+87PacxygmgRjk7StkhqugaMEDg==
 CONST_PROTOCOL_DICT = {
     "version": "6.5.12",
     # 替换自己的授权码
-    "machine_code": "e2b15a1a62075149e21d31f4dba27d0a",
+    "machine_code": "a9df7d698b1189ce7a45868c32ae5f93",
     # 初始化key 此key由授权人员分配
     "random_encry_key": [80, 117, 128, 85, 2, 55, 180, 126, 141, 93, 185, 220, 112, 142, 15, 128],
     # 在不知道用户设备的id的的时候固定或者随机 但必须保持 单一账号使用同一个设备id同一个设备ID 不建议多号登陆 一封就封一批 建议登陆账号的md5作为设备id 或wxid 的md5作为设备id
