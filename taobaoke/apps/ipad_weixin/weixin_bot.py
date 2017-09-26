@@ -551,8 +551,12 @@ class WXBot(object):
                                 action_rule.filter_keyword_rule(v_user.userame, msg_dict)
                             except Exception as e:
                                 print(e)
-
-                            Message.save_message(msg_dict)
+                            try:
+                                message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])
+                                message.update_from_msg_dict(msg_dict)
+                                message.save()
+                            except Exception as e:
+                                logger.error(e)
                         else:
                             print(msg_dict)
                     except Exception as e:
@@ -761,6 +765,7 @@ class WXBot(object):
                 'StartPos': start_pos,
                 'TotalLen': data_total_length,
                 'DataLen': len(data[start_pos:start_pos + count]),
+                #'DataLen': min(count, data_len) ?
                 'Data': upload_data
             }
             pay_load_json = json.dumps(payLoadJson)

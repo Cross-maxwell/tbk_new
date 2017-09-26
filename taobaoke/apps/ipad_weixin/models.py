@@ -224,16 +224,36 @@ class Message(models.Model):
     to_username = models.CharField(max_length=200)
 
 
+    def update_from_msg_dict(self, msg_dict):
+        self.content = msg_dict['Content']
+        self.create_time = msg_dict['CreateTime']
+        self.from_username = msg_dict['FromUserName']
+        self.img_buf = ''
+        self.img_status = msg_dict['ImgStatus']
+        self.msg_source = msg_dict['MsgSource']
+        self.msg_type = msg_dict['MsgType']
+        self.new_msg_id = msg_dict['NewMsgId']
+        self.push_content = msg_dict['PushContent']
+        self.status = msg_dict['Status']
+        self.to_username = msg_dict['ToUserName']
+
+
     @classmethod
     def save_message(cls, msg_dict):
         try:
             msg_db = cls(
-                content=msg_dict['Content'], create_time=msg_dict['CreateTime'],
-                from_username=msg_dict['FromUserName'], img_buf='',
-                img_status=msg_dict['ImgStatus'], msg_id=msg_dict['MsgId'],
-                msg_source=msg_dict['MsgSource'], msg_type=msg_dict['MsgType'],
-                new_msg_id=msg_dict['NewMsgId'], push_content=msg_dict['PushContent'],
-                status=msg_dict['Status'], to_username=msg_dict['ToUserName']
+                content=msg_dict['Content'],
+                create_time=msg_dict['CreateTime'],
+                from_username=msg_dict['FromUserName'],
+                img_buf='',
+                img_status=msg_dict['ImgStatus'],
+                msg_id=msg_dict['MsgId'],
+                msg_source=msg_dict['MsgSource'],
+                msg_type=msg_dict['MsgType'],
+                new_msg_id=msg_dict['NewMsgId'],
+                push_content=msg_dict['PushContent'],
+                status=msg_dict['Status'],
+                to_username=msg_dict['ToUserName']
             )
             msg_db.save()
         except Exception as e:
