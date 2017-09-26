@@ -19,6 +19,8 @@ interact_urls = [
     url(r'push-product/', push_product),
 ]
 
+
+
 urlpatterns = [
     url(r'product/', include(product_urls)),
     url(r'^user/', include(user_urls)),

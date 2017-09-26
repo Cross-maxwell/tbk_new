@@ -56,8 +56,6 @@ class WXBot(object):
         self.__is_async_check = False
         self.__lock = threading.Lock()
 
-        #二次登陆重试次数
-        self.__retry_num = 1
 
     def set_user_context(self, wx_username):
         # TODO：self.wx_username 不该在这初始化，待修改
@@ -417,7 +415,6 @@ class WXBot(object):
         :param new_socket:
         :return:
         """
-        self.__retry_num += 1
         bot_param = BotParam.objects.filter(username=v_user.userame).first()
         if bot_param:
             self.long_host = bot_param.long_host
@@ -440,20 +437,13 @@ class WXBot(object):
         auto_auth_rsp = grpc_client.send(auto_auth_req)
         (buffers, seq) = grpc_utils.get_seq_buffer(auto_auth_rsp)
         buffers = self.wechat_client.sync_send_and_return(buffers, close_socket=new_socket)
-        print(buffers)
 
-        check_num = self.wechat_client.check_buffer_16_is_191(buffers)
-        if check_num == False:
-            print('%s 二次登陆:wrong weixin return' % v_user.nickname)
-            print('%s 二次登陆重试' % v_user.nickname)
 
-            #最多重试1次
-            if self.__retry_num <= 2:
-                self.auto_auth(v_user, uuid, device_type, new_socket=True)
-        if check_num == True:
-            print('%s 二次登陆:right weixin return' % v_user.nickname)
-
-        # self.wechat_client.check_buffer_16_is_191(buffers)
+        # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
+        if not self.wechat_client.check_buffer_16_is_191(buffers):
+            oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
+            self.wechat_client.close_when_done()
+            return False
 
         auto_auth_rsp.baseMsg.cmd = -702
         auto_auth_rsp.baseMsg.payloads = buffers
@@ -734,6 +724,20 @@ class WXBot(object):
             self.long_host = bot_param.long_host
             self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
         data = urllib2.urlopen(url).read()
+
+
+
+        # print(data[-1])
+        # request_data = requests.get(url).content
+        # print(request_data)
+        # print(data[-1])
+        # print(len(data[-1]))
+        #
+        import random
+        random_str = str(random.randint(0, 999))
+        data = data + random_str
+
+
         # img_path = 'img/no.png'
         # with codecs.open(img_path, 'rb') as img_file:
         #     data = img_file.read()
@@ -791,25 +795,27 @@ class WXBot(object):
             buffers = self.wechat_client.sync_send_and_return(buffers, time_out=3)
 
             check_num = check_buffer_16_is_191(buffers)
-            if check_num == 0:
-                print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次的buffer 为 None'.format(v_user.nickname, user_name, total_send_nums, send_num))
+            if check_num == 0 or check_num == 1:
+                print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发生未知错误'.format(v_user.nickname, user_name, total_send_nums, send_num))
                 """
                 当我得到了 buffers is None 或者 wrong wexin return 之后，重发这个字节包
                 当重发2次依然得到wrong的时候，从最开始进行重发。
                 """
                 print('进行重发')
                 self.retry_send_img(user_name, data, start_pos, count)
-            if check_num == 1:
-                print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次得到错误的微信返回值'.format(v_user.nickname, user_name, total_send_nums, send_num))
+            # if check_num == 1:
+            #     print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次得到错误的微信返回值'.format(v_user.nickname, user_name, total_send_nums, send_num))
             if check_num == 2:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发送成功'.format(v_user.nickname, user_name, total_send_nums, send_num))
 
             start_pos = start_pos + count
             send_num += 1
-            # check_buffer_16_is_191(buffers)
         self.wechat_client.close_when_done()
         return True
 
+    """
+    这里看能不能再封装一层
+    """
     def retry_send_img(self, user_name, data, start_pos, count):
         upload_data = base64.b64encode(data[start_pos:start_pos + count])
         client_img_id = v_user.userame + "_" + str(get_time_stamp())
@@ -850,8 +856,6 @@ class WXBot(object):
         else:
             print('重发失败')
 
-
-
     def search_contact(self, user_name, v_user):
         payLoadJson = "{\"Username\":\"" + user_name + "\"}"
         search_contact_req = WechatMsg(
@@ -876,10 +880,6 @@ class WXBot(object):
             print('%s 查找联系人: 得到错误的微信返回' % v_user.nickname)
         if check_num == 2:
             print('%s 查找联系人: 成功' % v_user.nickname)
-
-
-        # check_buffer_16_is_191(buffers)
-
 
         search_contact_rsp.baseMsg.cmd = -106
         search_contact_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -1197,8 +1197,6 @@ class WXBot(object):
                     v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
                     self.async_check(v_user)
                     from ipad_weixin.heartbeat_manager import HeartBeatManager
-
-                    '''类直接调用了静态方法，不需要去实例一个什么东西'''
                     HeartBeatManager.begin_heartbeat(str(qr_code['Username']))
 
     def login(self, md_username):
@@ -1278,7 +1276,7 @@ if __name__ == "__main__":
                 v_user = pickle.loads(v_user_pickle)
                 UUid = u"667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
                 DeviceType = u"<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
-                wx_bot.auto_auth(v_user, UUid, DeviceType, False)
+                wx_bot.auto_auth(v_user, UUid, DeviceType, True)
 
             elif cmd == 1:
                 # wxid_ceapoyxs555k22

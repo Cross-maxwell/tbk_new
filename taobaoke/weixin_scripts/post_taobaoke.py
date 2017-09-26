@@ -149,5 +149,5 @@ if __name__ == "__main__":
     #测试
     while True:
         post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
-        time.sleep(60)
+        time.sleep(60 * 5)
 
