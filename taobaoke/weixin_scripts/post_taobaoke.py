@@ -78,7 +78,7 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         #这里 delay_time = 40, 能够刚好让200K左右的图片先发出， 文字信息紧随其后
         "delay_time": 40
     }
-    #TODO：这里应该根据图片的大小来去判断 delay_time 的时间，先给一个硬编码的时间
+
 
     img_msg_dict = {
         "uin": wx_id,
@@ -87,11 +87,13 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         "type": "img"
     }
 
+    # TODO: 当程序的休眠时间为30分钟时，发送图片和文字的间隔为45分钟。当打印完 push ... to .. 之后，15分钟后才开始进行图片的额发送。why?
+
     PushRecord.objects.create(entry=p, group=group_id)
     send_msg_type(img_msg_dict)
-    print "Push img %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id'])
+    print "%s Push img %s to group %s." % (datetime.datetime.now(), img_msg_dict['text'], img_msg_dict['group_id'])
     send_msg_type(text_msg_dict)
-    print "Push text %s to group %s." % (text_msg_dict['text'], text_msg_dict['group_id'])
+    print "%s Push text %s to group %s." % (datetime.datetime.now(), text_msg_dict['text'], text_msg_dict['group_id'])
 
 
 def select():
@@ -108,7 +110,7 @@ def select():
             if qr_code.md_username is not None:
                 md_username = qr_code.md_username
                 break
-        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, hid), timeout=4)
+        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id), timeout=4)
         ret = json.loads(rsp.text)['ret']
         if ret == 1:
             # 筛选出激活群
@@ -149,5 +151,5 @@ if __name__ == "__main__":
     #测试
     while True:
         post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
-        time.sleep(60 * 5)
+        time.sleep(60 * 30)
 

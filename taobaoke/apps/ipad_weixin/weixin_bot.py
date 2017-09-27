@@ -383,30 +383,16 @@ class WXBot(object):
         (buffers, seq) = grpc_utils.get_seq_buffer(sync_rsp)
         buffers = self.wechat_client.sync_send_and_return(buffers)
         if buffers is None:
+            print("%s heart_beat buffers is None" % v_user.userame)
             return False
 
         ret_code = ord(buffers[16])
         if ret_code is not 191:
             selector = read_int(buffers, 16)
             print "--heartbeat() selector is:{}--".format(selector)
-            # if selector == -1:
-            #     print "user logout when heartbeat"
-            #
-            # if selector > 0:
-            #     v_user = pickle.loads(red.get('v_user_' + v_user.username))
-            #     self.async_check(v_user)
 
         return True
-        # selector = read_int(buffers, 16)
-        # 更新user状态
-        # with app.app_context():
-        #     try:
-        #         user_db = User.objects.filter_by(userame=v_user.userame).first()
-        #         user_db.login = selector
-        #         db.session.commit()
-        #     except Exception as e:
-        #         print(e)
-        # return selector < 0
+
 
     def auto_auth(self, v_user, uuid, device_type, new_socket=True):
         """
@@ -436,17 +422,40 @@ class WXBot(object):
                 payloads=pay_load.encode('utf-8')
             )
         )
+        for i in range(10):
+            auto_auth_rsp = grpc_client.send(auto_auth_req)
+            (grpc_buffers, seq) = grpc_utils.get_seq_buffer(auto_auth_rsp)
 
-        auto_auth_rsp = grpc_client.send(auto_auth_req)
-        (buffers, seq) = grpc_utils.get_seq_buffer(auto_auth_rsp)
-        buffers = self.wechat_client.sync_send_and_return(buffers, close_socket=new_socket)
+            buffers = self.wechat_client.sync_send_and_return(grpc_buffers, close_socket=new_socket)
+
+            # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
+            if not self.wechat_client.check_buffer_16_is_191(buffers):
+                print("第 %s 次重新发送 auto_auth buffers" % (i+1))
+                self.wechat_client.close_when_done()
+                continue
+            else:
+                break
+
+            time.sleep(10)
+            if i == 9:
+                oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
+                print("淘宝客：{0} 已下线".format(v_user.nickname))
+                return False
 
 
-        # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
-        if not self.wechat_client.check_buffer_16_is_191(buffers):
-            oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
-            self.wechat_client.close_when_done()
-            return False
+            # try:
+            #     user = WxUser.objects.filter(username=v_user.userame)
+            #     if user.login == 1:
+            #         print("----------重启心跳中----------")
+            #         time.sleep(60)
+            #         self.async_check(v_user)
+            #         from ipad_weixin.heartbeat_manager import HeartBeatManager
+            #         HeartBeatManager.begin_heartbeat(str(v_user.userame))
+            # except Exception as e:
+            #     logger.error(e)
+            #     print("----------重启心跳失败----------")
+            #     print(e.message)
+
 
         auto_auth_rsp.baseMsg.cmd = -702
         auto_auth_rsp.baseMsg.payloads = buffers
@@ -454,6 +463,7 @@ class WXBot(object):
         if auto_auth_rsp_2.baseMsg.ret == 0:
             user = auto_auth_rsp_2.baseMsg.user
             print("二次登陆成功")
+            # TODO: 应该重启心跳
             v_user_pickle = pickle.dumps(user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             return True
@@ -549,6 +559,9 @@ class WXBot(object):
                         elif msg_dict['Status'] is not None:
                             try:
                                 action_rule.filter_keyword_rule(v_user.userame, msg_dict)
+                                """
+                                在此处添加一个签到规则。
+                                """
                             except Exception as e:
                                 print(e)
                             try:
@@ -786,7 +799,6 @@ class WXBot(object):
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0 or check_num == 1:
                 print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发生未知错误'.format(v_user.nickname, user_name, total_send_nums, send_num))
-                # 当我得到了 buffers is None 或者 wrong wexin return 之后，重发这个字节包
                 print('进行重发')
                 self.retry_send_img(img_msg_req)
             if check_num == 2:
@@ -1219,7 +1231,7 @@ if __name__ == "__main__":
             print "**************************"
             cmd = input()
             if cmd == 0:
-                wx_user = 'wxid_mynvgzqgnb5x22'
+                wx_user = 'wxid_cegmcl4xhn5w22'
 
                 wx_bot.set_user_context(wx_user)
 
@@ -1262,7 +1274,7 @@ if __name__ == "__main__":
 
             elif cmd == 6:
                 v_user = pickle.loads(red.get('v_user_' + wx_user))
-                wx_bot.get_chatroom_detail(v_user, '8043482794@chatroom')
+                wx_bot.get_chatroom_detail(v_user, '6610815091@chatroom')
                 print "socket status:{0}".format(wx_bot.wechat_client.connected)
 
             elif cmd == 7:
