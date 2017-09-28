@@ -6,8 +6,9 @@
 """
 import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
-sys.path.append('/Users/hong/sourcecode/work/ipad_wechat_test/wx_pad_taobaoke')
-sys.path.append('/home/ipad_wechat_test/wx_pad_taobaoke')
+# sys.path.append('/Users/hong/sourcecode/work/ipad_wechat_test/wx_pad_taobaoke')
+# sys.path.append('/home/ipad_wechat_test/wx_pad_taobaoke')
+sys.path.append('/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke')
 # print(sys.path)
 
 import json
@@ -16,9 +17,10 @@ import datetime
 import random
 import requests
 
+BASE_DIRS = '/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke/'
 import os
 import django
-os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
+os.environ.update({"DJANGO_SETTINGS_MODULE": BASE_DIRS + "fuli.settings"})
 django.setup()
 
 from django.db.models import Q
@@ -159,5 +161,4 @@ if __name__ == "__main__":
     #测试
     while True:
         post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
-        time.sleep(60 * 60 * 9)
-
+        time.sleep(60 * 5)

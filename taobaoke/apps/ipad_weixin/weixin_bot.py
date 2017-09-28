@@ -216,21 +216,19 @@ class WXBot(object):
             )
 
             checkqrcode_grpc_rsp = grpc_client.send(check_qrcode_grpc_req)
-            (buffers, seq) = grpc_utils.get_seq_buffer(checkqrcode_grpc_rsp)
+            (grpc_buffers, seq) = grpc_utils.get_seq_buffer(checkqrcode_grpc_rsp)
+            if not grpc_buffers :
+                logger.error("gRPC获取Qrcode buffers为None")
 
-            buffers = self.wechat_client.sync_send_and_return(buffers)
-
+            buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
 
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0:
-                logger.info('获取 check_qrcode_login buffers 为 None')
-                # print('获取 check_qrcode_login buffers 为 None')
+                logger.info('获取 check_qrcode_login buffers is None')
             if check_num == 1:
-                logger.info('获取 check_qrcode_login 得到错误的返回')
-                # print('获取 check_qrcode_login 得到错误的返回')
+                logger.info('获取 check_qrcode_login 得到了错误的微信返回')
             if check_num == 2:
                 logger.info('获取 check_qrcode_login 成功')
-                # print('获取 check_qrcode_login 成功')
 
 
             checkqrcode_grpc_rsp.baseMsg.cmd = -503
@@ -243,19 +241,14 @@ class WXBot(object):
 
             if 'unpack err' not in payloads:
                 qr_code = json.loads(payloads)
-                print(qr_code)
 
             if qr_code['Status'] is 2:
-                # save qr_code
-
-                qr_code_db, created = Qrcode.objects.get_or_create(uuid=uuid)
                 try:
+                    qr_code_db, created = Qrcode.objects.get_or_create(uuid=uuid)
                     qr_code_db.update_from_qrcode(qr_code)
                     qr_code_db.save()
                 except Exception as e:
                     logger.error(e)
-                    print e
-
                 # 成功登陆
                 return qr_code
             elif qr_code['Status'] is 0:
@@ -304,19 +297,20 @@ class WXBot(object):
         )
 
         qrcode_login_rsp = grpc_client.send(qrcode_login_req)
-        (buffers, seq) = grpc_utils.get_seq_buffer(qrcode_login_rsp)
-        buffers = self.wechat_client.sync_send_and_return(buffers)
+        (grpc_buffers, seq) = grpc_utils.get_seq_buffer(qrcode_login_rsp)
+
+        if not grpc_buffers:
+            logger.error('%s gRPC buffers is None' % qr_code['Nickname'])
+
+        buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:
-            logger.info("确认登录 buffers 为 None")
-            # print('确认登录 buffers 为 None')
+            logger.info("%s 确认登录 buffers is None" % qr_code['Nickname'])
         if check_num == 1:
-            logger.info('确认登录 buffers 得到错误的返回')
-            # print('确认登录 buffers 得到错误的返回')
+            logger.info('confirm login buffers has wrong return')
         if check_num == 2:
-            logger.info('确认登录 buffers 正确返回')
-            # print('确认登录 buffers 正确返回')
+            logger.info('get confirm login buffers successfully')
 
         qrcode_login_rsp.baseMsg.cmd = -1001
         qrcode_login_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -341,14 +335,10 @@ class WXBot(object):
             return False
         elif qrcode_login_rsp.baseMsg.ret == 0:
             # 返回0代表登陆成功
-            logger.info('%s 登录成功' % qr_code['Username'])
-            # print('login successful')
+            logger.info('%s 登录成功' % qr_code['Nickname'])
 
             # 将User赋值
             v_user = qrcode_login_rsp.baseMsg.user
-            #返回值：<class 'WechatProto_pb2.User'>， 即v_user是一个对象，而不是dict
-
-            # 存下v_user
 
             try:
                 wxuser, created = WxUser.objects.get_or_create(uin=v_user.uin)
@@ -357,21 +347,13 @@ class WXBot(object):
                 wxuser.save()
             except Exception as e:
                 logger.error(e)
-                print('---save v_user failed---')
-
-            # if keep_heart_beat:
-            # 登陆成功，维持心跳
-            #     asyn_rec_thread = threading.Thread(target=self, WXBot.heart_beat(v_user))
-            #     asyn_rec_thread.start()
 
             red.set('v_user_' + str(v_user.userame), pickle.dumps(v_user))
             self.wechat_client.close_when_done()
             return True
         else:
             logger.info("qrcode_login_rsp.baseMsg.ret is {}".format(qrcode_login_rsp.baseMsg.ret))
-            logger.info("原因是{}".format(qrcode_login_rsp.baseMsg.payloads))
-            # print("qrcode_login_rsp.baseMsg.ret is {}".format(qrcode_login_rsp.baseMsg.ret))
-            # print("原因是{}".format(qrcode_login_rsp.baseMsg.payloads))
+            logger.info("{0}登录失败，原因是：{1}".format(qr_code['Nickname'],qrcode_login_rsp.baseMsg.payloads))
             return False
 
     def heart_beat(self, v_user):
@@ -392,18 +374,20 @@ class WXBot(object):
             )
         )
         sync_rsp = grpc_client.send(sync_req)
-        (buffers, seq) = grpc_utils.get_seq_buffer(sync_rsp)
-        buffers = self.wechat_client.sync_send_and_return(buffers)
+        (grpc_buffers, seq) = grpc_utils.get_seq_buffer(sync_rsp)
+
+        if not grpc_buffers:
+            logger.error('%s gRPC buffers is None' % v_user.nickname)
+
+        buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
         if buffers is None:
-            logger.info("%s heart_beat buffers is None" % v_user.userame)
-            # print("%s heart_beat buffers is None" % v_user.userame)
+            logger.info("%s heart_beat buffers is None" % v_user.nickname)
             return False
 
         ret_code = ord(buffers[16])
         if ret_code is not 191:
             selector = read_int(buffers, 16)
             logger.info("--heartbeat() selector is:{}--".format(selector))
-            # print "--heartbeat() selector is:{}--".format(selector)
 
         return True
 
@@ -444,8 +428,7 @@ class WXBot(object):
 
             # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
             if not self.wechat_client.check_buffer_16_is_191(buffers):
-                logger.info("第 %s 次重新发送 auto_auth buffers" % (i+1))
-                # print("第 %s 次重新发送 auto_auth buffers" % (i+1))
+                logger.info("The %s times to retry send auto_auth buffers" % (i+1))
                 self.wechat_client.close_when_done()
                 continue
             else:
@@ -455,7 +438,6 @@ class WXBot(object):
             if i == 9:
                 oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
                 logger.info("淘宝客：{0} 已下线".format(v_user.nickname))
-                # print("淘宝客：{0} 已下线".format(v_user.nickname))
                 return False
 
         auto_auth_rsp.baseMsg.cmd = -702
@@ -463,12 +445,12 @@ class WXBot(object):
         auto_auth_rsp_2 = grpc_client.send(auto_auth_rsp)
         if auto_auth_rsp_2.baseMsg.ret == 0:
             user = auto_auth_rsp_2.baseMsg.user
-            logger.info("二次登陆成功")
+            logger.info("%s 二次登陆成功!" % v_user.nickname)
             v_user_pickle = pickle.dumps(user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             return True
         elif auto_auth_rsp_2.baseMsg.ret == -100 or auto_auth_rsp_2.baseMsg.ret == -2023:
-            print("二次登陆失败，重新扫码吧朋友")
+            print("%s 二次登陆失败，重新扫码吧朋友" % v_user.nickname)
 
             ret_reason = ''
             try:
@@ -477,6 +459,7 @@ class WXBot(object):
                 end = "]]></Content>"
                 ret_reason = payload[payload.find(start) + len(start):payload.find(end)]
             except Exception as e:
+                logger.error(e)
                 ret_reason = "未知"
 
             logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
@@ -579,7 +562,7 @@ class WXBot(object):
                         print(msg_dict)
                 self.async_check(v_user, new_socket=new_socket)
             else:
-                logger.info("sync 完成")
+                logger.info("sync finished")
 
     def new_init(self, v_user):
         """
@@ -609,13 +592,13 @@ class WXBot(object):
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0 :
-            logger.info('%s 初始化: buffers 为 None' % v_user.nickname)
+            logger.info('%s 初始化: buffers is None' % v_user.nickname)
             self.wechat_client.close_when_done()
         if check_num == 1:
-            logger.info('%s 初始化: 得到错误的微信返回' % v_user.nickname)
+            logger.info('%s 初始化: has wrong wexin return' % v_user.nickname)
             self.wechat_client.close_when_done()
         if check_num == 2:
-            logger.info('%s 初始化buffers: 正常' % v_user.nickname)
+            logger.info('%s 初始化: buffers正常返回' % v_user.nickname)
 
             new_init_rsp.baseMsg.cmd = -1002
             new_init_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -638,7 +621,7 @@ class WXBot(object):
             v_user_pickle = pickle.dumps(v_user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             if new_init_rsp.baseMsg.ret == 8888:
-                logger.info("%s 初始化成功" % v_user.userame)
+                logger.info("%s 初始化成功！" % v_user.nickname)
                 self.wechat_client.close_when_done()
             else:
                 self.wechat_client.close_when_done()
@@ -775,7 +758,6 @@ class WXBot(object):
                 'StartPos': start_pos,
                 'TotalLen': data_total_length,
                 'DataLen': len(data[start_pos:start_pos + count]),
-                #'DataLen': min(count, data_len) ?
                 'Data': upload_data
             }
             pay_load_json = json.dumps(payLoadJson)
@@ -796,15 +778,22 @@ class WXBot(object):
             )
 
             img_msg_rsp = grpc_client.send(img_msg_req)
-            (buffers, seq) = grpc_utils.get_seq_buffer(img_msg_rsp)
-            buffers = self.wechat_client.sync_send_and_return(buffers, time_out=3)
+            (grpc_buffers, seq) = grpc_utils.get_seq_buffer(img_msg_rsp)
+
+            if not grpc_buffers:
+                logger.error("%s gRPC buffers is None" % v_user.nickname)
+            buffers = self.wechat_client.sync_send_and_return(grpc_buffers, time_out=3)
 
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0 or check_num == 1:
                 logger.info('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发生未知错误'.format(v_user.nickname, user_name, total_send_nums, send_num))
                 logger.info('进行重发')
-
-                self.retry_send_img(img_msg_req)
+                retry_check_num = self.retry_send_img(img_msg_req)
+                if retry_check_num == 2:
+                    logger.info("重发成功")
+                else:
+                    logger.info("重发失败")
+                    return False
             if check_num == 2:
                 logger.info('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发送成功'.format(v_user.nickname, user_name, total_send_nums, send_num))
 
@@ -818,10 +807,8 @@ class WXBot(object):
         (buffers, seq) = grpc_utils.get_seq_buffer(img_msg_rsp)
         buffers = self.wechat_client.sync_send_and_return(buffers, time_out=3)
         check_num = check_buffer_16_is_191(buffers)
-        if check_num == 2:
-            logger.info('重发成功')
-        else:
-            logger.info('重发失败')
+        return check_num
+
 
     def search_contact(self, user_name, v_user):
         payLoadJson = "{\"Username\":\"" + user_name + "\"}"
@@ -837,8 +824,11 @@ class WXBot(object):
             )
         )
         search_contact_rsp = grpc_client.send(search_contact_req)
-        (buffers, seq) = grpc_utils.get_seq_buffer(search_contact_rsp)
-        buffers = self.wechat_client.sync_send_and_return(buffers)
+        (grpc_buffers, seq) = grpc_utils.get_seq_buffer(search_contact_rsp)
+
+        if not grpc_buffers:
+            logger.info("%s gRPC buffers is None" % v_user.nickname)
+        buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:
@@ -910,8 +900,10 @@ class WXBot(object):
         )
         get_contacts_rsp = grpc_client.send(contacts_req)
 
-        (buffers, seq) = grpc_utils.get_seq_buffer(get_contacts_rsp)
-        buffers = self.wechat_client.sync_send_and_return(buffers)
+        (grpc_buffers, seq) = grpc_utils.get_seq_buffer(get_contacts_rsp)
+        if not grpc_buffers:
+            logger.info("%s gRPC buffers is None" % v_user.nickname)
+        buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:

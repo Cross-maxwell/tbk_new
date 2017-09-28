@@ -35,6 +35,9 @@ def filter_keyword_rule(wx_id, msg_dict):
             gid = msg_dict['FromUserName']
             is_taobao_group = True
         # gid名称是福利社
+            """
+            为什么是first?
+            """
             contact_db = Contact.objects.filter(nickname__contains="福利社",
                                                 username=gid).first()
         gid_name_is = contact_db is not None

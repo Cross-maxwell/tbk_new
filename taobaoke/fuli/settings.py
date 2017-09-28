@@ -16,6 +16,8 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(BASE_DIR)
+
 
 import sys
 sys.path.insert(0, os.path.join(BASE_DIR,'apps'))
@@ -169,7 +171,7 @@ LOGGING = {
             'formatter': 'standard',
         },
         'console':{
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
@@ -179,7 +181,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': False
         },
         'django_models':{
@@ -194,12 +196,12 @@ LOGGING = {
         },
         'weixin_bot':{
             'handlers': ['error', 'console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True
         },
         'post_taobaoke':{
             'handlers': ['error', 'console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True
         },
     }

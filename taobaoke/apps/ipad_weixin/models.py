@@ -211,4 +211,9 @@ class Message(models.Model):
         self.to_username = msg_dict['ToUserName']
 
 
+class SignInRule(models.Model):
+    group_name = models.CharField(max_length=200)
+    keyword = models.TextField()
+    red_packet_id = models.CharField(max_length=100)
+
 
