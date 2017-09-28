@@ -150,7 +150,7 @@ LOGGING = {
     'disable_existing_loggers': True,
     'formatters': {
        'standard': {
-            'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'}  #日志格式
+            'format': '%(asctime)s [%(threadName)s] [%(name)s:%(funcName)s] [%(levelname)s]- %(message)s'}  #日志格式
     },
     'filters': {
     },
@@ -166,37 +166,15 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'log', 'error.log'),
             'maxBytes':1024*1024*5,
             'backupCount': 5,
-            'formatter':'standard',
+            'formatter': 'standard',
         },
         'console':{
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'standard'
         },
-        'request_handler': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'log', 'script.log'),
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
-            'formatter':'standard',
-        },
-        'scprits_handler': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':os.path.join(BASE_DIR, 'log', 'script.log'),
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
-            'formatter':'standard',
-        },
-        'wechat_client_error': {
-            'level':'ERROR',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':os.path.join(BASE_DIR, 'log', 'wechat_client.log'),
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
-            'formatter':'standard',
-        }
+
+
     },
     'loggers': {
         'django': {
@@ -204,45 +182,25 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': False
         },
-        'django.request': {
-            'handlers': ['request_handler'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
         'django_models':{
-            'handlers': ['error'],
+            'handlers': ['error', 'console'],
             'level': 'ERROR',
             'propagate': True
         },
         'django_views':{
-            'handlers': ['error'],
+            'handlers': ['error', 'console'],
             'level': 'ERROR',
             'propagate': True
         },
         'weixin_bot':{
-            'handlers': ['error'],
-            'level': 'ERROR',
+            'handlers': ['error', 'console'],
+            'level': 'DEBUG',
             'propagate': True
         },
         'post_taobaoke':{
-            'handlers': ['error'],
-            'level': 'ERROR',
+            'handlers': ['error', 'console'],
+            'level': 'DEBUG',
             'propagate': True
-        },
-        'weixin_scripts': {
-            'handlers': ['scprits_handler'],
-            'level': 'INFO',
-            'propagate': False
-        },
-        'entry_views': {
-            'handlers': ['scprits_handler'],
-            'level': 'INFO',
-            'propagate': False
-        },
-        'fetch_lanlan': {
-            'handlers': ['scprits_handler'],
-            'level': 'INFO',
-            'propagate': False
         },
     }
 }

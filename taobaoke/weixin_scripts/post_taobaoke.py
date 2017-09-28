@@ -8,7 +8,7 @@ import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
 sys.path.append('/Users/hong/sourcecode/work/ipad_wechat_test/wx_pad_taobaoke')
 sys.path.append('/home/ipad_wechat_test/wx_pad_taobaoke')
-print(sys.path)
+# print(sys.path)
 
 import json
 import time
@@ -65,6 +65,7 @@ def post_taobaoke_url(wx_id, group_id, md_username):
             break
         except Exception as exc:
             print "Get entry exception. Count=%d." % qs.count()
+            logger.error(exc)
             print exc.message
 
     # img or text
@@ -89,11 +90,18 @@ def post_taobaoke_url(wx_id, group_id, md_username):
 
     # TODO: 当程序的休眠时间为30分钟时，发送图片和文字的间隔为45分钟。当打印完 push ... to .. 之后，15分钟后才开始进行图片的额发送。why?
 
+
+
+
     PushRecord.objects.create(entry=p, group=group_id)
     send_msg_type(img_msg_dict)
-    print "%s Push img %s to group %s." % (datetime.datetime.now(), img_msg_dict['text'], img_msg_dict['group_id'])
+    logger.info("Push img %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
+
+    # print "%s Push img %s to group %s." % (datetime.datetime.now(), img_msg_dict['text'], img_msg_dict['group_id'])
     send_msg_type(text_msg_dict)
-    print "%s Push text %s to group %s." % (datetime.datetime.now(), text_msg_dict['text'], text_msg_dict['group_id'])
+    logger.info("Push text %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
+
+    # print "%s Push text %s to group %s." % (datetime.datetime.now(), text_msg_dict['text'], text_msg_dict['group_id'])
 
 
 def select():
@@ -151,5 +159,5 @@ if __name__ == "__main__":
     #测试
     while True:
         post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
-        time.sleep(60 * 30)
+        time.sleep(60 * 60 * 9)
 

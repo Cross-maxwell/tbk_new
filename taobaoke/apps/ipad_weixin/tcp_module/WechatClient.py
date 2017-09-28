@@ -7,8 +7,6 @@ import time
 from datetime import datetime
 from ipad_weixin.utils import common_utils
 
-import logging
-logger = logging.getLogger('wechat_client')
 
 '''
 async_chat & asyncore.dispatcher

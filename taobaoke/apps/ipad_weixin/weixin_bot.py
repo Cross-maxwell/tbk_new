@@ -89,7 +89,8 @@ class WXBot(object):
         if data is not None and len(data) >= 4:
             selector = common_utils.read_int(data, 16)
             if selector > 0:
-                print "selector:{0} start sync thread".format(selector)
+                logger.info("selector:{0} start sync thread".format(selector))
+                # print "selector:{0} start sync thread".format(selector)
 
                 # TODO：在 set_user_context 中定义的wx_username, 这么写不好, 待修改
                 if self.wx_username is not None and self.wx_username != "":
@@ -99,7 +100,8 @@ class WXBot(object):
                             self.__is_async_check = True
                             self.__lock.release()
                         else:
-                            print "*********skip async check*********"
+                            logger.info("----------skip async check----------")
+                            # print "*********skip async check*********"
                             self.__lock.release()
                             return
 
@@ -171,10 +173,11 @@ class WXBot(object):
         # 上传二维码图片到图床中 id为uuid
         try:
             oss_path = oss_utils.put_object_to_oss("wxpad/" + uuid + ".png", imgData)
-            print("oss_path is: {}".format(oss_path))
+            logger.info("oss_path is: {}".format(oss_path))
+            # print("oss_path is: {}".format(oss_path))
         except Exception as e:
             logger.error(e)
-            print('upload oss err by uuid:{}'.format(uuid))
+            print('upload oss error by uuid:{}'.format(uuid))
 
 
         return oss_path, qrcode_rsp, self.deviceId
@@ -220,11 +223,14 @@ class WXBot(object):
 
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0:
-                print('获取 check_qrcode_login buffers 为 None')
+                logger.info('获取 check_qrcode_login buffers 为 None')
+                # print('获取 check_qrcode_login buffers 为 None')
             if check_num == 1:
-                print('获取 check_qrcode_login 得到错误的返回')
+                logger.info('获取 check_qrcode_login 得到错误的返回')
+                # print('获取 check_qrcode_login 得到错误的返回')
             if check_num == 2:
-                print('获取 check_qrcode_login 成功')
+                logger.info('获取 check_qrcode_login 成功')
+                # print('获取 check_qrcode_login 成功')
 
 
             checkqrcode_grpc_rsp.baseMsg.cmd = -503
@@ -303,11 +309,14 @@ class WXBot(object):
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:
-            print('确认登录 buffers 为 None')
+            logger.info("确认登录 buffers 为 None")
+            # print('确认登录 buffers 为 None')
         if check_num == 1:
-            print('确认登录 buffers 得到错误的返回')
+            logger.info('确认登录 buffers 得到错误的返回')
+            # print('确认登录 buffers 得到错误的返回')
         if check_num == 2:
-            print('确认登录 buffers 正确返回')
+            logger.info('确认登录 buffers 正确返回')
+            # print('确认登录 buffers 正确返回')
 
         qrcode_login_rsp.baseMsg.cmd = -1001
         qrcode_login_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -332,7 +341,8 @@ class WXBot(object):
             return False
         elif qrcode_login_rsp.baseMsg.ret == 0:
             # 返回0代表登陆成功
-            print('login successful')
+            logger.info('%s 登录成功' % qr_code['Username'])
+            # print('login successful')
 
             # 将User赋值
             v_user = qrcode_login_rsp.baseMsg.user
@@ -358,8 +368,10 @@ class WXBot(object):
             self.wechat_client.close_when_done()
             return True
         else:
-            print("qrcode_login_rsp.baseMsg.ret is {}".format(qrcode_login_rsp.baseMsg.ret))
-            print("原因是{}".format(qrcode_login_rsp.baseMsg.payloads))
+            logger.info("qrcode_login_rsp.baseMsg.ret is {}".format(qrcode_login_rsp.baseMsg.ret))
+            logger.info("原因是{}".format(qrcode_login_rsp.baseMsg.payloads))
+            # print("qrcode_login_rsp.baseMsg.ret is {}".format(qrcode_login_rsp.baseMsg.ret))
+            # print("原因是{}".format(qrcode_login_rsp.baseMsg.payloads))
             return False
 
     def heart_beat(self, v_user):
@@ -383,13 +395,15 @@ class WXBot(object):
         (buffers, seq) = grpc_utils.get_seq_buffer(sync_rsp)
         buffers = self.wechat_client.sync_send_and_return(buffers)
         if buffers is None:
-            print("%s heart_beat buffers is None" % v_user.userame)
+            logger.info("%s heart_beat buffers is None" % v_user.userame)
+            # print("%s heart_beat buffers is None" % v_user.userame)
             return False
 
         ret_code = ord(buffers[16])
         if ret_code is not 191:
             selector = read_int(buffers, 16)
-            print "--heartbeat() selector is:{}--".format(selector)
+            logger.info("--heartbeat() selector is:{}--".format(selector))
+            # print "--heartbeat() selector is:{}--".format(selector)
 
         return True
 
@@ -430,7 +444,8 @@ class WXBot(object):
 
             # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
             if not self.wechat_client.check_buffer_16_is_191(buffers):
-                print("第 %s 次重新发送 auto_auth buffers" % (i+1))
+                logger.info("第 %s 次重新发送 auto_auth buffers" % (i+1))
+                # print("第 %s 次重新发送 auto_auth buffers" % (i+1))
                 self.wechat_client.close_when_done()
                 continue
             else:
@@ -439,31 +454,16 @@ class WXBot(object):
             time.sleep(10)
             if i == 9:
                 oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
-                print("淘宝客：{0} 已下线".format(v_user.nickname))
+                logger.info("淘宝客：{0} 已下线".format(v_user.nickname))
+                # print("淘宝客：{0} 已下线".format(v_user.nickname))
                 return False
-
-
-            # try:
-            #     user = WxUser.objects.filter(username=v_user.userame)
-            #     if user.login == 1:
-            #         print("----------重启心跳中----------")
-            #         time.sleep(60)
-            #         self.async_check(v_user)
-            #         from ipad_weixin.heartbeat_manager import HeartBeatManager
-            #         HeartBeatManager.begin_heartbeat(str(v_user.userame))
-            # except Exception as e:
-            #     logger.error(e)
-            #     print("----------重启心跳失败----------")
-            #     print(e.message)
-
 
         auto_auth_rsp.baseMsg.cmd = -702
         auto_auth_rsp.baseMsg.payloads = buffers
         auto_auth_rsp_2 = grpc_client.send(auto_auth_rsp)
         if auto_auth_rsp_2.baseMsg.ret == 0:
             user = auto_auth_rsp_2.baseMsg.user
-            print("二次登陆成功")
-            # TODO: 应该重启心跳
+            logger.info("二次登陆成功")
             v_user_pickle = pickle.dumps(user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             return True
@@ -479,13 +479,15 @@ class WXBot(object):
             except Exception as e:
                 ret_reason = "未知"
 
+            logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             oss_utils.beary_chat("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             self.wechat_client.close_when_done()
             return False
         else:
-            print("二次登陆未知返回码")
+            logger.info("二次登陆未知返回码")
             ret_code = auto_auth_rsp_2.baseMsg.ret
             oss_utils.beary_chat("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
+            logger.info("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
             self.wechat_client.close_when_done()
             return False
 
@@ -531,7 +533,7 @@ class WXBot(object):
 
                 print(read_int(buffers, 18))
                 if read_int(buffers, 18) == -13:
-                    print("Session Time out 离线或用户取消登陆 需执行二次登录")
+                    logger.info("Session Time out 离线或用户取消登陆 需执行二次登录")
             except Exception as e:
                 print(e)
             return False
@@ -577,7 +579,7 @@ class WXBot(object):
                         print(msg_dict)
                 self.async_check(v_user, new_socket=new_socket)
             else:
-                print "sync 完成"
+                logger.info("sync 完成")
 
     def new_init(self, v_user):
         """
@@ -607,13 +609,13 @@ class WXBot(object):
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0 :
-            print('%s 初始化: buffers 为 None' % v_user.nickname)
+            logger.info('%s 初始化: buffers 为 None' % v_user.nickname)
             self.wechat_client.close_when_done()
         if check_num == 1:
-            print('%s 初始化: 得到错误的微信返回' % v_user.nickname)
+            logger.info('%s 初始化: 得到错误的微信返回' % v_user.nickname)
             self.wechat_client.close_when_done()
         if check_num == 2:
-            print('%s 初始化: 成功' % v_user.nickname)
+            logger.info('%s 初始化buffers: 正常' % v_user.nickname)
 
             new_init_rsp.baseMsg.cmd = -1002
             new_init_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -636,7 +638,7 @@ class WXBot(object):
             v_user_pickle = pickle.dumps(v_user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             if new_init_rsp.baseMsg.ret == 8888:
-                print("同步完成")
+                logger.info("%s 初始化成功" % v_user.userame)
                 self.wechat_client.close_when_done()
             else:
                 self.wechat_client.close_when_done()
@@ -677,9 +679,9 @@ class WXBot(object):
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0 or check_num == 1:
             if read_int(buffers, 18) == -13:
-                print("Session Time out %s: 离线或取消登陆 需执行二次登录" % v_user.nickname)
+                logger.info("Session Time out %s: 离线或取消登陆 需执行二次登录" % v_user.nickname)
         else:
-            print('{0} 向 {1} 发送文字信息:成功'.format(v_user.nickname, user_name, content))
+            logger.info('{0} 向 {1} 发送文字信息:成功'.format(v_user.nickname, user_name, content))
 
 
         self.wechat_client.close_when_done()
@@ -754,7 +756,8 @@ class WXBot(object):
         total_send_nums = -(-data_total_length / data_len)
         send_num = 1
 
-        print('preparing sent img to {0}, length {1}'.format(user_name, data_total_length))
+        logger.info('preparing sent img to {0}, length {1}'.format(user_name, data_total_length))
+        # print('preparing sent img to {0}, length {1}'.format(user_name, data_total_length))
         # 客户图像id
         client_img_id = v_user.userame + "_" + str(get_time_stamp())
         while start_pos != data_total_length:
@@ -798,11 +801,12 @@ class WXBot(object):
 
             check_num = check_buffer_16_is_191(buffers)
             if check_num == 0 or check_num == 1:
-                print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发生未知错误'.format(v_user.nickname, user_name, total_send_nums, send_num))
-                print('进行重发')
+                logger.info('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发生未知错误'.format(v_user.nickname, user_name, total_send_nums, send_num))
+                logger.info('进行重发')
+
                 self.retry_send_img(img_msg_req)
             if check_num == 2:
-                print('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发送成功'.format(v_user.nickname, user_name, total_send_nums, send_num))
+                logger.info('{0} 向 {1} 发送图片, 共{2}次, 第{3}次发送成功'.format(v_user.nickname, user_name, total_send_nums, send_num))
 
             start_pos = start_pos + count
             send_num += 1
@@ -815,9 +819,9 @@ class WXBot(object):
         buffers = self.wechat_client.sync_send_and_return(buffers, time_out=3)
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 2:
-            print('重发成功')
+            logger.info('重发成功')
         else:
-            print('重发失败')
+            logger.info('重发失败')
 
     def search_contact(self, user_name, v_user):
         payLoadJson = "{\"Username\":\"" + user_name + "\"}"
@@ -838,11 +842,11 @@ class WXBot(object):
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:
-            print('%s 查找联系人: buffer 为 None' % v_user.nickname)
+            logger.info('%s 查找联系人: buffer 为 None' % v_user.nickname)
         if check_num == 1:
-            print('%s 查找联系人: 得到错误的微信返回' % v_user.nickname)
+            logger.info('%s 查找联系人: 得到错误的微信返回' % v_user.nickname)
         if check_num == 2:
-            print('%s 查找联系人: 成功' % v_user.nickname)
+            logger.info('%s 查找联系人: 成功' % v_user.nickname)
 
         search_contact_rsp.baseMsg.cmd = -106
         search_contact_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -911,9 +915,9 @@ class WXBot(object):
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:
-            print('%s 获取联系人: buffers 为 None' % v_user.nickname)
+            logger.info('%s 获取联系人: buffers 为 None' % v_user.nickname)
         if check_num == 1:
-            print('%s 获取联系人: 错误的微信返回' % v_user.nickname)
+            logger.info('%s 获取联系人: 错误的微信返回' % v_user.nickname)
 
         # if not check_buffer_16_is_191(buffers):
         #     print("未知包 init")
@@ -923,7 +927,7 @@ class WXBot(object):
             get_contacts_rsp = grpc_client.send(get_contacts_rsp)
 
         print(get_contacts_rsp.baseMsg.payloads)
-        print('%s 获取联系人成功' % v_user.nickname)
+        logger.info('%s 获取联系人成功' % v_user.nickname)
 
     def create_chatroom(self, v_user, wx_id_list):
         """
@@ -954,13 +958,14 @@ class WXBot(object):
 
         check_num = check_buffer_16_is_191(buffers)
         if check_num == 0:
-            print('%s 创建群: buffers 为 None' % v_user.nickname)
+            logger.info('%s 创建群: buffers 为 None' % v_user.nickname)
+            # print('%s 创建群: buffers 为 None' % v_user.nickname)
         if check_num == 1:
-            print('%s 创建群: 错误的微信返回' % v_user.nickname)
+            logger.info('%s 创建群: 错误的微信返回' % v_user.nickname)
+            # print('%s 创建群: 错误的微信返回' % v_user.nickname)
         if check_num == 2:
-            print('%s 创建群: 成功' % v_user.nickname)
+            logger.info('%s 创建群: 成功' % v_user.nickname)
 
-        # check_buffer_16_is_191(buffers)
 
         create_chatroom_rsp.baseMsg.cmd = -119
         create_chatroom_rsp.baseMsg.payloads = char_to_str(buffers)
@@ -1022,7 +1027,7 @@ class WXBot(object):
 
         # 似乎每次登陆后的返回都不一样
         if not ord(buffers.text[0]) == 191:
-            print "invite_chatroom_member 返回码{0}".format(ord(buffers.text[0]))
+            logger.info("invite_chatroom_member 返回码{0}".format(ord(buffers.text[0])))
         return True
 
     def add_chatroom_member(self, v_user, chatroom_id, wx_id):

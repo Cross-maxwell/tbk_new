@@ -17,9 +17,7 @@ class Img(models.Model):
 
 
 class Contact(models.Model):
-    """
-    这里使用大写的原因是和weixin的数据对应。
-    """
+
     msg_type = models.CharField(max_length=200)
     username = models.CharField(max_length=200, unique=True)
     nickname = models.CharField(max_length=200)
