@@ -1064,11 +1064,23 @@ class WXBot(object):
 
         return member_details
 
+
+
+
+
+        get_contacts_rsp.baseMsg.cmd = -182
+        get_contacts_rsp.baseMsg.payloads = buffers.content
+        get_contacts_rsp = grpc_client.send(get_contacts_rsp)
+        buffers = get_contacts_rsp.baseMsg.payloads
+        print buffers.encode('utf-8')
+        return buffers
+
     def get_contact(self, v_user, wx_id_list):
         """
         TODO 根据联系人wxid，获取contact
         private void btn_GetContact_Click(object sender, EventArgs e)
         :param wx_id_list: 
+            当获取单个联系人消息时，直接传入联系人wx_id即可
         :param v_user: 
         :return: 
         """
@@ -1087,26 +1099,19 @@ class WXBot(object):
         )
         get_contacts_rsp = grpc_client.send(contacts_req)
 
-        (grpc_buffers, seq) = grpc_utils.get_seq_buffer(get_contacts_rsp)
-        if not grpc_buffers:
-            logger.info("%s gRPC buffers is None" % v_user.nickname)
+        body = get_contacts_rsp.baseMsg.payloads
+        buffers = requests.post("http://" + self.short_host + get_contacts_rsp.baseMsg.cmdUrl, body)
+
         buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
 
-        check_num = check_buffer_16_is_191(buffers)
-        if check_num == 0:
-            logger.info('%s 获取联系人: buffers 为 None' % v_user.nickname)
-        if check_num == 1:
-            logger.info('%s 获取联系人: 错误的微信返回' % v_user.nickname)
-
-        # if not check_buffer_16_is_191(buffers):
-        #     print("未知包 init")
-        else:
-            get_contacts_rsp.baseMsg.cmd = -182
-            get_contacts_rsp.baseMsg.payloads = char_to_str(buffers)
-            get_contacts_rsp = grpc_client.send(get_contacts_rsp)
+        get_contacts_rsp.baseMsg.cmd = -182
+        get_contacts_rsp.baseMsg.payloads = buffers.content
+        get_contacts_rsp = grpc_client.send(get_contacts_rsp)
+        buffers = get_contacts_rsp.baseMsg.payloads
 
         print(get_contacts_rsp.baseMsg.payloads)
         logger.info('%s 获取联系人成功' % v_user.nickname)
+        return buffers
 
     def create_chatroom(self, v_user, wx_id_list):
         """
