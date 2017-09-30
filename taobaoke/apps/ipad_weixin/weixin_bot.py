@@ -37,7 +37,8 @@ from ipad_weixin.utils.common_utils import get_time_stamp, read_int, int_list_co
 from ipad_weixin.rule import action_rule
 
 
-from ipad_weixin.models import WxUser, Contact, Message, Qrcode, BotParam, Img
+from ipad_weixin.models import WxUser, Contact, Message, Qrcode, BotParam, Img, ChatRoom, \
+    GroupMembers
 
 import logging
 logger = logging.getLogger('weixin_bot')
@@ -392,6 +393,7 @@ class WXBot(object):
         return True
 
 
+
     def auto_auth(self, v_user, uuid, device_type, new_socket=True):
         """
         二次登陆
@@ -420,6 +422,7 @@ class WXBot(object):
                 payloads=pay_load.encode('utf-8')
             )
         )
+
         for i in range(10):
             auto_auth_rsp = grpc_client.send(auto_auth_req)
             (grpc_buffers, seq) = grpc_utils.get_seq_buffer(auto_auth_rsp)
@@ -428,29 +431,37 @@ class WXBot(object):
 
             # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
             if not self.wechat_client.check_buffer_16_is_191(buffers):
-                logger.info("The %s times to retry send auto_auth buffers" % (i+1))
+                logger.info("[RETRY]第 %s 次发送 auto_auth buffers" % (i+1))
                 self.wechat_client.close_when_done()
+                if i == 9:
+                    oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
+                    logger.info("淘宝客：{0} 已下线".format(v_user.nickname))
+                    return False
+                time.sleep(10)
+                # 更改登录所需的验证信息，以及重新开启一个客户端尝试登录
+                auto_auth_req.timeStamp = get_time_stamp()
+                self.long_host = bot_param.long_host
+                if new_socket:
+                    self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
                 continue
             else:
+                logger.info("第 %s 次发送 auto_auth buffers成功，进行二次登录..." % (i+1))
                 break
 
-            time.sleep(10)
-            if i == 9:
-                oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
-                logger.info("淘宝客：{0} 已下线".format(v_user.nickname))
-                return False
+
 
         auto_auth_rsp.baseMsg.cmd = -702
         auto_auth_rsp.baseMsg.payloads = buffers
         auto_auth_rsp_2 = grpc_client.send(auto_auth_rsp)
         if auto_auth_rsp_2.baseMsg.ret == 0:
             user = auto_auth_rsp_2.baseMsg.user
-            logger.info("%s 二次登陆成功!" % v_user.nickname)
+            logger.info("%s 二次登陆成功" % v_user.nickname)
+            # TODO: 应该重启心跳
             v_user_pickle = pickle.dumps(user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             return True
         elif auto_auth_rsp_2.baseMsg.ret == -100 or auto_auth_rsp_2.baseMsg.ret == -2023:
-            print("%s 二次登陆失败，重新扫码吧朋友" % v_user.nickname)
+            logger.info("二次登陆失败，重新扫码吧朋友")
 
             ret_reason = ''
             try:
@@ -459,20 +470,103 @@ class WXBot(object):
                 end = "]]></Content>"
                 ret_reason = payload[payload.find(start) + len(start):payload.find(end)]
             except Exception as e:
-                logger.error(e)
                 ret_reason = "未知"
 
-            logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             oss_utils.beary_chat("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+            logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             self.wechat_client.close_when_done()
             return False
         else:
-            logger.info("二次登陆未知返回码")
+            print("二次登陆未知返回码")
             ret_code = auto_auth_rsp_2.baseMsg.ret
             oss_utils.beary_chat("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
             logger.info("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
             self.wechat_client.close_when_done()
             return False
+
+
+    # def auto_auth(self, v_user, uuid, device_type, new_socket=True):
+    #     """
+    #     二次登陆
+    #     只要redis里头存有正确的v_user 那么就能通过此方法再次登陆
+    #     :param v_user:
+    #     :param uuid:
+    #     :param device_type:
+    #     :param new_socket:
+    #     :return:
+    #     """
+    #     bot_param = BotParam.objects.filter(username=v_user.userame).first()
+    #     if bot_param:
+    #         self.long_host = bot_param.long_host
+    #         if new_socket:
+    #             self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
+    #
+    #     pay_load = "{\"UUid\":\"" + uuid + "\",\"DeviceType\":\"" + device_type + "\"}"
+    #     auto_auth_req = WechatMsg(
+    #         token=CONST_PROTOCOL_DICT['machine_code'],
+    #         version=CONST_PROTOCOL_DICT['version'],
+    #         timeStamp=get_time_stamp(),
+    #         iP=get_public_ip(),
+    #         baseMsg=BaseMsg(
+    #             cmd=702,
+    #             user=v_user,
+    #             payloads=pay_load.encode('utf-8')
+    #         )
+    #     )
+    #     for i in range(10):
+    #         auto_auth_rsp = grpc_client.send(auto_auth_req)
+    #         (grpc_buffers, seq) = grpc_utils.get_seq_buffer(auto_auth_rsp)
+    #
+    #         buffers = self.wechat_client.sync_send_and_return(grpc_buffers, close_socket=new_socket)
+    #
+    #         # 如果能正常返回auto_auth_rsp_2.baseMsg.ret，可把下面这段191的判断注释掉
+    #         if not self.wechat_client.check_buffer_16_is_191(buffers):
+    #             logger.info("The %s times to retry send auto_auth buffers" % (i+1))
+    #             self.wechat_client.close_when_done()
+    #             continue
+    #         else:
+    #             break
+    #
+    #         time.sleep(10)
+    #         if i == 9:
+    #             oss_utils.beary_chat("淘宝客：{0} 已下线".format(v_user.nickname))
+    #             logger.info("淘宝客：{0} 已下线".format(v_user.nickname))
+    #             return False
+    #
+    #     auto_auth_rsp.baseMsg.cmd = -702
+    #     auto_auth_rsp.baseMsg.payloads = buffers
+    #     auto_auth_rsp_2 = grpc_client.send(auto_auth_rsp)
+    #     if auto_auth_rsp_2.baseMsg.ret == 0:
+    #         user = auto_auth_rsp_2.baseMsg.user
+    #         logger.info("%s 二次登陆成功!" % v_user.nickname)
+    #         v_user_pickle = pickle.dumps(user)
+    #         red.set('v_user_' + v_user.userame, v_user_pickle)
+    #         return True
+    #     elif auto_auth_rsp_2.baseMsg.ret == -100 or auto_auth_rsp_2.baseMsg.ret == -2023:
+    #         print("%s 二次登陆失败，重新扫码吧朋友" % v_user.nickname)
+    #
+    #         ret_reason = ''
+    #         try:
+    #             payload = auto_auth_rsp_2.baseMsg.payloads
+    #             start = "<Content><![CDATA["
+    #             end = "]]></Content>"
+    #             ret_reason = payload[payload.find(start) + len(start):payload.find(end)]
+    #         except Exception as e:
+    #             logger.error(e)
+    #             ret_reason = "未知"
+    #
+    #         logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+    #         oss_utils.beary_chat("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+    #         self.wechat_client.close_when_done()
+    #         return False
+    #     else:
+    #         logger.info("二次登陆未知返回码")
+    #         ret_code = auto_auth_rsp_2.baseMsg.ret
+    #         oss_utils.beary_chat("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
+    #         logger.info("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
+    #         self.wechat_client.close_when_done()
+    #         return False
+
 
     def async_check(self, v_user, new_socket=True):
         """
@@ -536,6 +630,7 @@ class WXBot(object):
                     try:
                         if msg_dict['MsgType'] == 2:
                             try:
+                                #存入联系人
                                 contact, created = Contact.objects.get_or_create(username=msg_dict['UserName'])
                                 contact.update_from_mydict(msg_dict)
                                 contact.save()
@@ -543,12 +638,78 @@ class WXBot(object):
                                 logger.error(e)
                         elif msg_dict['Status'] is not None:
                             try:
+                                #消息
                                 action_rule.filter_keyword_rule(v_user.userame, msg_dict)
+                                from rule.sign_in_rule import filter_sign_in_keyword
+                                filter_sign_in_keyword(v_user.userame, msg_dict)
+
                                 """
                                 在此处添加一个签到规则。
                                 """
                             except Exception as e:
-                                print(e)
+                                logger.error(e)
+
+                            #拉取群信息
+                            try:
+                                chatroom_name = ''
+                                group_owner = ''
+                                if '@chatroom' in msg_dict['FromUserName']:
+                                    chatroom_name = msg_dict['FromUserName']
+                                elif '@chatroom' in msg_dict['ToUserName']:
+                                    # 那么此时的 FromUserName就是该群的群主
+                                    chatroom_name = msg_dict['ToUserName']
+                                    group_owner = msg_dict['FromUserName']
+
+                                if chatroom_name:
+                                    chatroom, created = ChatRoom.objects.get_or_create(name=chatroom_name)
+                                    if group_owner:
+                                        chatroom.owner = group_owner
+                                        chatroom.save()
+
+                                    elif created:
+                                        group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
+                                        chatroom.member_nums = len(group_members_details)
+                                        chatroom.save()
+
+                                        for members_dict in group_members_details:
+                                            group_member = GroupMembers()
+                                            group_member.chatroom_id = chatroom.id
+                                            group_member.update_from_members_dict(members_dict)
+                                            group_member.save()
+                                    else:
+                                        #该群存在
+                                        if msg_dict['Status'] == 4:
+                                            chatroom = ChatRoom.objects.get(name=chatroom_name)
+                                            members_db = GroupMembers.objects.filter(chatroom_id=chatroom.id, is_delete=False)
+                                            old_members_list = [member.username for member in members_db]
+                                            group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
+                                            new_members_list = [member['Username'] for member in group_members_details]
+
+                                            #踢人
+                                            delete_members = set(old_members_list) - set(new_members_list)
+                                            for delete_member in delete_members:
+                                                #还得是这个群的
+                                                from django.db.models import Q
+                                                delete_member_db = GroupMembers.objects.filter(username=delete_member,
+                                                                                               chatroom_id=chatroom.id).first()
+                                                delete_member_db.is_delete = True
+                                                delete_member_db.save()
+
+                                            #拉人
+                                            add_members = set(new_members_list) - set(old_members_list)
+                                            for add_member in add_members:
+                                                for group_member in group_members_details:
+                                                    if add_member == group_member['Username']:
+                                                        members_db = GroupMembers()
+                                                        members_db.chatroom_id = chatroom.id
+                                                        members_db.update_from_members_dict(group_member)
+                                                        members_db.is_delete = False
+                                                        members_db.save()
+
+
+                            except Exception as e:
+                                logger.error(e)
+
                             try:
                                 message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])
                                 message.update_from_msg_dict(msg_dict)
@@ -562,6 +723,8 @@ class WXBot(object):
                         print(msg_dict)
                 self.async_check(v_user, new_socket=new_socket)
             else:
+                from ipad_weixin.heartbeat_manager import HeartBeatManager
+                HeartBeatManager.begin_heartbeat(v_user.userame)
                 logger.info("sync finished")
 
     def new_init(self, v_user):
@@ -615,6 +778,10 @@ class WXBot(object):
                             contact.save()
                         except Exception as e:
                             logger.error(e)
+
+
+                        if '@chatroom' in msg_dict['UserName']:
+                            pass
                     else:
                         print(msg_dict)
             v_user = new_init_rsp.baseMsg.user
@@ -875,7 +1042,11 @@ class WXBot(object):
         get_room_detail_rsp.baseMsg.payloads = buffers.content
         get_room_detail_rsp = grpc_client.send(get_room_detail_rsp)
         buffers = get_room_detail_rsp.baseMsg.payloads
-        print buffers.encode('utf-8')
+        buffers_dict = json.loads(buffers)
+
+        member_details = buffers_dict["MemberDetails"]
+
+        return member_details
 
     def get_contact(self, v_user, wx_id_list):
         """
@@ -1156,8 +1327,8 @@ class WXBot(object):
                 if self.new_init(v_user):
                     v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
                     self.async_check(v_user)
-                    from ipad_weixin.heartbeat_manager import HeartBeatManager
-                    HeartBeatManager.begin_heartbeat(str(qr_code['Username']))
+                    # from ipad_weixin.heartbeat_manager import HeartBeatManager
+                    # HeartBeatManager.begin_heartbeat(str(qr_code['Username']))
 
     def login(self, md_username):
         (oss_path, qrcode_rsp, device_id) = self.get_qrcode(md_username)
@@ -1218,7 +1389,7 @@ if __name__ == "__main__":
             # wx_user = "wxid_fh235f4nylp22"  # 小小
             # wx_user = "wxid_kj1papird5kn22"
             # wx_user = "wxid_3cimlsancyfg22"  # 点金
-            wx_user = "wxid_cegmcl4xhn5w22"
+            wx_user = "wxid_cegmcl4xhn5w22" #楽阳
             # wxid_sygscg13nr0g21
             # wx_user = "wxid_5wrnusfmt26932"
             # wxid_mynvgzqgnb5x22
@@ -1256,7 +1427,7 @@ if __name__ == "__main__":
             elif cmd == 3:
                 v_user_pickle = red.get('v_user_' + wx_user)
                 v_user = pickle.loads(v_user_pickle)
-                wx_bot.async_check(v_user, False)
+                wx_bot.async_check(v_user, True)
 
             elif cmd == 4:
                 v_user_pickle = red.get('v_user_' + wx_user)

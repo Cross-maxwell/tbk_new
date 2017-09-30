@@ -8,6 +8,7 @@ from django.views.generic.base import View
 
 from ipad_weixin.weixin_bot import WXBot
 from models import Qrcode, WxUser, Message, Contact
+from django.views.decorators.csrf import csrf_exempt
 
 import logging
 logger = logging.getLogger('django_views')
@@ -153,6 +154,19 @@ class IsUuidLogin(View):
         response_data = {"ret": str(ret), "name": name}
         return HttpResponse(json.dumps(response_data))
 
+
+from ipad_weixin.models import ChatRoom
+
+class AddSendGroup(View):
+    @csrf_exempt
+    def post(self, request):
+        body = json.loads(request.body)
+        username = body["username"]
+        if username:
+            wx_user = WxUser.objects.get(username=username)
+        send_groups = body["send_groups"]
+        for send_group in send_groups():
+            pass
 
 
 

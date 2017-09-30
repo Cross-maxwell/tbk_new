@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.conf.urls import url, include
 from django.contrib import admin
 from broadcast.views.entry_views import search_product, push_product, search_product_pad
@@ -28,3 +30,4 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^ipad_weixin/', include('ipad_weixin.urls'))
 ]
+

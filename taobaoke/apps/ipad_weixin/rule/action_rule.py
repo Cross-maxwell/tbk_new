@@ -54,14 +54,14 @@ def filter_keyword_rule(wx_id, msg_dict):
                 """
                 发送给BotService，处理函数位于tbk>views>tbk_agent_views.py
                 """
-                r = requests.get("http://" + S_PROD_07_INT + "/api/tk/check-search?username={0}".format(username),
-                                 timeout=10)
-                if r.status_code != 200:
-                    return ("remote server ret_code:{0} --{1}".format(r.status_code, r.text))
-                ret_code = json.loads(json.loads(r.text))
-
-                if ret_code['data'] != 1:
-                    return ("check search fail:{0}".format(ret_code['data']))
+                # r = requests.get("http://" + S_PROD_07_INT + "/api/tk/check-search?username={0}".format(username),
+                #                  timeout=10)
+                # if r.status_code != 200:
+                #     return ("remote server ret_code:{0} --{1}".format(r.status_code, r.text))
+                # ret_code = json.loads(json.loads(r.text))
+                #
+                # if ret_code['data'] != 1:
+                #     return ("check search fail:{0}".format(ret_code['data']))
 
                 tku = TkUser.objects.get(user__username=username)
                 text = u"""搜索商品成功！点击下面链接查看我们给您找到的专属优惠券。

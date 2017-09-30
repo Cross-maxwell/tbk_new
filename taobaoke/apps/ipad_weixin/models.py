@@ -146,6 +146,32 @@ class BotParam(models.Model):
             print('---update qrcode failed---')
 
 
+class ChatRoom(models.Model):
+    name = models.CharField(max_length=100)
+    owner = models.CharField(max_length=100)
+    member_nums = models.IntegerField(default=0)
+    is_send = models.BooleanField(default=False)
+
+
+
+
+class GroupMembers(models.Model):
+    username = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=200, default='')
+    small_head_img_url = models.URLField(default='')
+    inviter_username = models.CharField(max_length=100, default='')
+    created = models.DateTimeField(auto_now=True)
+    is_delete = models.BooleanField(default=False)
+    chatroom = models.ForeignKey(ChatRoom)
+
+    def update_from_members_dict(self, members_dict):
+        self.username = members_dict['Username']
+        self.nickname = members_dict['NickName']
+        self.small_head_img_url = members_dict['SmallHeadImgUrl']
+        self.inviter_username = members_dict['InviterUserName']
+
+
+
 class WxUser(models.Model):
     auto_auth_key = models.CharField(max_length=200)
     cookies = models.CharField(max_length=200)
@@ -160,6 +186,8 @@ class WxUser(models.Model):
     user_ext = models.CharField(max_length=250)
     username = models.CharField(max_length=250)
     login = models.IntegerField(default=0)
+
+    send_groups = models.ManyToManyField(ChatRoom)
 
     last_update = models.DateTimeField(null=True)
     create_at = models.DateTimeField(null=True)

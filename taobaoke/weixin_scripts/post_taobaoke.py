@@ -20,7 +20,7 @@ import requests
 BASE_DIRS = '/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke/'
 import os
 import django
-os.environ.update({"DJANGO_SETTINGS_MODULE": BASE_DIRS + "fuli.settings"})
+os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
 
 from django.db.models import Q
@@ -141,8 +141,6 @@ def select():
 
 if __name__ == "__main__":
     # while True:
-    #     user_list = WxUser.objects.filter(login__gt = 0).all()
-    #     user_len = len([user.username for user in user_list])
     #     try:
     #         now_hour = int(time.strftime('%H', time.localtime(time.time())))
     #         if 7 <= now_hour <= 22:
