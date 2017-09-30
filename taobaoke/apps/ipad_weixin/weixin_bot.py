@@ -661,9 +661,9 @@ class WXBot(object):
                                     group_owner = msg_dict['FromUserName']
 
                                 if chatroom_name:
-                                    chatroom, created = ChatRoom.objects.get_or_create(name=chatroom_name)
+                                    chatroom, created = ChatRoom.objects.get_or_create(username=chatroom_name)
                                     if group_owner:
-                                        chatroom.owner = group_owner
+                                        chatroom.chat_room_owner = group_owner
                                         chatroom.save()
 
                                     elif created:
@@ -673,14 +673,16 @@ class WXBot(object):
 
                                         for members_dict in group_members_details:
                                             group_member = GroupMembers()
-                                            group_member.chatroom_id = chatroom.id
                                             group_member.update_from_members_dict(members_dict)
+                                            group_member.save()
+
+                                            group_member.chatroom.add(chatroom.id)
                                             group_member.save()
                                     else:
                                         #该群存在
                                         if msg_dict['Status'] == 4:
-                                            chatroom = ChatRoom.objects.get(name=chatroom_name)
-                                            members_db = GroupMembers.objects.filter(chatroom_id=chatroom.id, is_delete=False)
+                                            chatroom = ChatRoom.objects.get(username=chatroom_name)
+                                            members_db = GroupMembers.objects.filter(chatroom=chatroom.id, is_delete=False)
                                             old_members_list = [member.username for member in members_db]
                                             group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
                                             new_members_list = [member['Username'] for member in group_members_details]
@@ -689,9 +691,8 @@ class WXBot(object):
                                             delete_members = set(old_members_list) - set(new_members_list)
                                             for delete_member in delete_members:
                                                 #还得是这个群的
-                                                from django.db.models import Q
                                                 delete_member_db = GroupMembers.objects.filter(username=delete_member,
-                                                                                               chatroom_id=chatroom.id).first()
+                                                                                               chatroom=chatroom.id).first()
                                                 delete_member_db.is_delete = True
                                                 delete_member_db.save()
 
@@ -701,9 +702,11 @@ class WXBot(object):
                                                 for group_member in group_members_details:
                                                     if add_member == group_member['Username']:
                                                         members_db = GroupMembers()
-                                                        members_db.chatroom_id = chatroom.id
                                                         members_db.update_from_members_dict(group_member)
                                                         members_db.is_delete = False
+                                                        members_db.save()
+
+                                                        members_db.chatroom.add(chatroom.id)
                                                         members_db.save()
 
 
@@ -768,20 +771,33 @@ class WXBot(object):
             new_init_rsp = grpc_client.send(new_init_rsp)
             # 打印出同步消息的结构体
             msg_list = json.loads(new_init_rsp.baseMsg.payloads)
+
+            wx_user = WxUser.objects.get(username=v_user.userame)
             if msg_list is not None:
                 for msg_dict in msg_list:
                     print(msg_dict)
                     if msg_dict['MsgType'] == 2:
                         try:
-                            contact, created = Contact.objects.get_or_create(username=msg_dict['UserName'])
-                            contact.update_from_mydict(msg_dict)
-                            contact.save()
+                            if '@chatroom' in msg_dict['UserName']:
+                                # 在多对多关系中，通过chatroom.wx_user.add('wx_user_id')来存储关系，
+                                # 而且，chatroom这个实例必须要先保存至数据库中
+                                chatroom, created = ChatRoom.objects.get_or_create(username=msg_dict['UserName'])
+                                chatroom.update_from_msg_dict(msg_dict)
+                                chatroom.save()
+
+                                chatroom.wx_user.add(wx_user.id)
+                                chatroom.save()
+
+                            else:
+                                contact, created = Contact.objects.get_or_create(username=msg_dict['UserName'])
+                                contact.update_from_mydict(msg_dict)
+                                contact.save()
+
+                                contact.wx_user.add(wx_user.id)
+                                contact.save()
+
                         except Exception as e:
                             logger.error(e)
-
-
-                        if '@chatroom' in msg_dict['UserName']:
-                            pass
                     else:
                         print(msg_dict)
             v_user = new_init_rsp.baseMsg.user
@@ -1450,6 +1466,11 @@ if __name__ == "__main__":
                 UUid = u"667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
                 DeviceType = u"<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
                 wx_bot.auto_auth(v_user, UUid, DeviceType, new_socket=True)
+
+            elif cmd == 8:
+                v_user = pickle.loads(red.get('v_user_' + wx_user))
+                wx_bot.get_contact(v_user, ['wxid_9zoigugzqipj21'])
+
 
         except Exception as e:
             logger.error(e)

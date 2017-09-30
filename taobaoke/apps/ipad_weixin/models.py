@@ -16,62 +16,7 @@ class Img(models.Model):
         return self.name
 
 
-class Contact(models.Model):
 
-    msg_type = models.CharField(max_length=200)
-    username = models.CharField(max_length=200, unique=True)
-    nickname = models.CharField(max_length=200)
-    signature = models.CharField(max_length=200)
-    small_head_img_url = models.URLField(max_length=200)
-    big_head_img_url = models.URLField(max_length=200)
-    province = models.CharField(max_length=200)
-    city = models.CharField(max_length=200)
-    remark = models.CharField(max_length=200)
-    alias = models.CharField(max_length=200)
-    sex = models.CharField(max_length=200)
-    contact_type = models.CharField(max_length=200)
-    chat_room_owner = models.CharField(max_length=200)
-    ext_info = models.TextField(default='', null=True)
-    ticket = models.CharField(max_length=200)
-    chat_room_version = models.CharField(max_length=200)
-
-    last_update = models.DateTimeField(null=True)
-    create_at = models.DateTimeField(null=True)
-    remove_at = models.DateTimeField(null=True)  # Record removed time. Default None.
-
-    """
-    在models中的方法应该是什么样子的？
-    """
-
-    def update_from_mydict(self, msg_dict):
-        self.msg_type = msg_dict['MsgType']
-        self.nickname = msg_dict['NickName']
-        self.signature = msg_dict['Signature']
-        self.small_head_img_url = msg_dict['SmallHeadImgUrl']
-        self.big_head_img_url = msg_dict['BigHeadImgUrl']
-        self.province = msg_dict['Province']
-        self.city = msg_dict['City']
-        self.remark = msg_dict['Remark']
-        self.alias = msg_dict['Alias']
-        self.sex = msg_dict['Sex']
-        self.contact_type = msg_dict['ContactType']
-        self.chat_room_owner = msg_dict['ChatRoomOwner']
-        self.ext_info = msg_dict['ExtInfo']
-        self.ticket = msg_dict['Ticket']
-        self.chat_room_version = msg_dict['ChatroomVersion']
-
-
-    def save(self, *args, **kwargs):
-        """
-        重载save()方法来记录每次更新的时间，以及创建时间
-        :param args:
-        :param kwargs:
-        :return:
-        """
-        if not self.create_at:
-            self.create_at = datetime.datetime.now()
-        self.last_update = datetime.datetime.now()
-        return super(Contact, self).save(*args, **kwargs)
 
 
 class Qrcode(models.Model):
@@ -145,33 +90,6 @@ class BotParam(models.Model):
             logger.error(e)
             print('---update qrcode failed---')
 
-
-class ChatRoom(models.Model):
-    name = models.CharField(max_length=100)
-    owner = models.CharField(max_length=100)
-    member_nums = models.IntegerField(default=0)
-    is_send = models.BooleanField(default=False)
-
-
-
-
-class GroupMembers(models.Model):
-    username = models.CharField(max_length=100)
-    nickname = models.CharField(max_length=200, default='')
-    small_head_img_url = models.URLField(default='')
-    inviter_username = models.CharField(max_length=100, default='')
-    created = models.DateTimeField(auto_now=True)
-    is_delete = models.BooleanField(default=False)
-    chatroom = models.ForeignKey(ChatRoom)
-
-    def update_from_members_dict(self, members_dict):
-        self.username = members_dict['Username']
-        self.nickname = members_dict['NickName']
-        self.small_head_img_url = members_dict['SmallHeadImgUrl']
-        self.inviter_username = members_dict['InviterUserName']
-
-
-
 class WxUser(models.Model):
     auto_auth_key = models.CharField(max_length=200)
     cookies = models.CharField(max_length=200)
@@ -187,7 +105,6 @@ class WxUser(models.Model):
     username = models.CharField(max_length=250)
     login = models.IntegerField(default=0)
 
-    send_groups = models.ManyToManyField(ChatRoom)
 
     last_update = models.DateTimeField(null=True)
     create_at = models.DateTimeField(null=True)
@@ -209,6 +126,128 @@ class WxUser(models.Model):
             self.create_at = datetime.datetime.now()
         self.last_update = datetime.datetime.now()
         return super(WxUser, self).save(*args, **kwargs)
+
+
+class Contact(models.Model):
+
+    msg_type = models.CharField(max_length=200)
+    username = models.CharField(max_length=200, unique=True)
+    nickname = models.CharField(max_length=200)
+    signature = models.CharField(max_length=200)
+    small_head_img_url = models.URLField(max_length=200)
+    big_head_img_url = models.URLField(max_length=200)
+    province = models.CharField(max_length=200)
+    city = models.CharField(max_length=200)
+    remark = models.CharField(max_length=200)
+    alias = models.CharField(max_length=200)
+    sex = models.CharField(max_length=200)
+    contact_type = models.CharField(max_length=200)
+    chat_room_owner = models.CharField(max_length=200)
+    ext_info = models.TextField(default='', null=True)
+    ticket = models.CharField(max_length=200)
+    chat_room_version = models.CharField(max_length=200)
+
+    wx_user = models.ManyToManyField(WxUser)
+
+    last_update = models.DateTimeField(null=True)
+    create_at = models.DateTimeField(null=True)
+    remove_at = models.DateTimeField(null=True)  # Record removed time. Default None.
+
+    """
+    在models中的方法应该是什么样子的？
+    """
+
+    def update_from_mydict(self, msg_dict):
+        self.msg_type = msg_dict['MsgType']
+        self.nickname = msg_dict['NickName']
+        self.signature = msg_dict['Signature']
+        self.small_head_img_url = msg_dict['SmallHeadImgUrl']
+        self.big_head_img_url = msg_dict['BigHeadImgUrl']
+        self.province = msg_dict['Province']
+        self.city = msg_dict['City']
+        self.remark = msg_dict['Remark']
+        self.alias = msg_dict['Alias']
+        self.sex = msg_dict['Sex']
+        self.contact_type = msg_dict['ContactType']
+        self.chat_room_owner = msg_dict['ChatRoomOwner']
+        self.ext_info = msg_dict['ExtInfo']
+        self.ticket = msg_dict['Ticket']
+        self.chat_room_version = msg_dict['ChatroomVersion']
+
+
+    def save(self, *args, **kwargs):
+        """
+        重载save()方法来记录每次更新的时间，以及创建时间
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        if not self.create_at:
+            self.create_at = datetime.datetime.now()
+        self.last_update = datetime.datetime.now()
+        return super(Contact, self).save(*args, **kwargs)
+
+
+class ChatRoom(models.Model):
+    username = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=100)
+    signature = models.CharField(max_length=200)
+    small_head_img_url = models.URLField()
+    big_head_img_url = models.URLField()
+    province = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    alias = models.CharField(max_length=100)
+    chat_room_owner = models.CharField(max_length=200)
+    chat_room_version = models.CharField(max_length=50, default='')
+    wx_user = models.ManyToManyField(WxUser)
+    member_nums = models.IntegerField(default=0)
+    is_send = models.BooleanField(default=False)
+
+
+    """
+    {u'UserName': u'6947816994@chatroom', 
+    u'Province': u'', 
+    u'Remark': u'', 
+    u'LabelLists': u'', u'City': u'', 
+    u'ChatroomVersion': 700000010, 
+    u'ContactType': 0, 
+    u'BigHeadImgUrl': u'http://wx.qlogo.cn/mmcrhead/zhlIznLsdcwibRkU3ibqbdibepSYBibhIDfss2HKiboianXx2JEQSqa10icT6Z5ric1rn4MDjLGm3brTSYrnZG56kFQe5t3ng7ZR38HD/0', 
+    u'ExtInfoExt': u'', u'Sex': 0, u'Alias': u'', u'EncryptUsername': u'', 
+    u'MsgType': 2, u'Signature': u'', u'SmallHeadImgUrl': u'', 
+    u'ChatRoomOwner': u'wxid_cegmcl4xhn5w22', u'ExtInfo': 
+    u'hiddensorrow,wxid_cegmcl4xhn5w22,wxid_3drnq3ee20fg22,wxid_9zoigugzqipj21', 
+    u'NickName': u'\u6253\u5361\u7b7e\u5230\u6d4b\u8bd5', u'Ticket': u'', u'VerifyFlag': 1}
+    
+    """
+
+    def update_from_msg_dict(self, msg_dict):
+        # self.username = msg_dict['UserName']
+        self.nickname = msg_dict['NickName']
+        self.signature = msg_dict['Signature']
+        self.small_head_img_url = msg_dict['SmallHeadImgUrl']
+        self.big_head_img_url = msg_dict['BigHeadImgUrl']
+        self.province = msg_dict['Province']
+        self.city = msg_dict['City']
+        self.alias = msg_dict['Alias']
+        self.chat_room_owner = msg_dict['ChatRoomOwner']
+        self.chat_room_version = msg_dict['ChatroomVersion']
+        self.member_nums = len(msg_dict['ExtInfo'].split(','))
+
+
+class GroupMembers(models.Model):
+    username = models.CharField(max_length=100)
+    nickname = models.CharField(max_length=200, default='')
+    small_head_img_url = models.URLField(default='')
+    inviter_username = models.CharField(max_length=100, default='')
+    created = models.DateTimeField(auto_now=True)
+    is_delete = models.BooleanField(default=False)
+    chatroom = models.ManyToManyField(ChatRoom)
+
+    def update_from_members_dict(self, members_dict):
+        self.username = members_dict['Username']
+        self.nickname = members_dict['NickName']
+        self.small_head_img_url = members_dict['SmallHeadImgUrl']
+        self.inviter_username = members_dict['InviterUserName']
 
 
 class Message(models.Model):
