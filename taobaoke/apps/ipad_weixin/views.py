@@ -2,13 +2,14 @@
 from __future__ import unicode_literals
 
 import json
-
+from broadcast.models.user_models import TkUser
 from django.http import HttpResponse
 from django.views.generic.base import View
 
 from ipad_weixin.weixin_bot import WXBot
-from models import Qrcode, WxUser, Message, Contact
+from models import Qrcode, WxUser, ChatRoom
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
 
 import logging
 logger = logging.getLogger('django_views')
@@ -17,6 +18,7 @@ logger = logging.getLogger('django_views')
 class GetQrcode(View):
     def get(self, request):
         md_username = request.GET.get('username', '')
+
         wx_bot = WXBot()
         (oss_path, qrcode_rsp, deviceId) = wx_bot.get_qrcode(md_username)
 
@@ -51,30 +53,36 @@ class HostList(View):
         data = []
         try:
             # 第一步 筛选出这个人登录了多少个机器人 并且取出它的wx_id
-            qr_code_db = Qrcode.objects.filter(md_username=username).order_by('-id').all()
-            wx_id_set = set([qr_code.username for qr_code in qr_code_db if qr_code.username != ''])
+            wxusers = WxUser.objects.filter(user__username=username).all()
+            for wxuser in wxusers:
+                ret = wxuser.login
+                name = wxuser.nickname
+                chatroom_list = ChatRoom.objects.filter(wx_user__username=wxuser.username, nickname__contains=u"福利社")
+                for chatroom in chatroom_list:
+                    data.append({"ret": ret, "name": name, "group": chatroom.nickname})
 
-            for wx_id in wx_id_set:
-
-                # 筛选出wx用户昵称
-                user_db = WxUser.objects.filter(username=wx_id).first()
-                ret = user_db.login
-                name = user_db.nickname
-
-
-                # 筛选出这个wx_id激活的群id
-                message_list = Message.objects.filter(content__contains="激活",
-                                                      from_username=wx_id).all()
-                group_set = set([message.to_username for message in message_list])
-                for group in group_set:
-                    # 发单人的wx_id, 群名, 是否登陆了
-                    try:
-                        """联合查询"""
-                        contact_db = Contact.objects.filter(nickname__contains="福利社",
-                                                            username=group).first()
-                        data.append({"ret": ret, "name": name, "group": contact_db.nickname})
-                    except Exception as e:
-                        print(e)
+            # qr_code_db = Qrcode.objects.filter(md_username=username).order_by('-id').all()
+            # wx_id_set = set([qr_code.username for qr_code in qr_code_db if qr_code.username != ''])
+            #
+            # for wx_id in wx_id_set:
+            #
+            #     # 筛选出wx用户昵称
+            #     user_db = WxUser.objects.filter(username=wx_id).first()
+            #     ret = user_db.login
+            #     name = user_db.nickname
+            #
+            #
+            #     # 筛选出这个wx_id激活的群id
+            #     message_list = Message.objects.filter(content__contains="激活",
+            #                                           from_username=wx_id).all()
+            #     group_set = set([message.to_username for message in message_list])
+            #     for group in group_set:
+            #         # 发单人的wx_id, 群名, 是否登陆了
+            #         try:
+            #             contact_db = Contact.objects.filter(nickname__contains="福利社", username=group).first()
+            #             data.append({"ret": ret, "name": name, "group": contact_db.nickname})
+            #         except Exception as e:
+            #             print(e)
         except Exception as e:
             logger.error(e)
             print(e)
@@ -89,6 +97,7 @@ class IsLogin(View):
     # http://localhost:5000/is_login?username=15900000010
     :return:
     """
+
     def get(self, request):
         username = request.GET.get('username', '')
         if 'username' == '':
@@ -106,18 +115,20 @@ class IsLogin(View):
             print(wx_username)
 
 
-
             # 筛选出wx用户昵称
-            user_db = WxUser.objects.filter(username=wx_username).first()
-            ret = user_db.login
-            name = user_db.nickname
-            #type(name) <type 'unicode'>
+            wxuser = WxUser.objects.filter(username=wx_username).first()
+            ret = wxuser.login
+            name = wxuser.nickname
+
+            tk_user = TkUser.get_user(username)
+            wxuser.user.add(tk_user.user)
+            wxuser.save()
+
             print(name.encode('utf8'))
         except Exception as e:
             logger.error(e)
             print(e)
 
-        #不太清楚前端是否对name进行了编码处理，这里的name返回为 unicode
         response_data = {"ret": str(ret), "name": name}
         return HttpResponse(json.dumps(response_data))
 
@@ -155,18 +166,7 @@ class IsUuidLogin(View):
         return HttpResponse(json.dumps(response_data))
 
 
-from ipad_weixin.models import ChatRoom
 
-class AddSendGroup(View):
-    @csrf_exempt
-    def post(self, request):
-        body = json.loads(request.body)
-        username = body["username"]
-        if username:
-            wx_user = WxUser.objects.get(username=username)
-        send_groups = body["send_groups"]
-        for send_group in send_groups():
-            pass
 
 
 

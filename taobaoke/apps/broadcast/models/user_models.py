@@ -12,9 +12,7 @@ from django.dispatch import receiver
 
 
 class TkUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, default='')
-    #username,password
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     adzone = models.ForeignKey('Adzone', db_column='adzone_key', null=True)
     search_url_template = models.CharField(max_length=128, null=True)
 
@@ -22,7 +20,6 @@ class TkUser(models.Model):
         return self.adzone.pid.split('_')[-1]
 
     def get_search_url(self, keyword):
-        """http://dianjin532.123nlw.com/saber/index/search?pid=mm_122190119_26062749_103176155&search={keyword}"""
         return unicode(self.search_url_template).format(keyword=keyword)
 
     def assign_pid(self):
@@ -50,13 +47,6 @@ class TkUser(models.Model):
             return TkUser.objects.get(user=user)
 
 
-
-"""
-定义一个全局的Signal，属于扩展User字段的行为，那么当我的sender为User，且有一个post_save[即数据库的保存]行为时，
-我们去创建自己的附属User,TkUser
-instance是User的一个实例
-"""
-
 @receiver(post_save, sender=User)
 def create_tkuser(sender, instance, created, **kwargs):
     if created:
@@ -66,7 +56,6 @@ def create_tkuser(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_tkuser(sender, instance, **kwargs):
     instance.tkuser.save()
-
 
 
 class Adzone(models.Model):
@@ -89,4 +78,3 @@ class Adzone(models.Model):
             self.create_time = timezone.now()
         self.last_update = timezone.now()
         super(Adzone, self).save(*args, **kwargs)
-

@@ -25,11 +25,6 @@ from broadcast.management.commands.push import push_product
 from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSerializer
 
 
-"""
-由脚本发起的post请求
-scripts/fetch_pid
-"""
-
 @csrf_exempt
 def update_adzone(request):
     req_dict = json.loads(request.body)

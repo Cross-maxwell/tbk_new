@@ -3,16 +3,18 @@ from __future__ import unicode_literals
 
 import re
 import math
+import random
 import datetime
 import json
 from django.utils import timezone
 import requests
 from django.db import models
 import fuli.top_settings
-# from top import top.api
-import random
 import top.api
 
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 class Entry(models.Model):
     create_time = models.DateTimeField(default=None)
@@ -39,7 +41,6 @@ class Entry(models.Model):
 
 class PushRecord(models.Model):
     create_time = models.DateTimeField(auto_now=True)
-
     entry = models.ForeignKey('Entry')
     group = models.CharField(max_length=64)
     data_string = models.TextField(max_length=4096, default='')
@@ -80,13 +81,25 @@ class Product(Entry):
     item_id = models.CharField(max_length=64, unique=True, db_index=True, null=False)
 
 
+#     template = \
+# """
+# 【商品名称】{title}
+# 【券后劲爆价】￥{price}
+# 【劲省】{cupon_value}元!!
+# -----------------
+# {desc}
+# 【淘口令】{tao_pwd}
+# 复制这条消息，打开“手机淘宝”即可领券之后再下单
+# 也可以点击此链接直接下单：{cupon_url}
+# """
     template = \
 """{title}
 【标价】{org_price}元
 【本群价】￥{price}!!
 【已疯抢】超过{sold_qty}件
 -----------------
-{desc}  下单地址： {short_url}"""
+{desc}  下单地址： https://yiqizhuang.github.io/index.html?tkl=%EF%BF%A5{tao_pwd}%EF%BF%A5 """
+
     update_tao_pwd_url = 'http://www.fuligou88.com/haoquan/details_show00.php?act=zhuan'
 
     def get_text_msg(self, pid=None):
@@ -100,21 +113,12 @@ class Product(Entry):
         d.update({
             'org_price': self.org_price,
         })
-        """
-        添加encode是否合适？
-        """
-        long_url = 'https://yiqizhuang.github.io/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
-        # short_url_respose = requests.get('http://goo.gd/action/json.php?source=1681459862&url_long=' + long_url)
 
-        # 微博short_url平台
-        # source 为ipad微博AppKey
-        short_url_respose = requests.get('http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
-        self.short_url = short_url_respose.json()['urls'][0]['url_short']
-
+        self.tao_pwd = self.tao_pwd[1:-1]
         msg = self.template.format(**self.__dict__)
         if self.cupon_left < 15:
             msg += u'\n（该商品仅剩%s张券，抓紧下单吧）' % self.cupon_left
-        if random.random() < 0.1:
+        if random.random() < 0.5:
             msg += u'\n本群招代理，如果你也想把优惠带给你身边的朋友，那就赶快加我私聊吧！'
         print self.cupon_url
         return msg
@@ -125,22 +129,22 @@ class Product(Entry):
     def update_tokens(self):
         for _ in range(5):
             try:
-                req = top.api.WirelessShareTpwdCreateRequest()
+                req = top.api.TbkTpwdCreateRequest()
                 req.set_app_info(top.appinfo(fuli.top_settings.app_key, fuli.top_settings.app_secret))
 
-                req.tpwd_param = json.dumps({
-                    'url': self.cupon_url,
-                    'text': self.title,
-                    'logo': self.img_url,
-                })
+                req.text = self.title.encode('utf-8')
+                req.logo = self.img_url
+                req.url = self.cupon_url
+
                 resp = req.getResponse()
 
-                self.tao_pwd = resp['wireless_share_tpwd_create_response']['model']
+                self.tao_pwd = resp['tbk_tpwd_create_response']['data']['model']
 
                 self.cupon_short_url = self.cupon_url
                 break
-            except Exception:
+            except Exception as e:
                 print self.cupon_url, self.title
+                print e.message
                 continue
 
     def assert_available(self):
@@ -152,6 +156,12 @@ class Product(Entry):
         if self.sold_qty < 100 or (self.cupon_value / self.price) < 0.2:
             self.available = False
             print 'Trim item due to cupon value.'
+        # elif self.cupon_left < 5:
+        #     available = False
+        #     print 'Trim item due to too few cupons left.'
+        # elif re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
+        #     self.available = False
+        #     print 'Trim item due to no pid.'
         self.save()
         return self.available
 

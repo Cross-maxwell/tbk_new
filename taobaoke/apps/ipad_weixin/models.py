@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 from django.db import models
 import datetime
 
+from broadcast.models import TkUser
+from django.contrib.auth.models import User
+
 import logging
 logger = logging.getLogger('django_models')
 
@@ -14,9 +17,6 @@ class Img(models.Model):
 
     def __unicode__(self):
         return self.name
-
-
-
 
 
 class Qrcode(models.Model):
@@ -105,6 +105,7 @@ class WxUser(models.Model):
     username = models.CharField(max_length=250)
     login = models.IntegerField(default=0)
 
+    user = models.ManyToManyField(User)
 
     last_update = models.DateTimeField(null=True)
     create_at = models.DateTimeField(null=True)

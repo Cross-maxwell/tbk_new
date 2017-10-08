@@ -23,7 +23,6 @@ def send_msg_type(msg_dict):
         """
         这里是否可以没有这个多线程?
         """
-
         wx_bot.send_img_msg(group_id, v_user, text)
 
         # import thread
