@@ -36,5 +36,3 @@ class SaveQrcodeTest(TestCase):
                 }
         Qrcode.update_qr_code(dict, qr_code_db)
 
-
-

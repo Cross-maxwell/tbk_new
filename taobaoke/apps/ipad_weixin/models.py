@@ -234,14 +234,14 @@ class ChatRoom(models.Model):
         self.member_nums = len(msg_dict['ExtInfo'].split(','))
 
 
-class GroupMembers(models.Model):
+class ChatroomMember(models.Model):
     username = models.CharField(max_length=100)
     nickname = models.CharField(max_length=200, default='')
     small_head_img_url = models.URLField(default='')
     inviter_username = models.CharField(max_length=100, default='')
     created = models.DateTimeField(auto_now=True)
     is_delete = models.BooleanField(default=False)
-    chatroom = models.ManyToManyField(ChatRoom)
+    chatroom = models.ManyToManyField(ChatRoom, db_index=True)
 
     def update_from_members_dict(self, members_dict):
         self.username = members_dict['Username']

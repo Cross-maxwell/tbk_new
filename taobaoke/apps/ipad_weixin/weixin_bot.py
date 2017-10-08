@@ -38,7 +38,7 @@ from ipad_weixin.rule import action_rule
 
 
 from ipad_weixin.models import WxUser, Contact, Message, Qrcode, BotParam, Img, ChatRoom, \
-    GroupMembers
+    ChatroomMember
 
 import logging
 logger = logging.getLogger('weixin_bot')
@@ -627,103 +627,107 @@ class WXBot(object):
             msg_list = json.loads(sync_rsp.baseMsg.payloads)
             if msg_list is not None:
                 for msg_dict in msg_list:
-                    try:
-                        if msg_dict['MsgType'] == 2:
-                            try:
-                                #存入联系人
-                                contact, created = Contact.objects.get_or_create(username=msg_dict['UserName'])
-                                contact.update_from_mydict(msg_dict)
-                                contact.save()
-                            except Exception as e:
-                                logger.error(e)
-                        elif msg_dict['Status'] is not None:
-                            try:
-                                #消息
-                                action_rule.filter_keyword_rule(v_user.userame, msg_dict)
-                                from rule.sign_in_rule import filter_sign_in_keyword
-                                filter_sign_in_keyword(v_user.userame, msg_dict)
+                    if msg_dict['MsgType'] == 2:
+                        try:
+                            #存入联系人
+                            contact, created = Contact.objects.get_or_create(username=msg_dict['UserName'])
+                            contact.update_from_mydict(msg_dict)
+                            contact.save()
+                        except Exception as e:
+                            logger.error(e)
+                    # elif msg_dict['Status'] is not None:
+                    elif msg_dict.get('Status') is not None:
+                        try:
+                            #消息
+                            action_rule.filter_keyword_rule(v_user.userame, msg_dict)
+                            from rule.sign_in_rule import filter_sign_in_keyword
+                            filter_sign_in_keyword(v_user.userame, msg_dict)
 
-                                """
-                                在此处添加一个签到规则。
-                                """
-                            except Exception as e:
-                                logger.error(e)
+                            """
+                            在此处添加一个签到规则。
+                            """
+                        except Exception as e:
+                            logger.error(e)
 
-                            #拉取群信息
-                            try:
-                                chatroom_name = ''
-                                group_owner = ''
-                                if '@chatroom' in msg_dict['FromUserName']:
-                                    chatroom_name = msg_dict['FromUserName']
-                                elif '@chatroom' in msg_dict['ToUserName']:
-                                    # 那么此时的 FromUserName就是该群的群主
-                                    chatroom_name = msg_dict['ToUserName']
-                                    group_owner = msg_dict['FromUserName']
+                        # 拉取群信息
+                        # TODO: 实现太丑了， 待优化
+                        chatroom_name = ''
+                        group_owner = ''
+                        if '@chatroom' in msg_dict['FromUserName']:
+                            chatroom_name = msg_dict['FromUserName']
+                            # 那么此时的 ToUserName就是该群的群主
+                            group_owner = msg_dict['ToUserName']
+                        elif '@chatroom' in msg_dict['ToUserName']:
+                            chatroom_name = msg_dict['ToUserName']
 
-                                if chatroom_name:
-                                    chatroom, created = ChatRoom.objects.get_or_create(username=chatroom_name)
-                                    if group_owner:
-                                        chatroom.chat_room_owner = group_owner
-                                        chatroom.save()
+                        if chatroom_name:
+                            chatroom, created = ChatRoom.objects.get_or_create(username=chatroom_name)
+                            if group_owner:
+                                chatroom.chat_room_owner = group_owner
+                                chatroom.save()
 
-                                    elif created:
-                                        group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
-                                        chatroom.member_nums = len(group_members_details)
-                                        chatroom.save()
+                            if chatroom.nickname == '' or chatroom.nickname == None:
+                                group_members_details = self.get_chatroom_detail(v_user, chatroom_name.encode('utf-8'))
 
-                                        for members_dict in group_members_details:
-                                            group_member = GroupMembers()
-                                            group_member.update_from_members_dict(members_dict)
-                                            group_member.save()
+                                #获取群组的整体信息
+                                chatroom_details = self.get_contact(v_user, chatroom_name.encode('utf-8'))
+                                chatroom.update_from_msg_dict(chatroom_details[0])
+                                chatroom.member_nums = len(group_members_details)
+                                chatroom.save()
 
-                                            group_member.chatroom.add(chatroom.id)
-                                            group_member.save()
-                                    else:
-                                        #该群存在
-                                        if msg_dict['Status'] == 4:
-                                            chatroom = ChatRoom.objects.get(username=chatroom_name)
-                                            members_db = GroupMembers.objects.filter(chatroom=chatroom.id, is_delete=False)
-                                            old_members_list = [member.username for member in members_db]
-                                            group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
-                                            new_members_list = [member['Username'] for member in group_members_details]
+                                wx_user = WxUser.objects.get(username=v_user.userame)
+                                chatroom.wx_user.add(wx_user.id)
+                                chatroom.save()
 
-                                            #踢人
-                                            delete_members = set(old_members_list) - set(new_members_list)
-                                            for delete_member in delete_members:
-                                                #还得是这个群的
-                                                delete_member_db = GroupMembers.objects.filter(username=delete_member,
-                                                                                               chatroom=chatroom.id).first()
-                                                delete_member_db.is_delete = True
-                                                delete_member_db.save()
+                                for members_dict in group_members_details:
+                                    group_member = ChatroomMember()
+                                    group_member.update_from_members_dict(members_dict)
+                                    group_member.save()
 
-                                            #拉人
-                                            add_members = set(new_members_list) - set(old_members_list)
-                                            for add_member in add_members:
-                                                for group_member in group_members_details:
-                                                    if add_member == group_member['Username']:
-                                                        members_db = GroupMembers()
-                                                        members_db.update_from_members_dict(group_member)
-                                                        members_db.is_delete = False
-                                                        members_db.save()
-
-                                                        members_db.chatroom.add(chatroom.id)
-                                                        members_db.save()
+                                    group_member.chatroom.add(chatroom.id)
+                                    group_member.save()
 
 
-                            except Exception as e:
-                                logger.error(e)
 
-                            try:
-                                message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])
-                                message.update_from_msg_dict(msg_dict)
-                                message.save()
-                            except Exception as e:
-                                logger.error(e)
-                        else:
-                            print(msg_dict)
-                    except Exception as e:
-                        print(e)
-                        print(msg_dict)
+
+                            else:
+                                #该群存在
+                                if msg_dict['Status'] == 4:
+                                    chatroom = ChatRoom.objects.get(username=chatroom_name)
+                                    members_db = ChatroomMember.objects.filter(chatroom=chatroom.id, is_delete=False)
+                                    old_members_list = [member.username for member in members_db]
+                                    group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
+                                    new_members_list = [member['Username'] for member in group_members_details]
+
+                                    #踢人
+                                    delete_members = set(old_members_list) - set(new_members_list)
+                                    for delete_member in delete_members:
+                                        #还得是这个群的
+                                        delete_member_db = ChatroomMember.objects.filter(username=delete_member,
+                                                                                       chatroom=chatroom.id).first()
+                                        delete_member_db.is_delete = True
+                                        delete_member_db.save()
+
+                                    #拉人
+                                    add_members = set(new_members_list) - set(old_members_list)
+                                    for add_member in add_members:
+                                        for group_member in group_members_details:
+                                            if add_member == group_member['Username']:
+                                                members_db = ChatroomMember()
+                                                members_db.update_from_members_dict(group_member)
+                                                members_db.is_delete = False
+                                                members_db.save()
+
+                                                members_db.chatroom.add(chatroom.id)
+                                                members_db.save()
+
+                        try:
+                            message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])
+                            message.update_from_msg_dict(msg_dict)
+                            message.save()
+                        except Exception as e:
+                            logger.error(e)
+
                 self.async_check(v_user, new_socket=new_socket)
             else:
                 from ipad_weixin.heartbeat_manager import HeartBeatManager
@@ -787,6 +791,23 @@ class WXBot(object):
 
                                 chatroom.wx_user.add(wx_user.id)
                                 chatroom.save()
+
+                                if created:
+                                    chatroom_members_details = self.get_chatroom_detail(v_user, msg_dict['UserName'])
+                                    for members_dict in chatroom_members_details:
+                                        chatroom_member = ChatroomMember()
+                                        chatroom_member.update_from_members_dict(members_dict)
+                                        chatroom_member.save()
+
+                                        chatroom_member.chatroom.add(chatroom.id)
+                                        chatroom_member.save()
+
+                                """
+                                在这里应该调用 get_chatroom_detail 来获取群聊的群成员信息.
+                                那么就会涉及到一个更新的问题
+                                可以将 new_init 和 async_check 分开
+                                在这里只进行创建，不更新。更新的操作全部丢到 async_check 中去做。
+                                """
 
                             else:
                                 contact, created = Contact.objects.get_or_create(username=msg_dict['UserName'])
@@ -1066,24 +1087,20 @@ class WXBot(object):
 
 
 
-
-
-        get_contacts_rsp.baseMsg.cmd = -182
-        get_contacts_rsp.baseMsg.payloads = buffers.content
-        get_contacts_rsp = grpc_client.send(get_contacts_rsp)
-        buffers = get_contacts_rsp.baseMsg.payloads
-        print buffers.encode('utf-8')
-        return buffers
-
     def get_contact(self, v_user, wx_id_list):
         """
         TODO 根据联系人wxid，获取contact
         private void btn_GetContact_Click(object sender, EventArgs e)
         :param wx_id_list: 
             当获取单个联系人消息时，直接传入联系人wx_id即可
+            想要获取群组的整体信息，传入群的id即可，xxxxx@chatroom
         :param v_user: 
         :return: 
         """
+        bot_param = BotParam.objects.filter(username=v_user.userame).first()
+        if bot_param:
+            self.short_host = bot_param.short_host
+
         payLoadJson = "{\"UserNameList\":\"" + wx_id_list + "\"}"
 
         contacts_req = WechatMsg(
@@ -1102,16 +1119,14 @@ class WXBot(object):
         body = get_contacts_rsp.baseMsg.payloads
         buffers = requests.post("http://" + self.short_host + get_contacts_rsp.baseMsg.cmdUrl, body)
 
-        buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
-
         get_contacts_rsp.baseMsg.cmd = -182
         get_contacts_rsp.baseMsg.payloads = buffers.content
         get_contacts_rsp = grpc_client.send(get_contacts_rsp)
         buffers = get_contacts_rsp.baseMsg.payloads
-
-        print(get_contacts_rsp.baseMsg.payloads)
+        json_buffers = json.loads(buffers.encode('utf-8'))
+        print(json_buffers[0])
         logger.info('%s 获取联系人成功' % v_user.nickname)
-        return buffers
+        return (json_buffers)
 
     def create_chatroom(self, v_user, wx_id_list):
         """
@@ -1474,7 +1489,7 @@ if __name__ == "__main__":
 
             elif cmd == 8:
                 v_user = pickle.loads(red.get('v_user_' + wx_user))
-                wx_bot.get_contact(v_user, ['wxid_9zoigugzqipj21'])
+                wx_bot.get_contact(v_user, '6947816994@chatroom')
 
 
         except Exception as e:

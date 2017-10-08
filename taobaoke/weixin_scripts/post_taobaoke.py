@@ -26,7 +26,7 @@ django.setup()
 from django.db.models import Q
 from django.utils import timezone
 
-from ipad_weixin.models import Qrcode, Message, WxUser, Contact
+from ipad_weixin.models import Qrcode, Message, WxUser, Contact, ChatRoom
 from ipad_weixin.send_msg_type import send_msg_type
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product, PushRecord
@@ -93,17 +93,13 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     # TODO: 当程序的休眠时间为30分钟时，发送图片和文字的间隔为45分钟。当打印完 push ... to .. 之后，15分钟后才开始进行图片的额发送。why?
 
 
-
-
     PushRecord.objects.create(entry=p, group=group_id)
     send_msg_type(img_msg_dict)
     logger.info("Push img %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
 
-    # print "%s Push img %s to group %s." % (datetime.datetime.now(), img_msg_dict['text'], img_msg_dict['group_id'])
     send_msg_type(text_msg_dict)
     logger.info("Push text %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
 
-    # print "%s Push text %s to group %s." % (datetime.datetime.now(), text_msg_dict['text'], text_msg_dict['group_id'])
 
 
 def select():
@@ -124,17 +120,18 @@ def select():
         ret = json.loads(rsp.text)['ret']
         if ret == 1:
             # 筛选出激活群
-            message_list = Message.objects.filter(content__contains="激活",
-                                                  from_username=user.username).all()
-            group_set = set([message.to_username for message in message_list])
-            for group_id in group_set:
+            wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
+            chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"福利社").all()
+
+            for chatroom in chatroom_list:
                 # 发单人的wx_id, 群的id, 手机号
                 try:
-                    contact_db = Contact.objects.filter(nickname__contains="福利社",
-                                                        username=group_id).first()
-                    if contact_db is not None:
-                        print(contact_db.nickname)
-                        post_taobaoke_url(wx_id, group_id, md_username)
+                    group_id = chatroom.username
+                    logger.info(u'向 %s 推送商品' % chatroom.nickname)
+
+                    import thread
+                    thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
+                    # post_taobaoke_url(wx_id, group_id, md_username)
                 except Exception as e:
                     logging.error(e)
                     print(e)
@@ -158,5 +155,29 @@ if __name__ == "__main__":
 
     #测试
     while True:
-        post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
-        time.sleep(60 * 5)
+        wxuser = WxUser.objects.filter(username='wxid_cegmcl4xhn5w22').order_by('-id').first()
+        chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"福利社").all()
+        wx_id = 'wxid_cegmcl4xhn5w22'
+        md_username = 'leyang'
+
+        for chatroom in chatroom_list:
+            # 发单人的wx_id, 群的id, 手机号
+            try: 
+                group_id = chatroom.username
+                logger.info(u'向 %s 推送商品' % chatroom.nickname)
+
+                import thread
+
+                thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
+                time.sleep(60 * 5)
+                # post_taobaoke_url(wx_id, group_id, md_username)
+            except Exception as e:
+                logging.error(e)
+                print(e)
+
+
+
+
+
+        # post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
+        # time.sleep(60 * 5)
