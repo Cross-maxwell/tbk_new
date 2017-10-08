@@ -98,7 +98,7 @@ class Product(Entry):
 【本群价】￥{price}!!
 【已疯抢】超过{sold_qty}件
 -----------------
-{desc}  下单地址： https://yiqizhuang.github.io/index.html?tkl=%EF%BF%A5{tao_pwd}%EF%BF%A5 """
+{desc}  下单地址： {short_url} """
 
     update_tao_pwd_url = 'http://www.fuligou88.com/haoquan/details_show00.php?act=zhuan'
 
@@ -115,6 +115,16 @@ class Product(Entry):
         })
 
         self.tao_pwd = self.tao_pwd[1:-1]
+        
+
+        long_url = 'https://yiqizhuang.github.io/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
+        # 微博short_url平台
+        # source为ipad微博AppKey
+        short_url_respose = requests.get(
+            'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
+        self.short_url = short_url_respose.json()['urls'][0]['url_short']
+
+
         msg = self.template.format(**self.__dict__)
         if self.cupon_left < 15:
             msg += u'\n（该商品仅剩%s张券，抓紧下单吧）' % self.cupon_left
