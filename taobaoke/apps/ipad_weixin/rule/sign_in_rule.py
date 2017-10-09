@@ -7,37 +7,116 @@ django.setup()
 
 from ipad_weixin.models import ChatRoom, WxUser, SignInRule, ChatroomMember
 import time
+import re
+from ipad_weixin.send_msg_type import send_msg_type
+import requests
+import json
+
 
 def filter_sign_in_keyword(wx_id, msg_dict):
     # wx_id 机器人id
-    content = msg_dict['Content']
+    content = msg_dict['Content'].split(':')[1].strip()
     # keyword_db数据库中取出群所对应的红包id
     signin_db = SignInRule.objects.all()
     keywords = [signin.keyword for signin in signin_db]
     if content in keywords:
         speaker_id = msg_dict['Content'].split(':')[0]
-        speaker_name = msg_dict['PushContent'].split(':')[0]
-        speaker_head_img_url = ChatroomMember.objects.get(username=speaker_id)
-        red_packet_id = SignInRule.objects.get(keyword=content)
+        speaker_name = msg_dict['PushContent'].rsplit(':',1)[0].strip()
+
+        speaker = ChatroomMember.objects.filter(username=speaker_id).first()
+        singin_rule = SignInRule.objects.filter(keyword=content).first()
+
+        speaker_nick_name_trim = get_nick_name_trim(speaker_name)
+        speaker_head_img_url = speaker.small_head_img_url
+        speaker_nick_name_emoji_unicode = get_nick_name_emoji_unicode(speaker_name)
+        from_user_id = msg_dict['FromUserName']
 
         data = {
-            "speaker_nick_name_trim": '',
+            "speaker_nick_name_trim": speaker_nick_name_trim,
             "time": {"$date": int(round(time.time()*1000))},
-            "speaker_head_img_url": '',
-            "speaker_nick_name_emoji_unicode": '',
-            "from_user_id": msg_dict['FromUserName'],
-            "speaker_id": msg_dict['Content'].split(':')[0]
+            "speaker_head_img_url": speaker_head_img_url,
+            "speaker_nick_name_emoji_unicode": speaker_nick_name_emoji_unicode,
+            "from_user_id": from_user_id,
+            "speaker_id": speaker_id
         }
 
 
+        url = 'http://s-poc-02.qunzhu666.com/365/api/clockin/'
+        request_url = url + singin_rule.red_packet_id
+        json_data = json.dumps(data)
+        response = requests.post(request_url, data=json_data)
+        body = json.loads(response.content)
+
+        reaction_list = body['reaction_list']
+        for reaction in reaction_list:
+            if reaction['type'] == 'text':
+                text = reaction['content']
+
+                text_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": from_user_id,
+                    "text": text,
+                    "type": "text",
+                }
+                send_msg_type(text_msg_dict)
+
+            elif reaction['type'] == 'img':
+                img_url = reaction['content']
+
+                img_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": from_user_id,
+                    "text": img_url,
+                    "type": "img"
+                }
+                send_msg_type(img_msg_dict)
+
+        """
+        
+        {"code":1, "text":"扫码关注下方公众号方可签到！关注后再！到！群！里！签！一！次！如果你已经关注但未能识别，请取关后重新关注再签到一次~如果还是无效，则是您的昵称中包含特殊符号/表情无法识别，请修改微信昵称后，取关再重新关注签到。", 
+        "speak":"true", "img_url":"http://pin.guofenjie.cn/img/J0EloHVeWT8Z3oPzeAKZ.jpg", "ret_code":1, 
+        "reaction_list":[{"type":"text", "content":"扫码关注下方公众号方可签到！关注后再！到！群！里！签！一！次！如果你已经关注但未能识别，请取关后重新关注再签到一次~如果还是无效，则是您的昵称中包含特殊符号/表情无法识别，请修改微信昵称后，取关再重新关注签到。"}, 
+        {"type":"img", "content":"http://pin.guofenjie.cn/img/J0EloHVeWT8Z3oPzeAKZ.jpg"}]}
+        """
 
 
 
 
+def get_nick_name_emoji_unicode(nick_name):
+    return convert_emoji_from_html_to_unicode(nick_name)
+
+def get_nick_name_trim(nick_name):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u'\u2600-\u26FF\u2700-\u27BF'
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', get_nick_name_emoji_unicode(nick_name))
 
 
+def convert_emoji_from_html_to_unicode(s):
+    """
+    将网页的emoji编码转化为unicode
+    """
+    pattern = '<span class="emoji emoji(.{4,5})"></span>'
+    rst = re.search(pattern, s)
+    if rst is None:  # No emoji found.
+        return s
+    emoji_id = rst.group(1)
+    emoji_unicode = ('\U' + '0' * (8 - len(emoji_id)) + emoji_id).decode('raw-unicode-escape')
+    return re.sub(pattern, emoji_unicode, s)
 
+if __name__ == '__main__':
+    wx_id = "wxid_cegmcl4xhn5w22"
+    msg_dict = {
+        "Content": "wxid_9zoigugzqipj21:今天我要好好赚钱",
+        "PushContent": "陌:今天我要好好赚钱",
+        "FromUserName": "6610815091@chatroom"
+    }
 
+    filter_sign_in_keyword(wx_id, msg_dict)
 
 
     """
@@ -52,15 +131,4 @@ def filter_sign_in_keyword(wx_id, msg_dict):
     u'MsgType': 1, u'ImgBuf': None, 
     u'NewMsgId': 1469484974773846106, 
     u'CreateTime': 1506652565}
-    
-    
-    
-    msg_dict中包括谁在哪儿说了什么，以及说话的时间
-        群名称: msg_dict['FromUserName']
-        群主： msg_dict['ToUserName']
-        发消息成员 wx_id : msg_dict['Content'] 谁：说了什么
-        时间 msg_dict['CreateTime']
-        
-    该数据库应有字段：
-        群名称-关键词-红包id
     """

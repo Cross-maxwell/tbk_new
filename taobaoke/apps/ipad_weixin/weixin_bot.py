@@ -642,30 +642,29 @@ class WXBot(object):
                             action_rule.filter_keyword_rule(v_user.userame, msg_dict)
                             from rule.sign_in_rule import filter_sign_in_keyword
                             filter_sign_in_keyword(v_user.userame, msg_dict)
-
-                            """
-                            在此处添加一个签到规则。
-                            """
                         except Exception as e:
                             logger.error(e)
 
                         # 拉取群信息
                         # TODO: 实现太丑了， 待优化
                         chatroom_name = ''
-                        group_owner = ''
+                        chatroom_owner = ''
                         if '@chatroom' in msg_dict['FromUserName']:
                             chatroom_name = msg_dict['FromUserName']
-                            # 那么此时的 ToUserName就是该群的群主
-                            group_owner = msg_dict['ToUserName']
+                            chatroom_owner = msg_dict['ToUserName']
+
                         elif '@chatroom' in msg_dict['ToUserName']:
                             chatroom_name = msg_dict['ToUserName']
 
                         if chatroom_name:
                             chatroom, created = ChatRoom.objects.get_or_create(username=chatroom_name)
-                            if group_owner:
-                                chatroom.chat_room_owner = group_owner
+                            if chatroom_owner:
+                                chatroom.chat_room_owner = chatroom_owner
                                 chatroom.save()
 
+                            """
+                            在什么情况下去获取群信息？
+                            """
                             if chatroom.nickname == '' or chatroom.nickname == None:
                                 group_members_details = self.get_chatroom_detail(v_user, chatroom_name.encode('utf-8'))
 
