@@ -72,13 +72,12 @@ def post_taobaoke_url(wx_id, group_id, md_username):
 
     # img or text
     text_msg_dict = {
-        #群主 id
+        # 群主 id
         "uin": wx_id,
-        #群/联系人 id
+        # 群/联系人 id
         "group_id": group_id,
         "text": p.get_text_msg(pid=pid),
         "type": "text",
-        #这里 delay_time = 40, 能够刚好让200K左右的图片先发出， 文字信息紧随其后
         "delay_time": 40
     }
 
@@ -89,8 +88,6 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         "text": p.get_img_msg(),
         "type": "img"
     }
-
-    # TODO: 当程序的休眠时间为30分钟时，发送图片和文字的间隔为45分钟。当打印完 push ... to .. 之后，15分钟后才开始进行图片的额发送。why?
 
 
     PushRecord.objects.create(entry=p, group=group_id)

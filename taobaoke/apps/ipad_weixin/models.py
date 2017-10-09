@@ -5,6 +5,7 @@ import datetime
 
 from broadcast.models import TkUser
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 import logging
 logger = logging.getLogger('django_models')
@@ -124,8 +125,8 @@ class WxUser(models.Model):
         重载save()方法来记录每次更新的时间，以及创建时间
         """
         if not self.create_at:
-            self.create_at = datetime.datetime.now()
-        self.last_update = datetime.datetime.now()
+            self.create_at = timezone.now()
+        self.last_update = timezone.now()
         return super(WxUser, self).save(*args, **kwargs)
 
 
@@ -184,8 +185,8 @@ class Contact(models.Model):
         :return:
         """
         if not self.create_at:
-            self.create_at = datetime.datetime.now()
-        self.last_update = datetime.datetime.now()
+            self.create_at = timezone.now()
+        self.last_update = timezone.now()
         return super(Contact, self).save(*args, **kwargs)
 
 
@@ -204,22 +205,6 @@ class ChatRoom(models.Model):
     member_nums = models.IntegerField(default=0)
     is_send = models.BooleanField(default=False)
 
-
-    """
-    {u'UserName': u'6947816994@chatroom', 
-    u'Province': u'', 
-    u'Remark': u'', 
-    u'LabelLists': u'', u'City': u'', 
-    u'ChatroomVersion': 700000010, 
-    u'ContactType': 0, 
-    u'BigHeadImgUrl': u'http://wx.qlogo.cn/mmcrhead/zhlIznLsdcwibRkU3ibqbdibepSYBibhIDfss2HKiboianXx2JEQSqa10icT6Z5ric1rn4MDjLGm3brTSYrnZG56kFQe5t3ng7ZR38HD/0', 
-    u'ExtInfoExt': u'', u'Sex': 0, u'Alias': u'', u'EncryptUsername': u'', 
-    u'MsgType': 2, u'Signature': u'', u'SmallHeadImgUrl': u'', 
-    u'ChatRoomOwner': u'wxid_cegmcl4xhn5w22', u'ExtInfo': 
-    u'hiddensorrow,wxid_cegmcl4xhn5w22,wxid_3drnq3ee20fg22,wxid_9zoigugzqipj21', 
-    u'NickName': u'\u6253\u5361\u7b7e\u5230\u6d4b\u8bd5', u'Ticket': u'', u'VerifyFlag': 1}
-    
-    """
 
     def update_from_msg_dict(self, msg_dict):
         # self.username = msg_dict['UserName']
