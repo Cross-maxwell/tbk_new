@@ -687,39 +687,10 @@ class WXBot(object):
                                     group_member.chatroom.add(chatroom.id)
                                     group_member.save()
 
-
-
-
                             else:
                                 #该群存在
                                 if msg_dict['Status'] == 4:
-                                    chatroom = ChatRoom.objects.get(username=chatroom_name)
-                                    members_db = ChatroomMember.objects.filter(chatroom=chatroom.id, is_delete=False)
-                                    old_members_list = [member.username for member in members_db]
-                                    group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
-                                    new_members_list = [member['Username'] for member in group_members_details]
-
-                                    #踢人
-                                    delete_members = set(old_members_list) - set(new_members_list)
-                                    for delete_member in delete_members:
-                                        #还得是这个群的
-                                        delete_member_db = ChatroomMember.objects.filter(username=delete_member,
-                                                                                       chatroom=chatroom.id).first()
-                                        delete_member_db.is_delete = True
-                                        delete_member_db.save()
-
-                                    #拉人
-                                    add_members = set(new_members_list) - set(old_members_list)
-                                    for add_member in add_members:
-                                        for group_member in group_members_details:
-                                            if add_member == group_member['Username']:
-                                                members_db = ChatroomMember()
-                                                members_db.update_from_members_dict(group_member)
-                                                members_db.is_delete = False
-                                                members_db.save()
-
-                                                members_db.chatroom.add(chatroom.id)
-                                                members_db.save()
+                                    self.update_chatroom_members(chatroom_name, v_user)
 
                         try:
                             message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])
@@ -733,6 +704,7 @@ class WXBot(object):
                 from ipad_weixin.heartbeat_manager import HeartBeatManager
                 HeartBeatManager.begin_heartbeat(v_user.userame)
                 logger.info("sync finished")
+
 
     def new_init(self, v_user):
         """
@@ -1046,6 +1018,35 @@ class WXBot(object):
         search_contact_rsp.baseMsg.payloads = char_to_str(buffers)
         payloads = grpc_client.send(search_contact_rsp)
         print(payloads)
+
+    def update_chatroom_members(self, chatroom_name, v_user):
+        chatroom = ChatRoom.objects.get(username=chatroom_name)
+        members_db = ChatroomMember.objects.filter(chatroom=chatroom.id, is_delete=False)
+        old_members_list = [member.username for member in members_db]
+        group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
+        new_members_list = [member['Username'] for member in group_members_details]
+
+        # 踢人
+        delete_members = set(old_members_list) - set(new_members_list)
+        for delete_member in delete_members:
+            # 还得是这个群的
+            delete_member_db = ChatroomMember.objects.filter(username=delete_member,
+                                                             chatroom=chatroom.id).first()
+            delete_member_db.is_delete = True
+            delete_member_db.save()
+
+        # 拉人
+        add_members = set(new_members_list) - set(old_members_list)
+        for add_member in add_members:
+            for group_member in group_members_details:
+                if add_member == group_member['Username']:
+                    members_db = ChatroomMember()
+                    members_db.update_from_members_dict(group_member)
+                    members_db.is_delete = False
+                    members_db.save()
+
+                    members_db.chatroom.add(chatroom.id)
+                    members_db.save()
 
     def get_chatroom_detail(self, v_user, room_id):
         """

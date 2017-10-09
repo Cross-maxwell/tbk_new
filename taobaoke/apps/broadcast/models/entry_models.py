@@ -115,14 +115,14 @@ class Product(Entry):
         })
 
         self.tao_pwd = self.tao_pwd[1:-1]
-        
+
 
         long_url = 'https://yiqizhuang.github.io/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
         # 微博short_url平台
         # source为ipad微博AppKey
         short_url_respose = requests.get(
             'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
-        self.short_url = short_url_respose.json()['urls'][0]['url_short']
+        self.short_url = short_url_respose.json()['urls'][0]['url_short'] + str(random.randint(0,100000))
 
 
         msg = self.template.format(**self.__dict__)

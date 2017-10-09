@@ -280,8 +280,11 @@ class Message(models.Model):
 
 
 class SignInRule(models.Model):
-    group_name = models.CharField(max_length=200)
     keyword = models.TextField()
     red_packet_id = models.CharField(max_length=100)
+    created = models.DateTimeField(auto_now=True)
+
+    chatroom = models.ManyToManyField(ChatRoom)
+
 
 
