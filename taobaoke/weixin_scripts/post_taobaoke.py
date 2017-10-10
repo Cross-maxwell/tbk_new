@@ -55,10 +55,10 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         qs = Product.objects.filter(
             available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=10000),
         )
-        requests.post(
-            'https://hook.bearychat.com/=bw8NI/incoming/219689cd1075dbb9b848e4c763d88de0',
-            json={'text': '点金推送商品失败：无可用商品, group_id=%s' % group_id}
-        )
+        # requests.post(
+        #     'https://hook.bearychat.com/=bw8NI/incoming/219689cd1075dbb9b848e4c763d88de0',
+        #     json={'text': '点金推送商品失败：无可用商品, group_id=%s' % group_id}
+        # )
 
     for _ in range(50):
         try:
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         wxuser = WxUser.objects.filter(username='wxid_cegmcl4xhn5w22').order_by('-id').first()
         chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"测试福利社").all()
         wx_id = 'wxid_cegmcl4xhn5w22'
-        md_username = 'leyang'
+        md_username = '13632909405_l'
 
         for chatroom in chatroom_list:
             # 发单人的wx_id, 群的id, 手机号
@@ -163,18 +163,14 @@ if __name__ == "__main__":
                 group_id = chatroom.username
                 logger.info(u'向 %s 推送商品' % chatroom.nickname)
 
-                import thread
-
-                thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
+                # import thread
+                #
+                # thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
+                # time.sleep(60 * 5)
+                post_taobaoke_url(wx_id, group_id, md_username)
                 time.sleep(60 * 5)
-                # post_taobaoke_url(wx_id, group_id, md_username)
             except Exception as e:
                 logging.error(e)
                 print(e)
 
 
-
-
-
-        # post_taobaoke_url(wx_id='wxid_cegmcl4xhn5w22', group_id='wxid_9zoigugzqipj21', md_username='leyang')
-        # time.sleep(60 * 5)

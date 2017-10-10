@@ -94,6 +94,7 @@ WSGI_APPLICATION = 'fuli.wsgi.application'
 #     }
 # }
 
+# 本地测试数据库
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',

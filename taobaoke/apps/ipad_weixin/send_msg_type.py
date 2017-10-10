@@ -18,15 +18,13 @@ def send_msg_type(msg_dict):
     v_user = pickle.loads(v_user_pickle)
 
     wx_bot = WXBot()
+    # wx_bot.set_user_context(v_user.userame)
     return_msg = "1"
     if type == 'img':
-        """
-        这里是否可以没有这个多线程?
-        """
-        wx_bot.send_img_msg(group_id, v_user, text)
+        # wx_bot.send_img_msg(group_id, v_user, text)
 
-        # import thread
-        # thread.start_new_thread(wx_bot.send_img_msg, (group_id, v_user, text))
+        import thread
+        thread.start_new_thread(wx_bot.send_img_msg, (group_id, v_user, text))
     elif type == 'text':
         text = text.encode('utf-8')
         a = text.split('《')
@@ -47,9 +45,9 @@ def send_msg_type(msg_dict):
             text = text.replace('\r', '\\r').replace('\n', '\\n')
             text += "\\n[太阳]点击上面链接购买商品"
 
-            wx_bot.try_sleep_send(int(delay_time), group_id, text, v_user)
-            # import thread
-            # thread.start_new_thread(wx_bot.try_sleep_send, (int(delay_time), group_id, text, v_user))
+            # wx_bot.try_sleep_send(int(delay_time), group_id, text, v_user)
+            import thread
+            thread.start_new_thread(wx_bot.try_sleep_send, (int(delay_time), group_id, text, v_user))
         else:
             wx_bot.send_text_msg(group_id, text, v_user)
     else:

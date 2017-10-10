@@ -12,7 +12,7 @@ from utils import oss_utils
 from models import *
 
 import logging
-logger = logging.getLogger('heartbeat_manager')
+logger = logging.getLogger('weixin_bot')
 
 
 class HeartBeatManager(object):
@@ -41,6 +41,7 @@ class HeartBeatManager(object):
         HeartBeatManager.heartbeat_thread_dict[vx_username] = t
         t.setDaemon(True)
         t.start()
+        # print "heartbeat start working..."
 
     def __start_thread_pool(self):
         online_user_list = WxUser.objects.filter(login__gt = 0).all()
@@ -66,7 +67,7 @@ class HeartBeatManager(object):
                 if user is not None:
                     # 用户退出登陆,退出线程
                     if user.login == 0:
-                        cls.__print_log("[{0}:{1}]user logout,heartbeat thread exit".format(user.username, user.nickname))
+                        logger.info("[{0}:{1}]用户退出登录,结束心跳".format(user.username, user.nickname))
                         # 登出时需要把socket断开，否则会一直收到退出登陆的消息
                         wx_bot.wechat_client.close_when_done()
                         return
@@ -92,22 +93,28 @@ class HeartBeatManager(object):
                     if wx_bot.auto_auth(v_user, UUid, DeviceType, False):
                         # oss_utils.beary_chat("{} auto_auth success in heartbeat".format(wx_username),
                         #                    user='fatphone777')
-                        cls.__print_log("{} auto_auth success in heartbeat".format(wx_username))
+                        logger.info("{}心跳二次登录成功".format(wx_username))
                     else:
                         oss_utils.beary_chat("{} auto_auth failed in heartbeat".format(wx_username),
                                            user='fatphone777')
-                        cls.__print_log("{} auto_auth failed in heartbeat, thread exit".format(wx_username))
+                        logger.info("{}心跳二次登录失败，退出心跳".format(wx_username))
+                        wx_bot.wechat_client.close_when_done()
                         wx_bot.logout_bot(v_user)
+                        return
                     is_first = False
 
                 # c# demo 中的heart_beat包，能延长socket的持续时间
                 # 但始终会断开
-                wx_bot.heart_beat(v_user)
-
+                if wx_bot.heart_beat(v_user):
+                    # print "success"
+                    logger.info("%s: 心跳包发送成功" % user.nickname)
+                else:
+                    # print "fail"
+                    logger.info("%s: 心跳包发送失败" % user.nickname)
                 # print "{} heart best finished".format(wx_username)
                 time.sleep(30)
             except Exception as e:
                 logger.error(e)
-                print "[{0}]heartbeat exception:{1}".format(wx_username, e.message)
+                logger.info("[{0}]heartbeat exception:{1}".format(wx_username, e.message))
                 continue
 

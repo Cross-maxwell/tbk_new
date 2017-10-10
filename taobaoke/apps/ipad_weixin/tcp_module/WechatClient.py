@@ -6,7 +6,8 @@ import asynchat
 import time
 from datetime import datetime
 from ipad_weixin.utils import common_utils
-
+import logging
+logger = logging.getLogger('weixin_bot')
 
 '''
 async_chat & asyncore.dispatcher
@@ -39,7 +40,7 @@ class WechatClient(asynchat.async_chat, object):
         _socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         errcode = _socket.connect_ex((self.endpoint_host, self.endpoint_port))
         if errcode == 0:
-            self.__print_log("socket connected")
+            self.__print_log("******socket 连接******")
         else:
             self.__print_log("error_code:{0}".format(errcode))
         super(WechatClient, self).__init__(_socket)
@@ -63,7 +64,7 @@ class WechatClient(asynchat.async_chat, object):
         super(WechatClient, self).close_when_done()
         if self.socket is not None:
             self.socket.close()
-            self.__print_log("close socket")
+            self.__print_log("******socket 关闭！******")
 
     def asyn_send(self, data):
         self.push(data)
@@ -97,11 +98,12 @@ class WechatClient(asynchat.async_chat, object):
 
     def collect_incoming_data(self, data):
         if self.connected is False:
+            logger.info("连接已断开...")
             return
 
         while len(data) != 0:
             cur_rec_len = len(data)
-            self.__print_log("Receive Wx Server Block Buf length:{0}".format(cur_rec_len))
+            # self.__print_log("接收到包长度: {0}".format(cur_rec_len))
             if cur_rec_len > 0:
                 # 检测头部是否有20字节的notify包
                 if common_utils.read_int(data[:20], 0) == 20:
@@ -115,9 +117,9 @@ class WechatClient(asynchat.async_chat, object):
                     # cmd = 24的notify包就不存了
                     if tmp_seq not in self.__rec_package_dict.keys() and cmd != 24:
                         self.__rec_package_dict[tmp_seq] = data[:20]
-
+                        # print 'self.__rec_package_dict is:', self.__rec_package_dict
                     data = data[20:]
-                    self.__print_log("rec 20 bytes package from head**")
+                    # logger.info("检测头部notify包 成功！")
                     continue
 
                 # 检测尾部
@@ -132,17 +134,18 @@ class WechatClient(asynchat.async_chat, object):
                     # cmd = 24的notify包就不存了
                     if tmp_seq not in self.__rec_package_dict.keys() and cmd != 24:
                         self.__rec_package_dict[tmp_seq] = data[-20:]
+                        # print 'self.__rec_package_dict is:', self.__rec_package_dict
 
                     data = data[:-20]
-                    self.__print_log("rec 20 bytes package from tail--")
+                    # self.__print_log("rec 20 bytes package from tail--")
                     continue
 
                 if self.rec_flag is False:
                     self.seq = common_utils.read_int(data, 12)
-                    self.__print_log("Receive Seq {0}".format(self.seq))
+                    # self.__print_log("接收序号 Seq:{0}".format(self.seq))
                     # 期望包总长度
                     self.total_len = common_utils.read_int(data, 0)
-                    self.__print_log("WX say this package Total Length should be :{0}".format(self.total_len))
+                    # self.__print_log("期望包长度 :{0}".format(self.total_len))
                     if self.total_len > 100000:
                         # total_len太长不正常直接过滤...
                         return
@@ -181,7 +184,8 @@ class WechatClient(asynchat.async_chat, object):
                         # 当前dict没有这个seq，放入
                         elif self.seq not in self.__rec_package_dict.keys():
                             self.__rec_package_dict[self.seq] = _buffers
-                            self.__print_log("Receive Wx Server Buf length:{0}".format(self.total_len))
+                            # print 'self.__rec_package_dict is:', self.__rec_package_dict
+                            # self.__print_log("接收到包长度: {0}".format(self.total_len))
                             self.seq = 0
                         # 重置参数
                         self.rec_flag = False
@@ -235,7 +239,9 @@ class WechatClient(asynchat.async_chat, object):
     def __notify(self, data):
         for func in self.__notify_list:
             try:
-                threading.Thread(target=func, args=(data, )).start()
+                t = threading.Thread(target=func, args=(data,))
+                t.setDaemon(True)
+                t.start()
             except Exception as e:
                 self.__print_log("exception:{0}".format(e.message))
                 continue
