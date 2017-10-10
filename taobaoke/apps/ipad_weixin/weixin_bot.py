@@ -371,11 +371,11 @@ class WXBot(object):
 
         if qrcode_login_rsp.baseMsg.ret == -301:
             # 返回-301代表重定向
-            # self.long_host = qrcode_login_rsp.baseMsg.longHost
-            # self.short_host = qrcode_login_rsp.baseMsg.shortHost
+            self.long_host = qrcode_login_rsp.baseMsg.longHost
+            self.short_host = qrcode_login_rsp.baseMsg.shortHost
             self.wechat_client.close_when_done()
-            # self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
-            return False
+            self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
+            return -301
             # self.confirm_qrcode_login(qr_code, keep_heart_beat=False)
             # 在user表写上gg，麻烦重新登录吧
             # return False
@@ -1356,6 +1356,25 @@ class WXBot(object):
         qr_code = self.check_qrcode_login(qrcode_rsp, device_id)
         starttime = datetime.datetime.now()
         if qr_code is not False:
+
+            if self.confirm_qrcode_login(qr_code, keep_heart_beat=False) == -301:
+                if self.confirm_qrcode_login(qr_code, keep_heart_beat=False):
+                    v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
+                    v_user = pickle.loads(v_user_pickle)
+                    self.new_init(v_user)
+                    if not self.newinitflag:
+                        v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
+                        while not self.async_check(v_user):
+                            if (datetime.datetime.now() - starttime).seconds >= 100:
+                                return False
+                            time.sleep(3)
+
+                        from ipad_weixin.heartbeat_manager import HeartBeatManager
+                        HeartBeatManager.begin_heartbeat(v_user.userame)
+                        return True
+                else:
+                    logger.info("GG 重新登录吧大兄弟")
+
             if self.confirm_qrcode_login(qr_code, keep_heart_beat=False):
                 v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                 v_user = pickle.loads(v_user_pickle)

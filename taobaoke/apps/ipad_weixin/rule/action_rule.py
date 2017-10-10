@@ -10,6 +10,8 @@ from django.utils.encoding import iri_to_uri
 from ipad_weixin.models import Qrcode, ChatRoom
 from broadcast.models.user_models import Adzone
 import urllib
+import requests
+import json
 
 
 def filter_keyword_rule(wx_id, msg_dict):
@@ -30,6 +32,7 @@ def filter_keyword_rule(wx_id, msg_dict):
             为啥Qrcode.objects.filter(username=wx_id, md_username__isnull=False).first()
             会返回一个ms_username=''的结果 = =
             """
+
             qrcode_dbs = Qrcode.objects.filter(username=wx_id)
             for qrcode_db in qrcode_dbs:
                 if qrcode_db.md_username != '' and qrcode_db.md_username != None:
@@ -41,8 +44,14 @@ def filter_keyword_rule(wx_id, msg_dict):
             url_keyword = urllib.quote(keyword.encode('utf-8'))
 
             template_url = 'http://dianjin364.123nlw.com/saber/index/search?pid={0}&search={1}'.format(pid, url_keyword)
-            text = u"""搜索商品成功！点击下面链接查看我们给您找到的专属优惠券。
-            {}""".format(iri_to_uri(template_url))
+            judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=6&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
+            judge_response = requests.get(judge_url)
+            judge_dict = json.loads(judge_response.content)
+            if judge_dict['result']['items'] == []:
+                text = u"很抱歉，您需要的{}没有找到".format(keyword)
+            else:
+                text = u"""搜索商品成功！点击下面链接查看我们给您找到的专属优惠券。
+                {}""".format(iri_to_uri(template_url))
 
             params_dict = {
                         "uin": wx_id,
@@ -85,3 +94,64 @@ if __name__ == "__main__":
                 }
     wx_id = 'wxid_cegmcl4xhn5w22'
     filter_keyword_rule(wx_id, msg_dict)
+
+
+
+    """
+    请求 
+    http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=6&pid=mm_122190119_26062749_103284242&search=%E7%BA%BD%E6%9B%BC%E7%82%B9%E8%AF%BB%E7%AC%94&_path=9001.SE.0
+    没有搜索到商品的结果：
+    {
+        "status":{"code":1001,"msg":"ok"},
+        "result":{
+            "search":"\u7ebd\u66fc\u70b9\u8bfb\u7b14",
+            "items":[],
+            "wp":"eyJwYWdlIjoyLCJzb3J0IjoiNiIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU3ZWJkXHU2NmZjXHU3MGI5XHU4YmZiXHU3YjE0IiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6Mn0=",
+            "isEnd":1,"type":null,
+            "title":"\u7ebd\u66fc\u70b9\u8bfb\u7b14-\u963f\u56fd\u798f\u5229\u793e",
+            "pid":"mm_122190119_26062749_103284242"
+            }
+    }
+    
+    有商品返回的结果：
+    {
+    "status":{
+        "code":1001,
+        "msg":"ok"
+    },
+    "result":{
+        "search":"飞机",
+        "items":[
+            {
+                "id":"4470149",
+                "title":"超级飞机耐摔玩具小黄人飞机感应悬浮飞行器遥控飞机儿童玩具礼物",
+                "itemId":"545806621017",
+                "isBaoyou":false,
+                "baoyouImg":"",
+                "tabs":[
+
+                ],
+                "price":"¥33.9",
+                "originPrice":"¥113.9",
+                "amount":80,
+                "totalCount":200000,
+                "surplus":184082,
+                "percentage":7,
+                "coverImage":"http://oss3.lanlanlife.com/ce4006737a6e96a05da5c4edbbf4e48e_800x800.jpg@!1-300-90-jpg",
+                "link":"/saber/detail?activityId=5b6d98a49e524a8db15f8d75a2062adb&itemId=545806621017&pid=mm_122190119_26062749_103284242&forCms=1&_path=9001.CA.0.i.545806621017",
+                "monthSales":640,
+                "activityId":"5b6d98a49e524a8db15f8d75a2062adb",
+                "score":0,
+                "priorityRecommend":""
+            },
+            
+            
+        ],
+        "wp":"eyJwYWdlIjoyLCJzb3J0IjoiNiIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5OGRlXHU2NzNhIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0=",
+        "isEnd":0,
+        "type":null,
+        "title":"飞机-阿国福利社",
+        "pid":"mm_122190119_26062749_103284242"
+    }
+}    
+    """
