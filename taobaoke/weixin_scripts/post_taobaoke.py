@@ -8,7 +8,8 @@ import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
 # sys.path.append('/Users/hong/sourcecode/work/ipad_wechat_test/wx_pad_taobaoke')
 # sys.path.append('/home/ipad_wechat_test/wx_pad_taobaoke')
-sys.path.append('/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke')
+# sys.path.append('/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke')
+sys.path.append('/home/new_taobaoke/taobaoke')
 # print(sys.path)
 
 import json

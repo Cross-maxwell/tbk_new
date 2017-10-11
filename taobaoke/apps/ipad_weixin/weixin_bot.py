@@ -253,7 +253,7 @@ class WXBot(object):
             buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
 
             if not buffers:
-                logger.info("%s: buffers为空" % v_user.nickname)
+                logger.info("check_qrcode_login buffers为空")
                 return False
 
             # while not buffers:
