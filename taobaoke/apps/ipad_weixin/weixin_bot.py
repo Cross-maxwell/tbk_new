@@ -441,15 +441,21 @@ class WXBot(object):
         if ord(buffers[16]) is not 191:
             selector = read_int(buffers, 16)
             if selector > 0:
-                # logger.info("%s: selector {} start sync thread", selector)
-                starttime = datetime.datetime.now()
-                while not self.async_check(v_user):
-                    if (datetime.datetime.now() - starttime).seconds >= 100:
-                        logger.info("%s: 心跳中同步失败" % v_user.nickname)
+                logger.info("%s: 心跳中准备同步", v_user.nickname)
+                if self.__lock.acquire():
+                    # 确保只有一个线程在执行async_check，否则会接受多次相同的消息
+                    if not self.__is_async_check:
+                        self.__is_async_check = True
+                        self.__lock.release()
+                    else:
+                        logger.info("----------已有线程执行async_check，跳过async_check---------")
+                        # print "*********skip async check*********"
+                        self.__lock.release()
                         return False
-                    time.sleep(3)
-                logger.info("%s： 心跳中同步成功" % v_user.nickname)
-                return False
+                if self.async_check(v_user) is False:
+                    self.__is_async_check = False
+                    return False
+                return True
 
         return True
 
@@ -590,6 +596,7 @@ class WXBot(object):
                     return 'ERROR'
 
             else:
+                logger.info("%s: 同步资料中" % v_user.nickname)
                 sync_rsp.baseMsg.cmd = -138
                 sync_rsp.baseMsg.payloads = char_to_str(buffers)
                 sync_rsp = grpc_client.send(sync_rsp)
