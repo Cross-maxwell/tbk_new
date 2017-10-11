@@ -126,7 +126,7 @@ class WXBot(object):
                         elif res is 'ERROR':
                             logger.info("%s: 即将退出机器人" % v_user.nickname)
                             self.wechat_client.close_when_done()
-                            self.logout_bot(v_user)
+                            # self.logout_bot(v_user)
                         else:
                             logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
@@ -585,7 +585,8 @@ class WXBot(object):
                         return False
                 else:
                     logger.info("%s: 微信返回错误" % v_user.nickname)
-                    # self.wechat_client.close_when_done()
+                    self.wechat_client.close_when_done()
+                    self.logout_bot(v_user)
                     return 'ERROR'
 
             else:
