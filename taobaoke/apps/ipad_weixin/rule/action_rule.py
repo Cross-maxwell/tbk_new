@@ -47,17 +47,17 @@ def filter_keyword_rule(wx_id, msg_dict):
             url_keyword = urllib.quote(keyword.encode('utf-8'))
 
             template_url = 'http://dianjin364.123nlw.com/saber/index/search?pid={0}&search={1}'.format(pid, url_keyword)
-            judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=6&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
+            judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
             judge_response = requests.get(judge_url)
             judge_dict = json.loads(judge_response.content)
 
             from ipad_weixin.send_msg_type import send_msg_type
 
             if judge_dict['result']['items'] == []:
-                text = u"很抱歉，您需要的{}没有找到".format(keyword)
+                text = u"很抱歉，您需要的{}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(keyword)
             else:
-                text = u"""搜索商品成功！点击下面链接查看我们给您找到的专属优惠券。
-                {}""".format(iri_to_uri(template_url))
+                text = u"""搜索商品 {0} 成功！点击下面链接查看我们给您找到的专属优惠券。
+                {1}""".format(keyword, iri_to_uri(template_url))
 
                 shop_url = judge_dict['result']['items'][0]['coverImage']
                 img_msg_dict = {
