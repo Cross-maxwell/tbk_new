@@ -118,15 +118,11 @@ class WXBot(object):
                         # if bot_param:
                         #     bot.long_host = bot_param.long_host
                         #     bot.wechat_client = WechatClient.WechatClient(bot.long_host, 80, True)
-                        starttime = datetime.datetime.now()
-                        while not self.async_check(v_user):
-                            if (datetime.datetime.now() - starttime).seconds >= 100:
-                                logger.info("%s: 线程同步失败，即将退出线程" % v_user.nickname)
-                                self.logout_bot(v_user)
-                                return
-                            time.sleep(3)
-
-                        logger.info("%s: 线程执行同步成功" % v_user.nickname)
+                        # starttime = datetime.datetime.now()
+                        if not self.async_check(v_user):
+                            logger.info("%s: 线程执行同步失败" % v_user.nickname)
+                        else:
+                            logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
                     self.__is_async_check = False
 
@@ -1458,18 +1454,19 @@ if __name__ == "__main__":
             # wx_user = "wxid_ceapoyxs555k22"
             # wx_user = "wxid_fh235f4nylp22"  # 小小
             # wx_user = "wxid_kj1papird5kn22"
-            # wx_user = "wxid_3cimlsancyfg22"  # 点金
-            wx_user = "wxid_cegmcl4xhn5w22" #楽阳
+            wx_user = "wxid_3cimlsancyfg22"  # 点金
+            # wx_user = "wxid_cegmcl4xhn5w22" #楽阳
             # wxid_sygscg13nr0g21
             # wx_user = "wxid_5wrnusfmt26932"
             # wxid_mynvgzqgnb5x22
             # wx_user = "wxid_sygscg13nr0g21"
+            to_user = 'hiddensorrow'
             print "**************************"
             print "enter cmd :{}".format(wx_user)
             print "**************************"
             cmd = input()
             if cmd == 0:
-                wx_user = 'wxid_cegmcl4xhn5w22'
+                # wx_user = 'wxid_cegmcl4xhn5w22'
 
                 wx_bot.set_user_context(wx_user)
 
@@ -1486,13 +1483,13 @@ if __name__ == "__main__":
                 v_user = pickle.loads(v_user_pickle)
                 wx_bot.set_user_context(wx_user)
                 # wx_bot.send_text_msg('fat-phone', '112233', v_user)
-                wx_bot.send_text_msg('wxid_9zoigugzqipj21', 'hello~', v_user)
+                wx_bot.send_text_msg(to_user, 'hello~', v_user)
 
             elif cmd == 2:
                 v_user_pickle = red.get('v_user_' + wx_user)
                 v_user = pickle.loads(v_user_pickle)
                 #给谁发，谁发的，图片url
-                wx_bot.send_img_msg('wxid_9zoigugzqipj21', v_user,
+                wx_bot.send_img_msg(to_user, v_user,
                                     "http://oss2.lanlanlife.com/1943bf8561ac2556d04c1b4078130ce1_800x800.jpg?x-oss-process=image/resize,w_600")
 
             elif cmd == 3:

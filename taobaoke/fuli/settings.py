@@ -94,16 +94,28 @@ WSGI_APPLICATION = 'fuli.wsgi.application'
 #     }
 # }
 
-# 本地测试数据库
+# # 本地测试数据库
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {'charset': 'utf8mb4'},
+#         'NAME': 'ipad_weixin',
+#         'USER': 'root',
+#         'PASSWORD': 'keyerror'
+#     }
+# }
+
+# May测试数据库
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {'charset': 'utf8mb4'},
         'NAME': 'ipad_weixin',
         'USER': 'root',
-        'PASSWORD': 'keyerror'
+        'PASSWORD': 'maxwell'
     }
 }
+
 
 
 # Password validation
