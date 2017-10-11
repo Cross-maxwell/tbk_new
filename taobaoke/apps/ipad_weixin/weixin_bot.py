@@ -119,14 +119,15 @@ class WXBot(object):
                         #     bot.long_host = bot_param.long_host
                         #     bot.wechat_client = WechatClient.WechatClient(bot.long_host, 80, True)
                         starttime = datetime.datetime.now()
-                        while not self.async_check(v_user):
-                            if (datetime.datetime.now() - starttime).seconds >= 100:
-                                logger.info("%s: 线程同步失败，即将退出线程" % v_user.nickname)
-                                self.logout_bot(v_user)
-                                return
-                            time.sleep(3)
-
-                        logger.info("%s: 线程执行同步成功" % v_user.nickname)
+                        if not self.async_check(v_user):
+                            # if (datetime.datetime.now() - starttime).seconds >= 100:
+                            #     logger.info("%s: 线程同步失败，即将退出线程" % v_user.nickname)
+                            #     self.logout_bot(v_user)
+                            #     return
+                            # time.sleep(3)
+                            logger.info('%s process_notify 线程执行失败' % self.wx_username)
+                        else:
+                            logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
                     self.__is_async_check = False
 
