@@ -88,6 +88,7 @@ class WXBot(object):
 
         if data is not None and len(data) >= 4:
             selector = common_utils.read_int(data, 16)
+            # print "process selector is:" , selector
             if selector > 0:
                 logger.info("selector:{0} start sync thread".format(selector))
                 # print "selector:{0} start sync thread".format(selector)
@@ -119,8 +120,13 @@ class WXBot(object):
                         #     bot.long_host = bot_param.long_host
                         #     bot.wechat_client = WechatClient.WechatClient(bot.long_host, 80, True)
                         # starttime = datetime.datetime.now()
-                        if not self.async_check(v_user):
+                        res = self.async_check(v_user)
+                        if res is False:
                             logger.info("%s: 线程执行同步失败" % v_user.nickname)
+                        elif res is 'ERROR':
+                            logger.info("%s: 即将退出机器人" % v_user.nickname)
+                            self.wechat_client.close_when_done()
+                            self.logout_bot(v_user)
                         else:
                             logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
@@ -425,7 +431,7 @@ class WXBot(object):
             return False
 
         buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
-
+        # print "heartbeat selector is", read_int(buffers, 16)
         if not buffers:
             logger.info("%s: buffers为空" % v_user.nickname)
             return False
@@ -580,7 +586,7 @@ class WXBot(object):
                 else:
                     logger.info("%s: 微信返回错误" % v_user.nickname)
                     # self.wechat_client.close_when_done()
-                    return False
+                    return 'ERROR'
 
             else:
                 sync_rsp.baseMsg.cmd = -138
@@ -1454,13 +1460,15 @@ if __name__ == "__main__":
             # wx_user = "wxid_ceapoyxs555k22"
             # wx_user = "wxid_fh235f4nylp22"  # 小小
             # wx_user = "wxid_kj1papird5kn22"
-            wx_user = "wxid_3cimlsancyfg22"  # 点金
+            # wx_user = "wxid_3cimlsancyfg22"  # 点金
             # wx_user = "wxid_cegmcl4xhn5w22" #楽阳
             # wxid_sygscg13nr0g21
             # wx_user = "wxid_5wrnusfmt26932"
             # wxid_mynvgzqgnb5x22
             # wx_user = "wxid_sygscg13nr0g21"
-            to_user = 'hiddensorrow'
+            # to_user = 'hiddensorrow'
+            wx_user = "hiddensorrow"
+            to_user = "mayyesterday"
             print "**************************"
             print "enter cmd :{}".format(wx_user)
             print "**************************"
