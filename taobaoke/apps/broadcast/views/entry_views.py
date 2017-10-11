@@ -51,6 +51,16 @@ def insert_product(request):
 
 
 @csrf_exempt
+def insert_product_by_msg(request):
+    return HttpResponse('Success', status=201)
+
+
+@csrf_exempt
+def insert_broadcast_by_msg(request):
+    return HttpResponse('Success', status=201)
+
+
+@csrf_exempt
 def push_product(request):
     data = {
         "ret_code": 0,
