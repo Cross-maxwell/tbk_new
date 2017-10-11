@@ -29,6 +29,10 @@ def filter_sign_in_keyword(wx_id, msg_dict):
     u'NewMsgId': 1469484974773846106,
     u'CreateTime': 1506652565}
 
+    {u'Status': 3, u'PushContent': u'\u964c : \u4eca\u5929\u6211\u8981\u597d\u597d\u8d5a\u94b1\uff01',
+    u'FromUserName': u'6610815091@chatroom', u'MsgId': 1650546494, u'ImgStatus': 1, u'ToUserName': u'wxid_cegmcl4xhn5w22', u'MsgSource': u'<msgsource>\n\t<silence>0</silence>\n\t<membercount>8</membercount>\n</msgsource>\n', u'Content': u'wxid_9zoigugzqipj21:\n\u4eca\u5929\u6211\u8981\u597d\u597d\u8d5a\u94b1\uff01', u'MsgType': 1,
+    u'ImgBuf': None, u'NewMsgId': 8821568761386270169, u'CreateTime': 1507696130}
+
     群主msg_dict
     {u'Status': 3, u'PushContent': u'', u'FromUserName': u'wxid_cegmcl4xhn5w22',
     u'MsgId': 1650545455, u'ImgStatus': 1, u'ToUserName': u'6610815091@chatroom',
