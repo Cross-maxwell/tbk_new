@@ -47,13 +47,13 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     qs = Product.objects.filter(
         ~Q(pushrecord__group__contains=group_id,
            pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
-        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=10000),
+        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
     )
 
     # 用发送过的随机商品替代
     if qs.count() == 0:
         qs = Product.objects.filter(
-            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=10000),
+            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
         )
         # requests.post(
         #     'https://hook.bearychat.com/=bw8NI/incoming/219689cd1075dbb9b848e4c763d88de0',
@@ -134,43 +134,43 @@ def select():
                     print(e)
 
 if __name__ == "__main__":
-    # while True:
-    #     try:
-    #         now_hour = int(time.strftime('%H', time.localtime(time.time())))
-    #         if 7 <= now_hour <= 22:
-    #             select()
-    #         else:
-    #             # 如果不在这个时间段 休眠长一点
-    #             time.sleep(20 * 60)
-    #     except Exception as e:
-    #         logging.error(e)
-    #         print(e)
-    #
-    #     time.sleep(60)
+    while True:
+        try:
+            now_hour = int(time.strftime('%H', time.localtime(time.time())))
+            if 7 <= now_hour <= 22:
+                select()
+            else:
+                # 如果不在这个时间段 休眠长一点
+                time.sleep(20 * 60)
+        except Exception as e:
+            logging.error(e)
+            print(e)
+
+        time.sleep(60)
 
 
 
     #测试
-    while True:
-        wxuser = WxUser.objects.filter(username='wxid_cegmcl4xhn5w22').order_by('-id').first()
-        chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"测试福利社").all()
-        wx_id = 'wxid_cegmcl4xhn5w22'
-        md_username = '13632909405_l'
-
-        for chatroom in chatroom_list:
-            # 发单人的wx_id, 群的id, 手机号
-            try:
-                group_id = chatroom.username
-                logger.info(u'向 %s 推送商品' % chatroom.nickname)
-
-                # import thread
-                #
-                # thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
-                # time.sleep(60 * 5)
-                post_taobaoke_url(wx_id, group_id, md_username)
-                time.sleep(60 * 5)
-            except Exception as e:
-                logging.error(e)
-                print(e)
+    # while True:
+    #     wxuser = WxUser.objects.filter(username='wxid_cegmcl4xhn5w22').order_by('-id').first()
+    #     chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"测试福利社").all()
+    #     wx_id = 'wxid_cegmcl4xhn5w22'
+    #     md_username = '13632909405_l'
+    #
+    #     for chatroom in chatroom_list:
+    #         # 发单人的wx_id, 群的id, 手机号
+    #         try:
+    #             group_id = chatroom.username
+    #             logger.info(u'向 %s 推送商品' % chatroom.nickname)
+    #
+    #             # import thread
+    #             #
+    #             # thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
+    #             # time.sleep(60 * 5)
+    #             post_taobaoke_url(wx_id, group_id, md_username)
+    #             time.sleep(60 * 5)
+    #         except Exception as e:
+    #             logging.error(e)
+    #             print(e)
 
 

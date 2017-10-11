@@ -122,7 +122,7 @@ class Product(Entry):
         # source为ipad微博AppKey
         short_url_respose = requests.get(
             'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
-        self.short_url = short_url_respose.json()['urls'][0]['url_short'] + str(random.randint(0,100000))
+        self.short_url = short_url_respose.json()['urls'][0]['url_short']
 
 
         msg = self.template.format(**self.__dict__)
