@@ -13,6 +13,10 @@ import urllib
 import requests
 import json
 
+import logging
+logger = logging.getLogger('weixin_bot')
+
+
 
 def filter_keyword_rule(wx_id, msg_dict):
     keyword = find_buy_start(msg_dict['Content'])
@@ -32,7 +36,6 @@ def filter_keyword_rule(wx_id, msg_dict):
             为啥Qrcode.objects.filter(username=wx_id, md_username__isnull=False).first()
             会返回一个ms_username=''的结果 = =
             """
-
             qrcode_dbs = Qrcode.objects.filter(username=wx_id)
             for qrcode_db in qrcode_dbs:
                 if qrcode_db.md_username != '' and qrcode_db.md_username != None:
@@ -47,11 +50,25 @@ def filter_keyword_rule(wx_id, msg_dict):
             judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=6&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
             judge_response = requests.get(judge_url)
             judge_dict = json.loads(judge_response.content)
+
+            from ipad_weixin.send_msg_type import send_msg_type
+
             if judge_dict['result']['items'] == []:
                 text = u"很抱歉，您需要的{}没有找到".format(keyword)
             else:
                 text = u"""搜索商品成功！点击下面链接查看我们给您找到的专属优惠券。
                 {}""".format(iri_to_uri(template_url))
+
+                shop_url = judge_dict['result']['items'][0]['coverImage']
+                img_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": gid,
+                    "text": shop_url,
+                    "type": "img"
+                }
+
+                send_msg_type(img_msg_dict)
+                logger.info('找到商品， 向 %s 推送图片' % gid)
 
             params_dict = {
                         "uin": wx_id,
@@ -60,10 +77,8 @@ def filter_keyword_rule(wx_id, msg_dict):
                         "type": "text"
                     }
 
-            from ipad_weixin.send_msg_type import send_msg_type
-
             send_msg_type(params_dict)
-            print "Push text %s to group %s." % (params_dict['text'], params_dict['group_id'])
+            logger.info("Push text %s to group %s." % (text, gid))
 
 
 

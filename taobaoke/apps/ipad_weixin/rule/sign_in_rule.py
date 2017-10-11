@@ -79,15 +79,16 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                 send_msg_type(text_msg_dict)
 
             elif reaction['type'] == 'img':
-                img_url = reaction['content']
 
-                img_msg_dict = {
-                    "uin": wx_id,
-                    "group_id": from_user_id,
-                    "text": img_url,
-                    "type": "img"
-                }
-                send_msg_type(img_msg_dict)
+                img_url = reaction['content']
+                if img_url:
+                    img_msg_dict = {
+                        "uin": wx_id,
+                        "group_id": from_user_id,
+                        "text": img_url,
+                        "type": "img"
+                    }
+                    send_msg_type(img_msg_dict)
 
         """
         

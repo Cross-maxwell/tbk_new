@@ -38,7 +38,6 @@ def send_msg_type(msg_dict):
 
         # 请求grpc 必须替换这些字符
         elif '\n' in text or '\r' in text:
-            print('---include n or r---')
             #类似发单群
             text = text.replace('\r', '\\r').replace('\n', '\\n')
             text += "\\n[太阳]点击上面链接购买商品"
