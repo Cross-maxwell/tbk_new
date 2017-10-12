@@ -41,7 +41,8 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     try:
         tk_user = TkUser.get_user(md_username)
     except Exception as e:
-        logger.error(e)
+        pass
+        # logger.error(e)
 
     pid = tk_user.adzone.pid
 
@@ -68,7 +69,7 @@ def post_taobaoke_url(wx_id, group_id, md_username):
             break
         except Exception as exc:
             print "Get entry exception. Count=%d." % qs.count()
-            logger.error(exc)
+            # logger.error(exc)
             print exc.message
 
     # img or text
@@ -93,10 +94,10 @@ def post_taobaoke_url(wx_id, group_id, md_username):
 
     PushRecord.objects.create(entry=p, group=group_id)
     send_msg_type(img_msg_dict)
-    logger.info("Push img %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
+    # logger.info("Push img %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
 
     send_msg_type(text_msg_dict)
-    logger.info("Push text %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
+    # logger.info("Push text %s to group %s." % (img_msg_dict['text'], img_msg_dict['group_id']))
 
 
 
@@ -109,11 +110,12 @@ def select():
         # 发单机器人id
         wx_id = user.username
         # 通过 wx_id = hid 筛选出手机号
-        qr_code_db = Qrcode.objects.filter(username=user.username).all()
+        qr_code_db = Qrcode.objects.filter(username=user.username).order_by('-id').all()
         for qr_code in qr_code_db:
             if qr_code.md_username is not None:
                 md_username = qr_code.md_username
                 break
+        # 10分钟内不可以连续发送同样的请求。
         rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id), timeout=4)
         ret = json.loads(rsp.text)['ret']
         if ret == 1:
@@ -125,13 +127,13 @@ def select():
                 # 发单人的wx_id, 群的id, 手机号
                 try:
                     group_id = chatroom.username
-                    logger.info(u'向 %s 推送商品' % chatroom.nickname)
+                    # logger.info(u'向 %s 推送商品' % chatroom.nickname)
 
                     import thread
                     thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
                     # post_taobaoke_url(wx_id, group_id, md_username)
                 except Exception as e:
-                    logging.error(e)
+                    # logging.error(e)
                     print(e)
 
 if __name__ == "__main__":
