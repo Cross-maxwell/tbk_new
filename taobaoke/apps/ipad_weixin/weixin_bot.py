@@ -118,14 +118,14 @@ class WXBot(object):
                         # if bot_param:
                         #     bot.long_host = bot_param.long_host
                         #     bot.wechat_client = WechatClient.WechatClient(bot.long_host, 80, True)
-                        starttime = datetime.datetime.now()
-                        if not self.async_check(v_user):
-                            # if (datetime.datetime.now() - starttime).seconds >= 100:
-                            #     logger.info("%s: 线程同步失败，即将退出线程" % v_user.nickname)
-                            #     self.logout_bot(v_user)
-                            #     return
-                            # time.sleep(3)
-                            logger.info('%s process_notify 线程执行失败' % self.wx_username)
+                        # starttime = datetime.datetime.now()
+                        res = self.async_check(v_user)
+                        if res is False:
+                            logger.info("%s: 线程执行同步失败" % v_user.nickname)
+                        elif res is 'ERROR':
+                            logger.info("%s: 即将退出机器人" % v_user.nickname)
+                            self.wechat_client.close_when_done()
+                            # self.logout_bot(v_user)
                         else:
                             logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
@@ -430,7 +430,7 @@ class WXBot(object):
             return False
 
         buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
-
+        # print "heartbeat selector is", read_int(buffers, 16)
         if not buffers:
             logger.info("%s: buffers为空" % v_user.nickname)
             return False
@@ -440,15 +440,21 @@ class WXBot(object):
         if ord(buffers[16]) is not 191:
             selector = read_int(buffers, 16)
             if selector > 0:
-                # logger.info("%s: selector {} start sync thread", selector)
-                starttime = datetime.datetime.now()
-                while not self.async_check(v_user):
-                    if (datetime.datetime.now() - starttime).seconds >= 100:
-                        logger.info("%s: 心跳中同步失败" % v_user.nickname)
+                logger.info("%s: 心跳中准备同步", v_user.nickname)
+                if self.__lock.acquire():
+                    # 确保只有一个线程在执行async_check，否则会接受多次相同的消息
+                    if not self.__is_async_check:
+                        self.__is_async_check = True
+                        self.__lock.release()
+                    else:
+                        logger.info("----------已有线程执行async_check，跳过async_check---------")
+                        # print "*********skip async check*********"
+                        self.__lock.release()
                         return False
-                    time.sleep(3)
-                logger.info("%s： 心跳中同步成功" % v_user.nickname)
-                return False
+                if self.async_check(v_user) is False:
+                    self.__is_async_check = False
+                    return False
+                return True
 
         return True
 
@@ -584,10 +590,12 @@ class WXBot(object):
                         return False
                 else:
                     logger.info("%s: 微信返回错误" % v_user.nickname)
-                    # self.wechat_client.close_when_done()
-                    return False
+                    self.wechat_client.close_when_done()
+                    self.logout_bot(v_user)
+                    return 'ERROR'
 
             else:
+                logger.info("%s: 同步资料中" % v_user.nickname)
                 sync_rsp.baseMsg.cmd = -138
                 sync_rsp.baseMsg.payloads = char_to_str(buffers)
                 sync_rsp = grpc_client.send(sync_rsp)

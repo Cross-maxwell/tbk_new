@@ -105,6 +105,7 @@ class HeartBeatManager(object):
 
                 # c# demo 中的heart_beat包，能延长socket的持续时间
                 # 但始终会断开
+                logger.info("%s: 开始发送心跳包" % user.nickname)
                 if wx_bot.heart_beat(v_user):
                     # print "success"
                     logger.info("%s: 心跳包发送成功" % user.nickname)

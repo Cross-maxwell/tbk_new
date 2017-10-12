@@ -31,7 +31,7 @@ SECRET_KEY = 'tdw1=k(f2=%^*9bj*_+h_05(!wk03^(_jto+m0t6322uo!2y-('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost', 's-prod-02.qunzhu666.com']
+ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost']
 
 
 # Application definition
@@ -94,17 +94,6 @@ DATABASES = {
         'PORT': '50001',
     }
 }
-
-# 本地测试数据库
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'ipad_weixin',
-#         'USER': 'root',
-#         'PASSWORD': 'keyerror'
-#     }
-# }
 
 
 # Password validation
