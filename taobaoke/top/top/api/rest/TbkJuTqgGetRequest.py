@@ -1,5 +1,5 @@
 '''
-Created by auto_sdk on 2017.04.17
+Created by auto_sdk on 2017.06.17
 '''
 from top.api.base import RestApi
 class TbkJuTqgGetRequest(RestApi):

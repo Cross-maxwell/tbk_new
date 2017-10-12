@@ -1,5 +1,5 @@
 '''
-Created by auto_sdk on 2016.04.29
+Created by auto_sdk on 2017.07.26
 '''
 from top.api.base import RestApi
 class TbkUatmFavoritesItemGetRequest(RestApi):

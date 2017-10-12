@@ -1,5 +1,5 @@
 '''
-Created by auto_sdk on 2016.01.05
+Created by auto_sdk on 2017.09.05
 '''
 from top.api.base import RestApi
 class TbkItemInfoGetRequest(RestApi):

@@ -1,5 +1,5 @@
 '''
-Created by auto_sdk on 2017.05.04
+Created by auto_sdk on 2017.05.10
 '''
 from top.api.base import RestApi
 class WirelessShareTpwdCreateRequest(RestApi):
