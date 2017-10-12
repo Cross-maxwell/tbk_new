@@ -33,6 +33,7 @@ class GetQrcode(View):
             logger.error(e)
             print(e)
 
+
         import thread
         thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId))
 
