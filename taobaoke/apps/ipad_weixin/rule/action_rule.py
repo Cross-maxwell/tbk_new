@@ -17,7 +17,6 @@ import logging
 logger = logging.getLogger('weixin_bot')
 
 
-
 def filter_keyword_rule(wx_id, msg_dict):
     keyword = find_buy_start(msg_dict['Content'])
     if keyword and keyword is not '':
@@ -32,54 +31,49 @@ def filter_keyword_rule(wx_id, msg_dict):
 
         chatroom = ChatRoom.objects.filter(nickname__contains=u"福利社",username=gid).first()
         if chatroom:
-            """
-            为啥Qrcode.objects.filter(username=wx_id, md_username__isnull=False).first()
-            会返回一个ms_username=''的结果 = =
-            """
-            qrcode_dbs = Qrcode.objects.filter(username=wx_id)
-            for qrcode_db in qrcode_dbs:
-                if qrcode_db.md_username != '' and qrcode_db.md_username != None:
-                    md_username = qrcode_db.md_username
-                    break
+            try:
+                qrcode_db = Qrcode.objects.filter(username=wx_id, md_username__isnull=False).order_by('-id').first()
+                md_username = qrcode_db.md_username
 
-            adzone_db = Adzone.objects.filter(tkuser__user__username=md_username).first()
-            pid = adzone_db.pid
-            url_keyword = urllib.quote(keyword.encode('utf-8'))
+                adzone_db = Adzone.objects.filter(tkuser__user__username=md_username).first()
+                pid = adzone_db.pid
+                url_keyword = urllib.quote(keyword.encode('utf-8'))
 
-            template_url = 'http://dianjin364.123nlw.com/saber/index/search?pid={0}&search={1}'.format(pid, url_keyword)
-            judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
-            judge_response = requests.get(judge_url)
-            judge_dict = json.loads(judge_response.content)
+                template_url = 'http://dianjin364.123nlw.com/saber/index/search?pid={0}&search={1}'.format(pid, url_keyword)
+                judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
+                judge_response = requests.get(judge_url)
+                judge_dict = json.loads(judge_response.content)
 
-            from ipad_weixin.send_msg_type import send_msg_type
+                from ipad_weixin.send_msg_type import send_msg_type
 
-            if judge_dict['result']['items'] == []:
-                text = u"很抱歉，您需要的{}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(keyword)
-            else:
-                text = u"""搜索商品 {0} 成功！点击下面链接查看我们给您找到的专属优惠券。
-                {1}""".format(keyword, iri_to_uri(template_url))
+                if judge_dict['result']['items'] == []:
+                    text = u"很抱歉，您需要的{}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(keyword)
+                else:
+                    text = u"""搜索商品 {0} 成功！点击下面链接查看我们给您找到的专属优惠券。
+                    {1}""".format(keyword, iri_to_uri(template_url))
 
-                shop_url = judge_dict['result']['items'][0]['coverImage']
-                img_msg_dict = {
-                    "uin": wx_id,
-                    "group_id": gid,
-                    "text": shop_url,
-                    "type": "img"
-                }
-
-                send_msg_type(img_msg_dict)
-                logger.info('找到商品， 向 %s 推送图片' % gid)
-
-            params_dict = {
+                    shop_url = judge_dict['result']['items'][0]['coverImage']
+                    img_msg_dict = {
                         "uin": wx_id,
                         "group_id": gid,
-                        "text": text,
-                        "type": "text"
+                        "text": shop_url,
+                        "type": "img"
                     }
 
-            send_msg_type(params_dict)
-            logger.info("Push text %s to group %s." % (text, gid))
+                    send_msg_type(img_msg_dict)
+                    logger.info('找到商品， 向 %s 推送图片' % gid)
 
+                params_dict = {
+                            "uin": wx_id,
+                            "group_id": gid,
+                            "text": text,
+                            "type": "text"
+                        }
+
+                send_msg_type(params_dict)
+                logger.info("Push text %s to group %s." % (text, gid))
+            except Exception as e:
+                logger.error(e)
 
 
 def find_buy_start(s):
@@ -100,14 +94,14 @@ if __name__ == "__main__":
                 u'FromUserName': u'6610815091@chatroom',
                 u'MsgId': 1650542751,
                 u'ImgStatus': 1,
-                u'ToUserName': u'wxid_cegmcl4xhn5w22',
+                u'ToUserName': u'wxid_ozdmesmnpy5g22',
                 u'MsgSource': u'<msgsource>\n\t<silence>0</silence>\n\t<membercount>5</membercount>\n</msgsource>\n',
                 u'Content': u'wxid_9zoigugzqipj21:\n\u627e\u62d6\u978b',
                 u'MsgType': 1, u'ImgBuf': None,
                 u'NewMsgId': 1469484974773846106,
                 u'CreateTime': 1506652565
                 }
-    wx_id = 'wxid_cegmcl4xhn5w22'
+    wx_id = 'wxid_ozdmesmnpy5g22'
     filter_keyword_rule(wx_id, msg_dict)
 
 

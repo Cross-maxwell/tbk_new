@@ -6,7 +6,6 @@ from .views import GetQrcode, HostList, IsLogin, IsUuidLogin
 
 urlpatterns = [
     url(r'getqrcode/',GetQrcode.as_view()),
-
     url(r'host_list/', HostList.as_view()),
     url(r'is_login/', IsLogin.as_view()),
     url(r'is-uuid-login/', IsUuidLogin.as_view()),
