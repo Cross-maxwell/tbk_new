@@ -627,7 +627,6 @@ class WXBot(object):
                                 logger.error(e)
 
                             # 拉取群信息
-                            # TODO: 实现太丑了， 待优化
                             chatroom_name = ''
                             chatroom_owner = ''
 

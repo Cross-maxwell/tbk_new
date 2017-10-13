@@ -6,12 +6,8 @@
 """
 import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
-# sys.path.append('/Users/hong/sourcecode/work/ipad_wechat_test/wx_pad_taobaoke')
-# sys.path.append('/home/ipad_wechat_test/wx_pad_taobaoke')
-# sys.path.append('/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke')
-# sys.path.append('/home/new_taobaoke/taobaoke')
-sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
-# print(sys.path)
+sys.path.append('/home/new_taobaoke/taobaoke')
+# sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
 
 import json
 import time
@@ -116,11 +112,8 @@ def select():
         # 发单机器人id
         wx_id = user.username
         # 通过 wx_id = hid 筛选出手机号
-        qr_code_db = Qrcode.objects.filter(username=user.username).order_by('-id').all()
-        for qr_code in qr_code_db:
-            if qr_code.md_username is not None:
-                md_username = qr_code.md_username
-                break
+        qr_code_db = Qrcode.objects.filter(username=user.username, md_username__isnull=False).order_by('-id').first()
+        md_username = qr_code_db.md_username
         # 10分钟内不可以连续发送同样的请求。
         rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id), timeout=4)
         ret = json.loads(rsp.text)['ret']

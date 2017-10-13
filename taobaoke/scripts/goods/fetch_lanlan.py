@@ -2,7 +2,6 @@
 
 """
     从www.lanlanlife.com的商品库中取出商品， 存入数据表 broadcast_product
-    09-21 测试正常
 """
 import sys
 sys.path.append('/home/new_taobaoke/taobaoke')

@@ -76,7 +76,8 @@ class HeartBeatManager(object):
                 if not wx_bot.wechat_client.connected:
                     # 测试过后发现好像没有哪个包能阻止socket断开，断开只是时间问题
                     # 检测一下socket有没断开，如果断开，重新起一个socket即可
-                    # oss_utils.beary_chat("{} heart_beat socket 断开, 准备重新链接".format(wx_username), user='fatphone777')
+                    # oss_utils.beary_chat("{}
+                    # heart_beat socket 断开, 准备重新链接".format(wx_username), user='fatphone777')
                     cls.__print_log("{0} socket state:{1}".format(wx_username, wx_bot.wechat_client.connected))
 
                     wx_bot.wechat_client.close_when_done()
