@@ -10,7 +10,8 @@ sys.path.append('/home/new_taobaoke/taobaoke')
 
 import requests
 import re
-
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke/')
 import os
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
