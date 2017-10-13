@@ -36,7 +36,7 @@ from ipad_weixin.utils.common_utils import get_time_stamp, read_int, int_list_co
     check_buffer_16_is_191, get_public_ip, check_grpc_response, get_md5
 from ipad_weixin.rule import action_rule
 
-
+from broadcast.models.user_models import TkUser
 from ipad_weixin.models import WxUser, Contact, Message, Qrcode, BotParam, Img, ChatRoom, \
     ChatroomMember
 
@@ -344,15 +344,6 @@ class WXBot(object):
             logger.info("%s: buffers为空" % qr_code['Nickname'])
             return False
 
-        # check_num = check_buffer_16_is_191(buffers)
-        # if check_num == 0:
-        #     logger.info("%s 确认登录 buffers is None" % qr_code['Nickname'])
-        # if check_num == 1:
-        #     logger.info('confirm login buffers has wrong return')
-        # if check_num == 2:
-        #     logger.info('get confirm login buffers successfully')
-        # while not buffers:
-        #     buffers = self.wechat_client.get_packaget_by_seq(seq)
         if ord(buffers[16]) != 191:
             logger.info("%s: 微信返回错误" % qr_code['Nickname'])
             # self.wechat_client.close_when_done()
@@ -643,10 +634,6 @@ class WXBot(object):
                                     chatroom.chat_room_owner = chatroom_owner
                                     chatroom.save()
 
-                                """
-                                在什么情况下去获取群信息？
-                                """
-
                                 if not ChatRoom.objects.filter(wx_user__username=v_user.userame,
                                                                username=chatroom_name):
                                     group_members_details = self.get_chatroom_detail(v_user,
@@ -671,7 +658,7 @@ class WXBot(object):
                                         group_member.save()
 
                                 else:
-                                    # 该群存在
+                                    # 该群存在, 则可能是更改群名称、拉/踢人等。
                                     if msg_dict['Status'] == 4:
                                         self.update_chatroom_members(chatroom_name, v_user)
 
@@ -689,7 +676,7 @@ class WXBot(object):
 
                     # self.async_check(v_user, new_socket=new_socket)
 
-    def new_init(self, v_user):
+    def new_init(self, v_user, md_username):
         """
         登陆初始化
         拉取通讯录联系人
@@ -789,13 +776,23 @@ class WXBot(object):
             v_user_pickle = pickle.dumps(v_user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
         if new_init_rsp.baseMsg.ret == 8888:
-            logger.info("%s 初始化成功！" % v_user.nickname)
+            try:
+                wxuser = WxUser.objects.filter(username=v_user.userame).order_by('-id').first()
+
+                tk_user = TkUser.get_user(md_username)
+                wxuser.user.add(tk_user.user)
+                wxuser.save()
+                logger.info("%s 初始化成功！" % v_user.nickname)
+            except Exception as e:
+                logger.error(e)
+
+
             self.newinitflag = False
             # self.wechat_client.close_when_done()
             return True
         else:
             # self.wechat_client.close_when_done()
-            self.new_init(v_user)
+            self.new_init(v_user, md_username)
 
     def send_text_msg(self, user_name, content, v_user):
         """
@@ -1033,6 +1030,20 @@ class WXBot(object):
         print(payloads)
 
     def update_chatroom_members(self, chatroom_name, v_user):
+
+        """
+        {u'Status': 4, u'PushContent': u'',
+        u'FromUserName': u'6947816994@chatroom',
+        u'MsgId': 1650547862,
+        u'ImgStatus': 1,
+        u'ToUserName': u'wxid_cegmcl4xhn5w22',
+        u'MsgSource': u'',
+        u'Content': u'\u4f60\u4fee\u6539\u7fa4\u540d\u4e3a\u201c\u798f\u5229\u793e02\u201d',
+        u'MsgType': 10000, u'ImgBuf': None,
+        u'NewMsgId': 6737633150987174322, u'CreateTime': 1507891856}
+
+        """
+
         chatroom = ChatRoom.objects.get(username=chatroom_name)
         members_db = ChatroomMember.objects.filter(chatroom=chatroom.id, is_delete=False)
         old_members_list = [member.username for member in members_db]
@@ -1041,25 +1052,32 @@ class WXBot(object):
 
         # 踢人
         delete_members = set(old_members_list) - set(new_members_list)
-        for delete_member in delete_members:
-            # 还得是这个群的
-            delete_member_db = ChatroomMember.objects.filter(username=delete_member,
-                                                             chatroom=chatroom.id).first()
-            delete_member_db.is_delete = True
-            delete_member_db.save()
+        if delete_members:
+            for delete_member in delete_members:
+                # 还得是这个群的
+                delete_member_db = ChatroomMember.objects.filter(username=delete_member,
+                                                                 chatroom=chatroom.id).first()
+                delete_member_db.is_delete = True
+                delete_member_db.save()
 
         # 拉人
         add_members = set(new_members_list) - set(old_members_list)
-        for add_member in add_members:
-            for group_member in group_members_details:
-                if add_member == group_member['Username']:
-                    members_db = ChatroomMember()
-                    members_db.update_from_members_dict(group_member)
-                    members_db.is_delete = False
-                    members_db.save()
+        if add_members:
+            for add_member in add_members:
+                for group_member in group_members_details:
+                    if add_member == group_member['Username']:
+                        members_db = ChatroomMember()
+                        members_db.update_from_members_dict(group_member)
+                        members_db.is_delete = False
+                        members_db.save()
 
-                    members_db.chatroom.add(chatroom.id)
-                    members_db.save()
+                        members_db.chatroom.add(chatroom.id)
+                        members_db.save()
+        else:
+            contact = self.get_contact(v_user, chatroom_name.encode('utf-8'))
+            new_nickname = contact[0]['NickName']
+            chatroom.nickname = new_nickname
+            chatroom.save()
 
     def get_chatroom_detail(self, v_user, room_id):
         """
@@ -1366,7 +1384,7 @@ class WXBot(object):
         return True
 
 
-    def check_and_confirm_and_load(self, qrcode_rsp, device_id):
+    def check_and_confirm_and_load(self, qrcode_rsp, device_id, md_username):
         qr_code = self.check_qrcode_login(qrcode_rsp, device_id)
         starttime = datetime.datetime.now()
         if qr_code is not False:
@@ -1375,7 +1393,7 @@ class WXBot(object):
                 if self.confirm_qrcode_login(qr_code, keep_heart_beat=False):
                     v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                     v_user = pickle.loads(v_user_pickle)
-                    self.new_init(v_user)
+                    self.new_init(v_user, md_username)
                     if not self.newinitflag:
                         v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
                         while not self.async_check(v_user):
@@ -1392,7 +1410,7 @@ class WXBot(object):
             if self.confirm_qrcode_login(qr_code, keep_heart_beat=False):
                 v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                 v_user = pickle.loads(v_user_pickle)
-                self.new_init(v_user)
+                self.new_init(v_user, md_username)
                 if not self.newinitflag:
                     v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
                     while not self.async_check(v_user):
@@ -1416,7 +1434,7 @@ class WXBot(object):
             return False
         oss_path, qrcode_rsp, device_id = res[0], res[1], res[2]
 
-        if self.check_and_confirm_and_load(qrcode_rsp, device_id):
+        if self.check_and_confirm_and_load(qrcode_rsp, device_id, md_username):
             print("login done!")
 
     def try_send_message(self, username):

@@ -28,6 +28,7 @@ from ipad_weixin.models import Qrcode, Message, WxUser, Contact, ChatRoom
 from ipad_weixin.send_msg_type import send_msg_type
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product, PushRecord
+from ipad_weixin.utils.oss_utils import beary_chat
 
 
 
@@ -40,13 +41,11 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     try:
         tk_user = TkUser.get_user(md_username)
     except Exception as e:
-        pass
         logger.error(e)
     try:
         pid = tk_user.adzone.pid
     except Exception as e:
-        logger.info('执行is_login失败')
-        logger.error(e)
+        logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(wx_id, e))
 
     qs = Product.objects.filter(
         ~Q(pushrecord__group__contains=group_id,
@@ -59,10 +58,7 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         qs = Product.objects.filter(
             available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
         )
-        requests.post(
-            'https://hook.bearychat.com/=bw8NI/incoming/219689cd1075dbb9b848e4c763d88de0',
-            json={'text': '点金推送商品失败：无可用商品, group_id=%s' % group_id}
-        )
+        beary_chat('点金推送商品失败：无可用商品')
 
     for _ in range(50):
         try:
@@ -72,7 +68,6 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         except Exception as exc:
             print "Get entry exception. Count=%d." % qs.count()
             logger.error(exc)
-            print exc.message
 
     # img or text
     text_msg_dict = {

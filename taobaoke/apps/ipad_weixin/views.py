@@ -34,7 +34,7 @@ class GetQrcode(View):
             print(e)
 
         import thread
-        thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId))
+        thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId, md_username))
 
         response_data = {"qrcode_url": oss_path}
         return HttpResponse(json.dumps(response_data), content_type="application/json")
@@ -90,15 +90,12 @@ class IsLogin(View):
 
             """
             这个地方的逻辑较为重要，如果写这里，那么必须要发送一个is_login的请求才行。
+            现移植到了new_init中
             """
             # 筛选出wx用户昵称
             wxuser = WxUser.objects.filter(username=wx_username).order_by('-id').first()
             ret = wxuser.login
             name = wxuser.nickname
-
-            tk_user = TkUser.get_user(username)
-            wxuser.user.add(tk_user.user)
-            wxuser.save()
 
             print(name.encode('utf8'))
         except Exception as e:
