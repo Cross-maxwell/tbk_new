@@ -86,7 +86,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {'charset': 'utf8mb4'},
-        # 修改 taobaoke 为 ipad_weixin
         'NAME': 'ipad_weixin',
         'USER': 'root',
         'PASSWORD': 'Xiaozuanfeng',
@@ -94,6 +93,18 @@ DATABASES = {
         'PORT': '50001',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {'charset': 'utf8mb4'},
+#         'NAME': 'ipad_weixin',
+#         'USER': 'root',
+#         'PASSWORD': 'keyerror',
+#     }
+# }
+
 
 
 # Password validation

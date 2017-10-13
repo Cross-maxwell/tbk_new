@@ -36,7 +36,7 @@ def filter_keyword_rule(wx_id, msg_dict):
             为啥Qrcode.objects.filter(username=wx_id, md_username__isnull=False).first()
             会返回一个ms_username=''的结果 = =
             """
-            qrcode_dbs = Qrcode.objects.filter(username=wx_id)
+            qrcode_dbs = Qrcode.objects.filter(username=wx_id).order_by('-id').all()
             for qrcode_db in qrcode_dbs:
                 if qrcode_db.md_username != '' and qrcode_db.md_username != None:
                     md_username = qrcode_db.md_username
