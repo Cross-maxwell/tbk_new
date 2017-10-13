@@ -35,6 +35,9 @@ class GetQrcode(View):
 
 
         import thread
+        # t = threading.Thread(target=WXBot.check_and_confirm_and_load, args=(qrcode_rsp, deviceId))
+        # t.setDaemon(True)
+        # t.start()
         thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId))
 
         response_data = {"qrcode_url": oss_path}
