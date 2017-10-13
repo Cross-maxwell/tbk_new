@@ -55,7 +55,7 @@ class WXBot(object):
         self.newinitflag = True
         # 是否在同步中
         self.__is_async_check = False
-        self.__lock = threading.Lock()
+        self._lock = threading.Lock()
 
         # 图片重试次数
         self.__retry_num = 1
@@ -95,15 +95,15 @@ class WXBot(object):
 
                 # TODO：在 set_user_context 中定义的wx_username, 这么写不好, 待修改
                 if self.wx_username is not None and self.wx_username != "":
-                    if self.__lock.acquire():
+                    if self._lock.acquire():
                         # 确保只有一个线程在执行async_check，否则会接受多次相同的消息
                         if not self.__is_async_check:
                             self.__is_async_check = True
-                            self.__lock.release()
+                            self._lock.release()
                         else:
                             logger.info("----------已有线程执行async_check，跳过async_check---------")
                             # print "*********skip async check*********"
-                            self.__lock.release()
+                            self._lock.release()
                             return
 
                     # 拉取消息之前先查询是否是登陆状态
@@ -120,15 +120,20 @@ class WXBot(object):
                         #     bot.long_host = bot_param.long_host
                         #     bot.wechat_client = WechatClient.WechatClient(bot.long_host, 80, True)
                         # starttime = datetime.datetime.now()
-                        res = self.async_check(v_user)
-                        if res is False:
-                            logger.info("%s: 线程执行同步失败" % v_user.nickname)
-                        elif res is 'ERROR':
-                            logger.info("%s: 即将退出机器人" % v_user.nickname)
-                            self.wechat_client.close_when_done()
-                            # self.logout_bot(v_user)
+                        if self._lock.acquire():
+                            res = self.async_check(v_user)
+                            self._lock.release()
+
+                            if res is False:
+                                logger.info("%s: 线程执行同步失败" % v_user.nickname)
+                            elif res is 'ERROR':
+                                logger.info("%s: 即将退出机器人" % v_user.nickname)
+                                self.wechat_client.close_when_done()
+                                # self.logout_bot(v_user)
+                            else:
+                                logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         else:
-                            logger.info("%s: 线程执行同步成功" % v_user.nickname)
+                            logger.info("%s: 线程同步锁获取失败，跳过线程同步" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
                     self.__is_async_check = False
 
@@ -390,7 +395,7 @@ class WXBot(object):
 
             try:
                 wxuser, created = WxUser.objects.get_or_create(uin=v_user.uin)
-                print created
+                # print created
                 wxuser.update_wxuser_from_userobject(v_user)
                 wxuser.save()
             except Exception as e:
@@ -442,15 +447,15 @@ class WXBot(object):
             selector = read_int(buffers, 16)
             if selector > 0:
                 logger.info("%s: 心跳中准备同步", v_user.nickname)
-                if self.__lock.acquire():
+                if self._lock.acquire():
                     # 确保只有一个线程在执行async_check，否则会接受多次相同的消息
                     if not self.__is_async_check:
                         self.__is_async_check = True
-                        self.__lock.release()
+                        self._lock.release()
                     else:
                         logger.info("----------已有线程执行async_check，跳过async_check---------")
                         # print "*********skip async check*********"
-                        self.__lock.release()
+                        self._lock.release()
                         return False
                 if self.async_check(v_user) is False:
                     self.__is_async_check = False
@@ -1361,6 +1366,7 @@ class WXBot(object):
         buffers = get_chatroom_msg_rsp.baseMsg.payloads
         print buffers
         return True
+
 
     def check_and_confirm_and_load(self, qrcode_rsp, device_id):
         qr_code = self.check_qrcode_login(qrcode_rsp, device_id)
