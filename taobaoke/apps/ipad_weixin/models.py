@@ -111,6 +111,8 @@ class WxUser(models.Model):
     last_update = models.DateTimeField(null=True)
     create_at = models.DateTimeField(null=True)
 
+    last_heart_beat = models.DateTimeField(null=True, blank=True)
+
     def update_wxuser_from_userobject(self, v_user):
         self.auto_auth_key = ''
         self.cookies = ''

@@ -39,8 +39,8 @@ def filter_keyword_rule(wx_id, msg_dict):
                 pid = adzone_db.pid
                 url_keyword = urllib.quote(keyword.encode('utf-8'))
 
-                template_url = 'http://dianjin364.123nlw.com/saber/index/search?pid={0}&search={1}'.format(pid, url_keyword)
-                judge_url = 'http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
+                template_url = 'http://dianjin.dg15.cn/saber/index/search?pid={0}&search={1}'.format(pid, url_keyword)
+                judge_url = 'http://dianjin.dg15.cn/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'.format(pid, url_keyword)
                 judge_response = requests.get(judge_url)
                 judge_dict = json.loads(judge_response.content)
 

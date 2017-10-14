@@ -61,6 +61,7 @@ class HeartBeatManager(object):
         wx_bot.open_notify_callback()
         # 微信有新消息就会往socket推20字节的notify包
         # 防止该socket断开，每30秒发一次同步消息包
+        heart_beat_count = 0
         while True:
             try:
                 user = WxUser.objects.filter(username=wx_username).first()
@@ -120,6 +121,11 @@ class HeartBeatManager(object):
                     if wx_bot.heart_beat(v_user):
                         # print "success"
                         logger.info("%s: 心跳包发送成功" % user.nickname)
+                        heart_beat_count += 1
+
+                        if heart_beat_count % 10 == 0:
+                            user.last_heart_beat = timezone.now()
+                            user.save()
                     else:
                         # print "fail"
                         logger.info("%s: 心跳包发送失败" % user.nickname)
