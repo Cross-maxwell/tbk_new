@@ -160,7 +160,7 @@ class WechatClient(asynchat.async_chat, object):
                         self.__print_log("This time wx sent too much:{0}".format(self.total_len))
                         data_to_process = data[:self.total_len-self.rec_len]
                         # data_to_process = data[:self.total_len-self.rec_len]是否应该这么改
-                        self.rec_len += self.total_len
+                        self.rec_len = self.total_len
 
                     # 如果 期望包总长度 大于或等于 当前此包长度，则代表还需要粘包
                     else:
