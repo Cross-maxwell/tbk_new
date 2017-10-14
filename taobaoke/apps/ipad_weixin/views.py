@@ -97,6 +97,14 @@ class IsLogin(View):
             ret = wxuser.login
             name = wxuser.nickname
 
+
+            """
+            測試
+            """
+            tk_user = TkUser.get_user(username)
+            wxuser.user.add(tk_user.user)
+            wxuser.save()
+
             print(name.encode('utf8'))
         except Exception as e:
             logger.error(e)
