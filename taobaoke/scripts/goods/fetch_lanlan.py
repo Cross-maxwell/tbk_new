@@ -43,7 +43,7 @@ for i in range(60):
             data_dict = {
                 'title': item['itemTitle'],
                 'desc': item['recommend'],
-                'img_url': item['coverImage'].split('@')[0] + '?x-oss-process=image/resize,w_600',
+                'img_url': item['coverImage'].split('@')[0] + '?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80',
                 'cupon_value': item['amount'],
                 'price': item['price'][1:],
                 'cupon_url': item['link'],
