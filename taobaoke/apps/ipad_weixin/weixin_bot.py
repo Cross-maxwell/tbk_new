@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import sys
+
 defaultencoding = 'utf-8'
 if sys.getdefaultencoding() != defaultencoding:
     reload(sys)
     sys.setdefaultencoding(defaultencoding)
-
-
+sys.path.append('/home/may/work/test_taobaoke/taobaoke/')
+# print(sys.path)
 import base64
 import json
 import pickle
@@ -59,6 +60,7 @@ class WXBot(object):
 
         # 图片重试次数
         self.__retry_num = 1
+        self._auto_retry = 0
 
     def set_user_context(self, wx_username):
         # TODO：self.wx_username 不该在这初始化，待修改
@@ -126,10 +128,15 @@ class WXBot(object):
 
                             if res is False:
                                 logger.info("%s: 线程执行同步失败" % v_user.nickname)
-                            elif res is 'ERROR':
+                            elif res is 'ERROR' and self._auto_retry == 1:
+                                self._auto_retry = 2
                                 logger.info("%s: 即将退出机器人" % v_user.nickname)
-                                self.wechat_client.close_when_done()
+                                # self.wechat_client.close_when_done()
                                 # self.logout_bot(v_user)
+                            elif res is 'ERROR' and self._auto_retry == 0:
+                                logger.info("%s: 线程同步返回微信错误，尝试重启心跳" % v_user.nickname)
+                                self._auto_retry += 1
+                                # self.wechat_client.close_when_done()
                             else:
                                 logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         else:
@@ -539,7 +546,7 @@ class WXBot(object):
             logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             oss_utils.beary_chat("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             self.wechat_client.close_when_done()
-            return False
+            return 'Logout'
         else:
             logger.info("二次登陆未知返回码")
             ret_code = auto_auth_rsp_2.baseMsg.ret
@@ -588,7 +595,7 @@ class WXBot(object):
                     logger.info("%s: Session Time out 离线或用户取消登陆 执行二次登录" % v_user.nickname)
                     UUid = u"667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
                     DeviceType = u"<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
-                    if self.auto_auth(v_user, UUid, DeviceType, new_socket=new_socket):
+                    if self.auto_auth(v_user, UUid, DeviceType, new_socket=new_socket) is True:
                         return True
                     else:
                         self.wechat_client.close_when_done()
@@ -1101,6 +1108,59 @@ class WXBot(object):
 
         return member_details
 
+    def send_app_msg(self, from_user, to_user, content):
+        bot_param = BotParam.objects.filter(username=from_user.userame).first()
+        if bot_param:
+            self.long_host = bot_param.long_host
+            self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
+
+        payLoadJson = {
+            'ToUserName': to_user.encode('utf-8'),
+            'AppId': "",
+            'Type': 5,
+            'Content': content
+        }
+        pay_load_json = json.dumps(payLoadJson)
+
+        app_msg_req = WechatMsg(
+            token=CONST_PROTOCOL_DICT['machine_code'],
+            version=CONST_PROTOCOL_DICT['version'],
+            timeStamp=get_time_stamp(),
+            iP=get_public_ip(),
+            baseMsg=BaseMsg(
+                cmd=222,
+                user=from_user,
+                payloads=pay_load_json.encode('utf-8'),
+            )
+        )
+        app_msg_rsp = grpc_client.send(app_msg_req)
+
+        (grpc_buffers, seq) = grpc_utils.get_seq_buffer(app_msg_rsp)
+        if not grpc_buffers:
+            logger.info("%s: grpc返回错误" % v_user.nickname)
+            # self.wechat_client.close_when_done()
+            return False
+
+        buffers = self.wechat_client.sync_send_and_return(grpc_buffers)
+
+        if not buffers:
+            logger.info("%s: buffers为空" % v_user.nickname)
+            return False
+
+        # while not buffers:
+        #     buffers = self.wechat_client.get_packaget_by_seq(seq)
+
+        if ord(buffers[16]) != 191:
+            logger.info("%s: 微信返回错误" % v_user.nickname)
+            # self.wechat_client.close_when_done()
+            return False
+
+        else:
+            logger.info('{0} 向 {1} 发送小程序:成功'.format(from_user.nickname, to_user))
+
+        self.wechat_client.close_when_done()
+        return True
+
     def get_contact(self, v_user, wx_id_list):
         """
         TODO 根据联系人wxid，获取contact
@@ -1482,7 +1542,8 @@ if __name__ == "__main__":
             # wx_user = "wxid_sygscg13nr0g21"
             # to_user = 'hiddensorrow'
             wx_user = "hiddensorrow"
-            to_user = "mayyesterday"
+            # to_user = "wxid_3drnq3ee20fg22"
+            to_user = '6610815091@chatroom'
             print "**************************"
             print "enter cmd :{}".format(wx_user)
             print "**************************"
@@ -1528,7 +1589,7 @@ if __name__ == "__main__":
 
             elif cmd == 5:
                 # wx_bot.login('15158197021')
-                wx_bot.login('13632909405_mimi')
+                wx_bot.login('18620366926_mimi')
                 # wx_bot.login('15900000010')
 
             elif cmd == 6:
@@ -1545,6 +1606,9 @@ if __name__ == "__main__":
             elif cmd == 8:
                 v_user = pickle.loads(red.get('v_user_' + wx_user))
                 wx_bot.get_contact(v_user, '6947816994@chatroom')
+            elif cmd == 9:
+                v_user = pickle.loads(red.get('v_user_' + wx_user))
+                wx_bot.send_app_msg(v_user, to_user, '<appmsg appid="" sdkver="0"><title>Python2生命期</title><des>升级Python3保平安</des><action></action><type>33</type><showtype>0</showtype><soundtype>0</soundtype><mediatagname></mediatagname><messageext></messageext><messageaction></messageaction><content></content><contentattr>0</contentattr><url>https://mp.weixin.qq.com/mp/waerrpage?appid=wxedac7bb2a64c41f7&amp;type=upgrade&amp;upgradetype=3#wechat_redirect</url><lowurl></lowurl><dataurl></dataurl><lowdataurl></lowdataurl><appattach><totallen>0</totallen><attachid></attachid><emoticonmd5></emoticonmd5><fileext></fileext><cdnthumburl>304f02010004483046020100020406070d8b02033d14b9020464fd03b7020459e42bdd0421777869645f3364726e713365653230666732323237335f313530383132353636310204010800030201000400</cdnthumburl><cdnthumbmd5>b9b12405481c2d5273cf1e850aa1d4f6</cdnthumbmd5><cdnthumblength>206292</cdnthumblength><cdnthumbwidth>750</cdnthumbwidth><cdnthumbheight>1206</cdnthumbheight><cdnthumbaeskey>d40cb038f4f8400594cc78dc01913844</cdnthumbaeskey><aeskey>d40cb038f4f8400594cc78dc01913844</aeskey><encryver>0</encryver></appattach><extinfo></extinfo><sourceusername>gh_95486d903be5@app</sourceusername><sourcedisplayname>Python之禅</sourcedisplayname><thumburl></thumburl><md5></md5><statextstr></statextstr><weappinfo><username><![CDATA[gh_95486d903be5@app]]></username><appid><![CDATA[wxedac7bb2a64c41f7]]></appid><type>2</type><version>6</version><weappiconurl><![CDATA[http://mmbiz.qpic.cn/mmbiz_png/XzlqmpwbLjfFGD6TciaRy2IibOwyFBvQicRSjEeybKuzggG2wFXKMAbM2r54CvnpfKUp2tJMeHojqeoetQdYhdmZw/0?wx_fmt=png]]></weappiconurl><pagepath><![CDATA[pages/index/index.html]]></pagepath><shareId><![CDATA[0_wxedac7bb2a64c41f7_101125515_1508125660_0]]></shareId></weappinfo></appmsg>')
 
 
         except Exception as e:
