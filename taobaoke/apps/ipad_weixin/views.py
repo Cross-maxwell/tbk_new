@@ -10,6 +10,9 @@ from ipad_weixin.weixin_bot import WXBot
 from models import Qrcode, WxUser, ChatRoom
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from weixin_scripts.post_taobaoke import post_taobaoke_url
+import requests
+import time
 
 import logging
 logger = logging.getLogger('django_views')
@@ -97,13 +100,10 @@ class IsLogin(View):
             ret = wxuser.login
             name = wxuser.nickname
 
-
-            """
-            測試
-            """
-            tk_user = TkUser.get_user(username)
-            wxuser.user.add(tk_user.user)
-            wxuser.save()
+            # 测试
+            # tk_user = TkUser.get_user(username)
+            # wxuser.user.add(tk_user.user)
+            # wxuser.save()
 
             print(name.encode('utf8'))
         except Exception as e:
@@ -145,6 +145,53 @@ class IsUuidLogin(View):
         # name <type 'unicode'>
         response_data = {"ret": str(ret), "name": name}
         return HttpResponse(json.dumps(response_data))
+
+
+class PostGoods(View):
+    """
+    接口： s-prod-04.qunzhu666.com/push_product?username=136xxxxxxxx
+    """
+    def get(self, request):
+        # 接收用户名 md_username
+        md_username = request.GET.get('md_username')
+        wx_user = WxUser.objects.get(user__username=md_username)
+        if wx_user:
+            chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username, nickname__contains=u'测试福利社')
+            if not chatroom_list:
+                logger.info('%s 发单群为空' % wx_user.nickname)
+                return HttpResponse(json.dumps({"ret": 0, "reason": "发单群为空"}))
+            else:
+                import threading
+                t = threading.Thread(post_taobaoke, (md_username, wx_user, chatroom_list))
+                t.start()
+
+            return HttpResponse(json.dumps({"ret": 1, "reason": "开始发单"}))
+
+
+def post_taobaoke(md_username, wx_user, chatroom_list):
+    while True:
+        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_user.username), timeout=4)
+        ret = json.loads(rsp.text)['ret']
+        if ret == 0:
+            logger.info("%s 请求s-prod-07返回结果为0" % wx_user.nickname)
+            time.sleep(60)
+        if ret == 1:
+        # 筛选出激活群
+            for chatroom in chatroom_list:
+                # 发单人的wx_id, 群的id, 手机号
+                now_hour = int(time.strftime('%H', time.localtime(time.time())))
+                if 7 <= now_hour <= 22:
+                    try:
+                        group_id = chatroom.username
+                        logger.info(u'%s 向 %s 推送商品' % (wx_user.nickname, chatroom.nickname))
+
+                        import thread
+                        thread.start_new_thread(post_taobaoke_url, (wx_user.username, group_id, md_username))
+                    except Exception as e:
+                        logging.error(e)
+                        print(e)
+                else:
+                    time.sleep(20 * 60)
 
 
 
