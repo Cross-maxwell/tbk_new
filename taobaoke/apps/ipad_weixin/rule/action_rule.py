@@ -7,7 +7,7 @@ django.setup()
 
 from django.utils.encoding import iri_to_uri
 
-from ipad_weixin.models import Qrcode, ChatRoom
+from ipad_weixin.models import Qrcode, ChatRoom, ChatroomMember
 from broadcast.models.user_models import Adzone
 import urllib
 import requests
@@ -22,12 +22,19 @@ def filter_keyword_rule(wx_id, msg_dict):
     if keyword and keyword is not '':
         # 群是淘宝客群，找XX才生效
         gid = ''
+        at_user_id = ''
+        at_user_nickname = ''
         # 情况分类1 机器人自己说找XX
         if msg_dict['FromUserName'] == wx_id and "@chatroom" in msg_dict['ToUserName']:
             gid = msg_dict['ToUserName']
+
+
         # 情况分类2 群成员说找XX
         elif "@chatroom" in msg_dict['FromUserName'] and msg_dict['ToUserName'] == wx_id:
             gid = msg_dict['FromUserName']
+            at_user_id = msg_dict['Content'].split(':')[0]
+            at_user_db = ChatroomMember.objects.filter(username=at_user_id).first()
+            at_user_nickname = '@' + at_user_db.nickname
 
         chatroom = ChatRoom.objects.filter(nickname__contains=u"福利社",username=gid).first()
         if chatroom:
@@ -47,10 +54,10 @@ def filter_keyword_rule(wx_id, msg_dict):
                 from ipad_weixin.send_msg_type import send_msg_type
 
                 if judge_dict['result']['items'] == []:
-                    text = u"很抱歉，您需要的{}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(keyword)
+                    text = u"{0}很抱歉，您需要的{1}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
                 else:
-                    text = u"""搜索商品 {0} 成功！点击下面链接查看我们给您找到的专属优惠券。
-                    {1}""".format(keyword, iri_to_uri(template_url))
+                    text = u"""{0} 搜索商品 {1} 成功！点击下面链接查看我们给您找到的专属优惠券。
+                    {2}""".format(at_user_nickname, keyword, iri_to_uri(template_url))
 
                     shop_url = judge_dict['result']['items'][0]['coverImage']
                     img_msg_dict = {
@@ -60,7 +67,7 @@ def filter_keyword_rule(wx_id, msg_dict):
                         "type": "img"
                     }
 
-                    send_msg_type(img_msg_dict)
+                    send_msg_type(img_msg_dict, at_user_id)
                     logger.info('找到商品， 向 %s 推送图片' % gid)
 
                 params_dict = {
@@ -70,7 +77,7 @@ def filter_keyword_rule(wx_id, msg_dict):
                             "type": "text"
                         }
 
-                send_msg_type(params_dict)
+                send_msg_type(params_dict, at_user_id)
                 logger.info("Push text %s to group %s." % (text, gid))
             except Exception as e:
                 logger.error(e)

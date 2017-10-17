@@ -4,7 +4,7 @@ from ipad_weixin.weixin_bot import WXBot
 from ipad_weixin import weixin_bot
 
 
-def send_msg_type(msg_dict):
+def send_msg_type(msg_dict, at_user_id):
     uin = msg_dict['uin']
     group_id = msg_dict['group_id']
     text = msg_dict['text']
@@ -44,11 +44,11 @@ def send_msg_type(msg_dict):
             text += "\\n[太阳]点击上面链接购买商品"
 
 
-            wx_bot.send_text_msg(group_id, text, v_user)
+            wx_bot.send_text_msg(group_id, text, v_user, at_user_id)
             # import thread
             # thread.start_new_thread(wx_bot.try_sleep_send, (int(delay_time), group_id, text, v_user))
         else:
-            wx_bot.send_text_msg(group_id, text, v_user)
+            wx_bot.send_text_msg(group_id, text, v_user, at_user_id)
     else:
         return_msg = 'type error, should be img or text'
         print return_msg

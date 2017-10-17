@@ -63,10 +63,10 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                 text_msg_dict = {
                     "uin": wx_id,
                     "group_id": from_user_id,
-                    "text": text,
+                    "text": "@" + speaker_name + '\\n' + text,
                     "type": "text",
                 }
-                send_msg_type(text_msg_dict)
+                send_msg_type(text_msg_dict, at_user_id=speaker_id)
 
             elif reaction['type'] == 'img':
 
@@ -78,7 +78,7 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                         "text": img_url,
                         "type": "img"
                     }
-                    send_msg_type(img_msg_dict)
+                    send_msg_type(img_msg_dict, at_user_id='')
 
 
 def get_nick_name_emoji_unicode(nick_name):

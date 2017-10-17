@@ -50,13 +50,13 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     qs = Product.objects.filter(
         ~Q(pushrecord__group__contains=group_id,
            pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
-        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=1000),
+        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
     )
 
     # 用发送过的随机商品替代
     if qs.count() == 0:
         qs = Product.objects.filter(
-            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=1000),
+            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
         )
         # beary_chat('点金推送商品失败：无可用商品')
 
