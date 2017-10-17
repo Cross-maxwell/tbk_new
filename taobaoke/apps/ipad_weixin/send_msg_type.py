@@ -41,7 +41,7 @@ def send_msg_type(msg_dict):
         elif '\n' in text or '\r' in text:
             #类似发单群
             text = text.replace('\r', '\\r').replace('\n', '\\n')
-            text += "\\n[太阳]点击上面链接购买商品"
+            # text += "\\n[太阳]点击上面链接购买商品"
 
 
             wx_bot.send_text_msg(group_id, text, v_user)
