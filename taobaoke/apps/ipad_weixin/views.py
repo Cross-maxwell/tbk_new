@@ -25,16 +25,16 @@ class GetQrcode(View):
         wx_bot = WXBot()
         (oss_path, qrcode_rsp, deviceId) = wx_bot.get_qrcode(md_username)
 
-        try:
-            buffers = qrcode_rsp.baseMsg.payloads
-            qr_code = json.loads(buffers)
-            uuid = qr_code['Uuid']
-            qr_code_db = Qrcode.objects.filter(uuid=uuid).order_by('-id').first()
-            qr_code_db.md_username = md_username
-            qr_code_db.save()
-        except Exception as e:
-            logger.error(e)
-            print(e)
+        # try:
+        #     buffers = qrcode_rsp.baseMsg.payloads
+        #     qr_code = json.loads(buffers)
+        #     uuid = qr_code['Uuid']
+        #     qr_code_db = Qrcode.objects.filter(uuid=uuid).order_by('-id').first()
+        #     qr_code_db.md_username = md_username
+        #     qr_code_db.save()
+        # except Exception as e:
+        #     logger.error(e)
+        #     print(e)
 
         import thread
         thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId, md_username))
@@ -68,8 +68,6 @@ class HostList(View):
             print(e)
 
         response_data = {"ret": str(ret), "data": data}
-
-
 
         return HttpResponse(json.dumps(response_data))
 

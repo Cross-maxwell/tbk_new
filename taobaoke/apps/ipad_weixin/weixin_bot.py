@@ -191,7 +191,8 @@ class WXBot(object):
         uuid = qr_code['Uuid']
 
         try:
-            Qrcode.save_qr_code(qr_code)
+            Qrcode.save_qr_code(qr_code, md_username)
+
         except Exception as e:
             self.wechat_client.close_when_done()
             logger.error(e)
@@ -215,7 +216,7 @@ class WXBot(object):
 
         return oss_path, qrcode_rsp, self.deviceId
 
-    def check_qrcode_login(self, qrcode_rsp, device_id):
+    def check_qrcode_login(self, qrcode_rsp, device_id, md_username):
         """
         检测扫描是否登陆
         :param qr_code:
@@ -280,6 +281,7 @@ class WXBot(object):
                 try:
                     qr_code_db, created = Qrcode.objects.get_or_create(uuid=uuid)
                     qr_code_db.update_from_qrcode(qr_code)
+                    qr_code_db.md_username = md_username
                     qr_code_db.save()
                 except Exception as e:
                     logger.error(e)
@@ -1386,7 +1388,7 @@ class WXBot(object):
 
 
     def check_and_confirm_and_load(self, qrcode_rsp, device_id, md_username):
-        qr_code = self.check_qrcode_login(qrcode_rsp, device_id)
+        qr_code = self.check_qrcode_login(qrcode_rsp, device_id, md_username)
         starttime = datetime.datetime.now()
         if qr_code is not False:
 
