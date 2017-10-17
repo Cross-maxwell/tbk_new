@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="787ba77d-18c1-4f1a-ac43-290a44c6bdba" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/master_taobaoke.iml" afterPath="$PROJECT_DIR$/.idea/master_taobaoke.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/taobaoke/apps/broadcast/migrations/0001_initial.py" afterPath="$PROJECT_DIR$/taobaoke/apps/broadcast/migrations/0001_initial.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/heartbeat_manager.py" afterPath="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/heartbeat_manager.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/urls.py" afterPath="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/urls.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py" afterPath="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/taobaoke/fuli/settings.py" afterPath="$PROJECT_DIR$/taobaoke/fuli/settings.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -25,6 +19,16 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="settings.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/taobaoke/fuli/settings.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="414">
+              <caret line="101" column="32" lean-forward="true" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="WechatClient.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/tcp_module/WechatClient.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -35,23 +39,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="urls.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/urls.py">
+      <file leaf-file-name="threading.py" pinned="false" current-in-tab="false">
+        <entry file="file:///usr/lib/python2.7/threading.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="7" column="29" lean-forward="false" selection-start-line="7" selection-start-column="29" selection-end-line="7" selection-end-column="29" />
-              <folding>
-                <element signature="e#27#59#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="160">
+              <caret line="753" column="0" lean-forward="false" selection-start-line="753" selection-start-column="0" selection-end-line="753" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="weixin_bot.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="weixin_bot.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-768">
-              <caret line="78" column="53" lean-forward="false" selection-start-line="78" selection-start-column="48" selection-end-line="78" selection-end-column="53" />
+            <state relative-caret-position="330">
+              <caret line="74" column="18" lean-forward="false" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -60,18 +62,8 @@
       <file leaf-file-name="sign_in_rule.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/sign_in_rule.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1343">
+            <state relative-caret-position="252">
               <caret line="15" column="4" lean-forward="false" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="query.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../venv/local/lib/python2.7/site-packages/django/db/models/query.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="439">
-              <caret line="452" column="8" lean-forward="false" selection-start-line="452" selection-start-column="8" selection-end-line="452" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -80,7 +72,7 @@
       <file leaf-file-name="action_rule.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/action_rule.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="115">
+            <state relative-caret-position="-144">
               <caret line="16" column="4" lean-forward="false" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
               <folding />
             </state>
@@ -90,8 +82,8 @@
       <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="358">
-              <caret line="43" column="80" lean-forward="false" selection-start-line="43" selection-start-column="80" selection-end-line="43" selection-end-column="82" />
+            <state relative-caret-position="72">
+              <caret line="93" column="6" lean-forward="false" selection-start-line="93" selection-start-column="6" selection-end-line="93" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -100,28 +92,18 @@
       <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
+            <state relative-caret-position="-936">
               <caret line="17" column="6" lean-forward="false" selection-start-line="17" selection-start-column="6" selection-end-line="17" selection-end-column="6" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="urls.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/taobaoke/fuli/urls.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="335">
-              <caret line="30" column="36" lean-forward="false" selection-start-line="30" selection-start-column="36" selection-end-line="30" selection-end-column="36" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="heartbeat_manager.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="heartbeat_manager.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/heartbeat_manager.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="918">
-              <caret line="107" column="47" lean-forward="false" selection-start-line="107" selection-start-column="47" selection-end-line="107" selection-end-column="47" />
+            <state relative-caret-position="-768">
+              <caret line="86" column="30" lean-forward="false" selection-start-line="86" selection-start-column="27" selection-end-line="86" selection-end-column="30" />
               <folding />
             </state>
           </provider>
@@ -131,14 +113,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>用户退出</find>
-      <find>read</find>
-      <find>hear</find>
-      <find>selector</find>
-      <find>asy</find>
-      <find>heart_beat</find>
-      <find>asyn</find>
-      <find>Get</find>
       <find>Thread</find>
       <find>check</find>
       <find>new_init</find>
@@ -151,16 +125,24 @@
       <find>msg</find>
       <find>auto</find>
       <find>auto_auth</find>
-      <find>logout</find>
       <find>confirm_and</find>
       <find>proces</find>
-      <find>login</find>
-      <find>async</find>
       <find>text</find>
       <find>check_and</find>
-      <find>process</find>
+      <find>async</find>
+      <find>二次</find>
+      <find>add</find>
       <find>proc</find>
+      <find>177</find>
+      <find>176</find>
       <find>proce</find>
+      <find>is_login</find>
+      <find>login</find>
+      <find>Wxuser</find>
+      <find>set_</find>
+      <find>logout</find>
+      <find>process</find>
+      <find>set_user</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -173,8 +155,9 @@
         <option value="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/tcp_module/WechatClient.py" />
         <option value="$PROJECT_DIR$/taobaoke/fuli/settings.py" />
         <option value="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/urls.py" />
-        <option value="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py" />
         <option value="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/heartbeat_manager.py" />
+        <option value="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/action_rule.py" />
+        <option value="$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py" />
       </list>
     </option>
   </component>
@@ -224,13 +207,6 @@
               <item name="test_taobaoke" type="462c0819:PsiDirectoryNode" />
               <item name="taobaoke" type="462c0819:PsiDirectoryNode" />
               <item name="apps" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="test_taobaoke" type="b2602c69:ProjectViewProjectNode" />
-              <item name="test_taobaoke" type="462c0819:PsiDirectoryNode" />
-              <item name="taobaoke" type="462c0819:PsiDirectoryNode" />
-              <item name="apps" type="462c0819:PsiDirectoryNode" />
-              <item name="ipad_weixin" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="test_taobaoke" type="b2602c69:ProjectViewProjectNode" />
@@ -358,21 +334,26 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py</url>
-          <line>1122</line>
+          <line>1128</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py</url>
-          <line>1112</line>
+          <line>1118</line>
           <option name="timeStamp" value="15" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py</url>
-          <line>622</line>
-          <option name="timeStamp" value="17" />
+          <line>96</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py</url>
+          <line>120</line>
+          <option name="timeStamp" value="26" />
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="20" />
+      <option name="time" value="27" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -616,14 +597,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/lib/python2.7/threading.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="13554">
-          <caret line="753" column="0" lean-forward="false" selection-start-line="753" selection-start-column="0" selection-end-line="753" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/taobaoke/top/top/api/rest/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -635,30 +608,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="144">
           <caret line="8" column="13" lean-forward="false" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/taobaoke/fuli/settings.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="22" column="45" lean-forward="false" selection-start-line="22" selection-start-column="45" selection-end-line="22" selection-end-column="45" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../venv/local/lib/python2.7/site-packages/django/db/models/query.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="439">
-          <caret line="452" column="8" lean-forward="false" selection-start-line="452" selection-start-column="8" selection-end-line="452" selection-end-column="8" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="358">
-          <caret line="43" column="80" lean-forward="false" selection-start-line="43" selection-start-column="80" selection-end-line="43" selection-end-column="82" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -680,30 +629,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="17" column="6" lean-forward="false" selection-start-line="17" selection-start-column="6" selection-end-line="17" selection-end-column="6" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/action_rule.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="115">
-          <caret line="16" column="4" lean-forward="false" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/sign_in_rule.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1343">
-          <caret line="15" column="4" lean-forward="false" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/tcp_module/WechatClient.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-252">
@@ -712,18 +637,74 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/heartbeat_manager.py">
+    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/action_rule.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="918">
-          <caret line="107" column="47" lean-forward="false" selection-start-line="107" selection-start-column="47" selection-end-line="107" selection-end-column="47" />
+        <state relative-caret-position="-144">
+          <caret line="16" column="4" lean-forward="false" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/taobaoke/fuli/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="414">
+          <caret line="101" column="32" lean-forward="true" selection-start-line="101" selection-start-column="32" selection-end-line="101" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/rule/sign_in_rule.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="252">
+          <caret line="15" column="4" lean-forward="false" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="4" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-936">
+          <caret line="17" column="6" lean-forward="false" selection-start-line="17" selection-start-column="6" selection-end-line="17" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python2.7/threading.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="160">
+          <caret line="753" column="0" lean-forward="false" selection-start-line="753" selection-start-column="0" selection-end-line="753" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../venv/local/lib/python2.7/site-packages/django/db/models/query.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="633">
+          <caret line="452" column="8" lean-forward="false" selection-start-line="452" selection-start-column="8" selection-end-line="452" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="93" column="6" lean-forward="false" selection-start-line="93" selection-start-column="6" selection-end-line="93" selection-end-column="6" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/weixin_bot.py">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="74" column="18" lean-forward="false" selection-start-line="74" selection-start-column="18" selection-end-line="74" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/taobaoke/apps/ipad_weixin/heartbeat_manager.py">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-768">
-          <caret line="78" column="53" lean-forward="false" selection-start-line="78" selection-start-column="48" selection-end-line="78" selection-end-column="53" />
+          <caret line="86" column="30" lean-forward="false" selection-start-line="86" selection-start-column="27" selection-end-line="86" selection-end-column="30" />
           <folding />
         </state>
       </provider>

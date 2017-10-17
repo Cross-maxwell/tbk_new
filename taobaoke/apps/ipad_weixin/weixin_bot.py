@@ -66,7 +66,13 @@ class WXBot(object):
         # TODO：self.wx_username 不该在这初始化，待修改
         """为什么不应该在这里初始化？"""
         self.wx_username = wx_username
-
+        user_db = WxUser.objects.filter(username=self.wx_username).first()
+        if user_db:
+            user_db.login = 1
+            logger.info("%s: 重置用户login成功" % user_db.nickname)
+        else:
+            logger.info("%s: 重置用户login失败，wx_username不存在" % self.wx_username)
+            return
         # 数据库中查询
         bot_param = BotParam.objects.filter(username=wx_username).first()
         if bot_param:
