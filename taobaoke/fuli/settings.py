@@ -33,7 +33,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -94,16 +93,6 @@ WSGI_APPLICATION = 'fuli.wsgi.application'
 #     }
 # }
 
-# # 本地测试数据库
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'ipad_weixin',
-#         'USER': 'root',
-#         'PASSWORD': 'keyerror'
-#     }
-# }
 
 # May测试数据库
 DATABASES = {
@@ -204,7 +193,7 @@ LOGGING = {
         },
         'django_views':{
             'handlers': ['error', 'console'],
-            'level': 'ERROR',
+            'level': 'INFO',
             'propagate': True
         },
         'weixin_bot':{

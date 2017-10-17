@@ -37,7 +37,7 @@ from ipad_weixin.utils.common_utils import get_time_stamp, read_int, int_list_co
     check_buffer_16_is_191, get_public_ip, check_grpc_response, get_md5
 from ipad_weixin.rule import action_rule
 
-
+from broadcast.models.user_models import TkUser
 from ipad_weixin.models import WxUser, Contact, Message, Qrcode, BotParam, Img, ChatRoom, \
     ChatroomMember
 
@@ -96,7 +96,6 @@ class WXBot(object):
 
         if data is not None and len(data) >= 4:
             selector = common_utils.read_int(data, 16)
-            # print "process selector is:" , selector
             if selector > 0:
                 logger.info("selector:{0} start sync thread".format(selector))
                 # print "selector:{0} start sync thread".format(selector)
@@ -316,7 +315,7 @@ class WXBot(object):
                 self.wechat_client.close_when_done()
                 return False
 
-    def confirm_qrcode_login(self, qr_code, keep_heart_beat):
+    def confirm_qrcode_login(self, qr_code, md_username, keep_heart_beat):
         # 重置longHost
 
         # bot_param = BotParam.objects.filter(username=qr_code['Username']).first()
@@ -325,8 +324,9 @@ class WXBot(object):
         #     self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
 
         # 微信确认登陆模块
-        UUid = u"667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
-        DeviceType = u"<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
+
+        UUid = common_utils.random_uuid(md_username)
+        DeviceType = common_utils.random_devicetpye(md_username)
         payLoadJson = "{\"Username\":\"" + qr_code['Username'] + "\",\"PassWord\":\"" + qr_code[
             'Password'] + "\",\"UUid\":\"" + UUid + "\",\"DeviceType\":\"" + DeviceType + "\"}"
 
@@ -410,6 +410,8 @@ class WXBot(object):
                 wxuser, created = WxUser.objects.get_or_create(uin=v_user.uin)
                 # print created
                 wxuser.update_wxuser_from_userobject(v_user)
+                wxuser.uuid = UUid
+                wxuser.device_type = DeviceType
                 wxuser.save()
             except Exception as e:
                 logger.error(e)
@@ -532,12 +534,12 @@ class WXBot(object):
         auto_auth_rsp_2 = grpc_client.send(auto_auth_rsp)
         if auto_auth_rsp_2.baseMsg.ret == 0:
             user = auto_auth_rsp_2.baseMsg.user
-            logger.info("%s 二次登录成功!" % v_user.nickname)
+            logger.info("%s: 二次登录成功!" % v_user.nickname)
             v_user_pickle = pickle.dumps(user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
             return True
         elif auto_auth_rsp_2.baseMsg.ret == -100 or auto_auth_rsp_2.baseMsg.ret == -2023:
-            logger.info("%s 二次登录失败，请重新扫码" % v_user.nickname)
+            logger.info("%s: 二次登录失败，请重新扫码" % v_user.nickname)
 
             ret_reason = ''
             try:
@@ -549,19 +551,19 @@ class WXBot(object):
                 logger.error(e)
                 ret_reason = "未知"
 
-            logger.info("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
-            oss_utils.beary_chat("淘宝客：{0} 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+            logger.info("淘宝客{0}: 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+            oss_utils.beary_chat("淘宝客{0}: 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             self.wechat_client.close_when_done()
             return 'Logout'
         else:
             logger.info("二次登陆未知返回码")
             ret_code = auto_auth_rsp_2.baseMsg.ret
-            oss_utils.beary_chat("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
+            oss_utils.beary_chat("淘宝客{0}: 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
             logger.info("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
             self.wechat_client.close_when_done()
             return False
 
-    def async_check(self, v_user, new_socket=True):
+    def async_check(self, v_user,new_socket=True):
         """
         同步消息
         从微信服务器拉取新消息
@@ -599,8 +601,9 @@ class WXBot(object):
                 ret = read_int(buffers, 18)
                 if ret == -13:
                     logger.info("%s: Session Time out 离线或用户取消登陆 执行二次登录" % v_user.nickname)
-                    UUid = u"667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
-                    DeviceType = u"<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
+                    wx_user = WxUser.objects.get(username=v_user.userame)
+                    UUid = wx_user.uuid
+                    DeviceType = wx_user.device_type
                     if self.auto_auth(v_user, UUid, DeviceType, new_socket=new_socket) is True:
                         return True
                     else:
@@ -641,7 +644,6 @@ class WXBot(object):
                                 logger.error(e)
 
                             # 拉取群信息
-                            # TODO: 实现太丑了， 待优化
                             chatroom_name = ''
                             chatroom_owner = ''
 
@@ -657,10 +659,6 @@ class WXBot(object):
                                 if chatroom_owner:
                                     chatroom.chat_room_owner = chatroom_owner
                                     chatroom.save()
-
-                                """
-                                在什么情况下去获取群信息？
-                                """
 
                                 if not ChatRoom.objects.filter(wx_user__username=v_user.userame,
                                                                username=chatroom_name):
@@ -686,7 +684,7 @@ class WXBot(object):
                                         group_member.save()
 
                                 else:
-                                    # 该群存在
+                                    # 该群存在, 则可能是更改群名称、拉/踢人等。
                                     if msg_dict['Status'] == 4:
                                         self.update_chatroom_members(chatroom_name, v_user)
 
@@ -704,7 +702,7 @@ class WXBot(object):
 
                     # self.async_check(v_user, new_socket=new_socket)
 
-    def new_init(self, v_user):
+    def new_init(self, v_user, md_username):
         """
         登陆初始化
         拉取通讯录联系人
@@ -804,13 +802,23 @@ class WXBot(object):
             v_user_pickle = pickle.dumps(v_user)
             red.set('v_user_' + v_user.userame, v_user_pickle)
         if new_init_rsp.baseMsg.ret == 8888:
-            logger.info("%s 初始化成功！" % v_user.nickname)
+            try:
+                wxuser = WxUser.objects.filter(username=v_user.userame).order_by('-id').first()
+
+                tk_user = TkUser.get_user(md_username)
+                wxuser.user.add(tk_user.user)
+                wxuser.save()
+                logger.info("%s 初始化成功！" % v_user.nickname)
+            except Exception as e:
+                logger.error(e)
+
+
             self.newinitflag = False
             # self.wechat_client.close_when_done()
             return True
         else:
             # self.wechat_client.close_when_done()
-            self.new_init(v_user)
+            self.new_init(v_user, md_username)
 
     def send_text_msg(self, user_name, content, v_user):
         """
@@ -1056,25 +1064,32 @@ class WXBot(object):
 
         # 踢人
         delete_members = set(old_members_list) - set(new_members_list)
-        for delete_member in delete_members:
-            # 还得是这个群的
-            delete_member_db = ChatroomMember.objects.filter(username=delete_member,
-                                                             chatroom=chatroom.id).first()
-            delete_member_db.is_delete = True
-            delete_member_db.save()
+        if delete_members:
+            for delete_member in delete_members:
+                # 还得是这个群的
+                delete_member_db = ChatroomMember.objects.filter(username=delete_member,
+                                                                 chatroom=chatroom.id).first()
+                delete_member_db.is_delete = True
+                delete_member_db.save()
 
         # 拉人
         add_members = set(new_members_list) - set(old_members_list)
-        for add_member in add_members:
-            for group_member in group_members_details:
-                if add_member == group_member['Username']:
-                    members_db = ChatroomMember()
-                    members_db.update_from_members_dict(group_member)
-                    members_db.is_delete = False
-                    members_db.save()
+        if add_members:
+            for add_member in add_members:
+                for group_member in group_members_details:
+                    if add_member == group_member['Username']:
+                        members_db = ChatroomMember()
+                        members_db.update_from_members_dict(group_member)
+                        members_db.is_delete = False
+                        members_db.save()
 
-                    members_db.chatroom.add(chatroom.id)
-                    members_db.save()
+                        members_db.chatroom.add(chatroom.id)
+                        members_db.save()
+        else:
+            contact = self.get_contact(v_user, chatroom_name.encode('utf-8'))
+            new_nickname = contact[0]['NickName']
+            chatroom.nickname = new_nickname
+            chatroom.save()
 
     def get_chatroom_detail(self, v_user, room_id):
         """
@@ -1434,16 +1449,16 @@ class WXBot(object):
         return True
 
 
-    def check_and_confirm_and_load(self, qrcode_rsp, device_id):
+    def check_and_confirm_and_load(self, qrcode_rsp, device_id, md_username):
         qr_code = self.check_qrcode_login(qrcode_rsp, device_id)
         starttime = datetime.datetime.now()
         if qr_code is not False:
 
-            if self.confirm_qrcode_login(qr_code, keep_heart_beat=False) == -301:
-                if self.confirm_qrcode_login(qr_code, keep_heart_beat=False):
+            if self.confirm_qrcode_login(qr_code, md_username, keep_heart_beat=False) == -301:
+                if self.confirm_qrcode_login(qr_code, md_username, keep_heart_beat=False):
                     v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                     v_user = pickle.loads(v_user_pickle)
-                    self.new_init(v_user)
+                    self.new_init(v_user, md_username)
                     if not self.newinitflag:
                         v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
                         while not self.async_check(v_user):
@@ -1457,10 +1472,10 @@ class WXBot(object):
                 else:
                     logger.info("GG 重新登录吧大兄弟")
 
-            if self.confirm_qrcode_login(qr_code, keep_heart_beat=False):
+            if self.confirm_qrcode_login(qr_code, md_username, keep_heart_beat=False):
                 v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                 v_user = pickle.loads(v_user_pickle)
-                self.new_init(v_user)
+                self.new_init(v_user, md_username)
                 if not self.newinitflag:
                     v_user = pickle.loads(red.get('v_user_' + str(qr_code['Username'])))
                     while not self.async_check(v_user):
@@ -1484,7 +1499,7 @@ class WXBot(object):
             return False
         oss_path, qrcode_rsp, device_id = res[0], res[1], res[2]
 
-        if self.check_and_confirm_and_load(qrcode_rsp, device_id):
+        if self.check_and_confirm_and_load(qrcode_rsp, device_id, md_username):
             print("login done!")
 
     def try_send_message(self, username):

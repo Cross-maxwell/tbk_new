@@ -61,6 +61,7 @@ class HeartBeatManager(object):
 
         # 微信有新消息就会往socket推20字节的notify包
         # 防止该socket断开，每30秒发一次同步消息包
+        heart_beat_count = 0
         while True:
             try:
                 user = WxUser.objects.filter(username=wx_username).first()
@@ -100,8 +101,8 @@ class HeartBeatManager(object):
                     # wx_bot.open_notify_callback()
 
                 if is_first:
-                    UUid = u"667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
-                    DeviceType = u"<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
+                    UUid = user.uuid
+                    DeviceType = user.device_type
                     start_time = datetime.datetime.now()
                     logger.info("%s: 进行心跳二次登录中" % user.nickname)
                     while True:
@@ -115,7 +116,7 @@ class HeartBeatManager(object):
                             break
                         elif res_auto is 'Logout':
                             logger.info("{}: 用户主动退出登录，退出心跳，机器人下线".format(user.nickname))
-                            oss_utils.beary_chat("淘宝客{0}: 用户退出登录，退出机器人".format(user.nickname))
+                            oss_utils.beary_chat("淘宝客{0}: 用户主动退出登录，退出机器人".format(user.nickname))
                             # wx_bot.wechat_client.close_when_done()
                             wx_bot.logout_bot(v_user)
                             return
@@ -139,6 +140,11 @@ class HeartBeatManager(object):
                     if wx_bot.heart_beat(v_user):
                         # print "success"
                         logger.info("%s: 心跳包发送成功" % user.nickname)
+                        heart_beat_count += 1
+
+                        if heart_beat_count % 10 == 0:
+                            user.last_heart_beat = timezone.now()
+                            user.save()
                     else:
                         # print "fail"
                         logger.info("%s: 心跳包发送失败" % user.nickname)

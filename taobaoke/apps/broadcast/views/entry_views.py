@@ -51,6 +51,16 @@ def insert_product(request):
 
 
 @csrf_exempt
+def insert_product_by_msg(request):
+    return HttpResponse('Success', status=201)
+
+
+@csrf_exempt
+def insert_broadcast_by_msg(request):
+    return HttpResponse('Success', status=201)
+
+
+@csrf_exempt
 def push_product(request):
     data = {
         "ret_code": 0,
@@ -120,6 +130,49 @@ def push_product(request):
     requests.post(push_url, json.dumps(text_msg))
     print "Push text %s to group %s." % (text_msg['content'], text_msg['target_id'])
     return HttpResponse(json.dumps(data), status=200)
+
+
+@csrf_exempt
+def new_push_product():
+
+    pass
+    """
+    接收用户名 md_username
+    wx_user = WxUser.objects.get(user__username=mdusername)
+    wx_id = wx_user.username
+    chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username)
+    
+    while True:
+        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id), timeout=4)
+        ret = json.loads(rsp.text)['ret']
+        if ret == 0:
+            logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
+            
+        if ret == 1:
+        # 筛选出激活群
+            if not chatroom_list:
+                logger.info('%s 发单群为空' % wxuser.nickname)
+        
+            for chatroom in chatroom_list:
+                # 发单人的wx_id, 群的id, 手机号
+                now_hour = int(time.strftime('%H', time.localtime(time.time())))
+                if 7 <= now_hour <= 22:
+                    
+                
+                    try:
+                        group_id = chatroom.username
+                        logger.info(u'%s 向 %s 推送商品' % (wxuser.nickname, chatroom.nickname))
+            
+                        import thread
+                        thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
+                    except Exception as e:
+                        logging.error(e)
+                        print(e)
+                else:
+                    time.sleep(20 * 60)
+                    
+    """
+
 
 
 @csrf_exempt

@@ -15,7 +15,8 @@ import md5
 #     func = ctxt.eval("function asciiConvertNative(s){var asciicode=s.split(\"\\\\u\");var nativeValue=asciicode[0];for(var i=1;i<asciicode.length;i++){var code=asciicode[i];nativeValue+=String.fromCharCode(parseInt(\"0x\"+code.substring(0,4)));if(code.length>4){nativeValue+=code.substring(4,code.length)}}return nativeValue};")
 #     print func(s)
 
-
+RANDOM_ROUTER_DICT = {0:'TP_LINKS_5G', 1:'TP_LINK_5G', 2:'TP_LINK_2.4G', 3:'TP_LINKS_2.4G'}
+RANDOM_COMMUNICATION_DICT = {0:'中国移动', 1:'中国联通', 2:'中国电信'}
 def get_md5(s):
     if s == '' or s is None:
         return "74237af20c724e36316cf39ddce7a97c"
@@ -114,6 +115,62 @@ def check_grpc_response(ret):
 def timestamp_to_time(timestamp):
     print time.localtime(timestamp)
 
+def random_mac(md_username):
+    candidate = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
+    total = reduce(lambda x, y: int(x) + int(y), list(md_username))
+    res = []
+    for i in range(1,len(md_username)-1, 2):
+        total += int(md_username[i])
+        temp = candidate[total%16]
+        total += int(md_username[i+1])
+        temp += candidate[total%16]
+        res.append(temp)
+    total += int(md_username[-1])
+    temp = candidate[total%16]
+    total += int(md_username[0])
+    temp += candidate[total%16]
+    res.append(temp)
+    return ":".join(res)
+
+def random_devicetpye(md_username):
+    try:
+        int(md_username)
+    except Exception as e:
+        return "<k21>TP_lINKS_5G</k21><k22>中国移动</k22><k24>c1:cd:2d:1c:5b:11</k24>"
+    template = "<k21>{0}</k21><k22>{1}</k22><k24>{2}</k24>"
+    name = RANDOM_ROUTER_DICT[int(md_username[-1]) % 4]
+    tel_com = RANDOM_COMMUNICATION_DICT[int(md_username[-1]) % 3]
+    mac = random_mac(md_username)
+    return template.format(name,tel_com,mac)
+
+def random_uuid(md_username):
+    try:
+        int(md_username)
+    except Exception as e:
+        return "667D18B1-BCE3-4AA2-8ED1-1FDC19446567"
+    candidate = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F']
+    total = reduce(lambda x, y: int(x) + int(y), list(md_username))
+    res, temp = [], ""
+
+    for i in range(1, 9):
+        total += int(md_username[i])
+        temp += candidate[total % 16]
+    res.append(temp)
+    for j in range(3):
+        temp = ""
+        for i in range(4):
+            total += int(md_username[i])
+            temp += candidate[total % 16]
+        res.append(temp)
+    temp = ""
+    for i in range(11):
+        total += int(md_username[i])
+        temp += candidate[total % 16]
+    res.append(temp)
+    total += int(md_username[-1])
+    res[-1] += candidate[total % 16]
+
+    return "-".join(res)
 
 if __name__ == "__main__":
     # byte_list = range(1, 20)
@@ -124,8 +181,10 @@ if __name__ == "__main__":
     # timestamp_to_time(1503371850)
     # print(get_md5())
     # print(get_time_stamp())
-    import re
-    pattern = re.compile(r'(\w+)')
-    m = pattern.match('wwwwww')
-    print(m.group(1))
-    from datetime import datetime
+    print random_devicetpye('18620366927')
+    print random_devicetpye('15723106823')
+    print random_devicetpye('1896480499')
+    print random_devicetpye('abdc')
+    print random_uuid('18620366926')
+    print random_uuid('15723106823')
+    print random_uuid('abcd')

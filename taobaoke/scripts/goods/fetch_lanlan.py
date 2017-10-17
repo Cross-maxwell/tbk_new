@@ -2,11 +2,16 @@
 
 """
     从www.lanlanlife.com的商品库中取出商品， 存入数据表 broadcast_product
-    09-21 测试正常
 """
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke')
+# sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
+
+
 import requests
 import re
-
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke/')
 import os
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
@@ -38,7 +43,7 @@ for i in range(60):
             data_dict = {
                 'title': item['itemTitle'],
                 'desc': item['recommend'],
-                'img_url': item['coverImage'].split('@')[0] + '?x-oss-process=image/resize,w_600',
+                'img_url': item['coverImage'].split('@')[0] + '?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80',
                 'cupon_value': item['amount'],
                 'price': item['price'][1:],
                 'cupon_url': item['link'],

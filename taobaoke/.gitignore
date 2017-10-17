@@ -62,4 +62,4 @@ db.sqlite3
 log/*.log
 log/supervisor_log/*.log
 
-*cookie*
+*cookie.txt*
