@@ -79,7 +79,7 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                         "text": img_url,
                         "type": "img"
                     }
-                    send_msg_type(img_msg_dict, at_user_id='')
+                    send_msg_type(img_msg_dict, at_user_id=None)
     else:
         pass
 

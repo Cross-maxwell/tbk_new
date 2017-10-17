@@ -58,7 +58,7 @@ def post_taobaoke_url(wx_id, group_id, md_username):
         qs = Product.objects.filter(
             available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
         )
-        # beary_chat('点金推送商品失败：无可用商品')
+        beary_chat('点金推送商品失败：无可用商品')
 
     for _ in range(50):
         try:
@@ -89,11 +89,11 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     }
 
     PushRecord.objects.create(entry=p, group=group_id)
-    send_msg_type(img_msg_dict)
-    logger.info("%s 向 %s 推送图片 ." % (img_msg_dict['text'], img_msg_dict['group_id']))
+    send_msg_type(img_msg_dict, at_user_id='')
+    logger.info("向 %s 推送图片 \n %s." % (img_msg_dict['group_id'], img_msg_dict['text']))
 
-    send_msg_type(text_msg_dict)
-    logger.info("%s 向 %s 推送文字 ." % (img_msg_dict['text'], img_msg_dict['group_id']))
+    send_msg_type(text_msg_dict, at_user_id='')
+    logger.info("向 %s 推送文字 \n %s." % (text_msg_dict['group_id'], text_msg_dict['text']))
 
 
 

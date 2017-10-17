@@ -4,7 +4,7 @@ from ipad_weixin.weixin_bot import WXBot
 from ipad_weixin import weixin_bot
 
 
-def send_msg_type(msg_dict, at_user_id):
+def send_msg_type(msg_dict, at_user_id=''):
     uin = msg_dict['uin']
     group_id = msg_dict['group_id']
     text = msg_dict['text']
@@ -41,8 +41,6 @@ def send_msg_type(msg_dict, at_user_id):
         elif '\n' in text or '\r' in text:
             #类似发单群
             text = text.replace('\r', '\\r').replace('\n', '\\n')
-            text += "\\n[太阳]点击上面链接购买商品"
-
 
             wx_bot.send_text_msg(group_id, text, v_user, at_user_id)
             # import thread

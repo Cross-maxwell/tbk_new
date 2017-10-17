@@ -157,7 +157,7 @@ class PostGoods(View):
         logger.info([user.username for user in user_list])
 
         for user in user_list:
-            logger.info('Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
+            logger.info('Post Taobaoke Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
             # 发单机器人id
             wx_id = user.username
             # 通过 wx_id = hid 筛选出手机号
@@ -176,7 +176,7 @@ class PostGoods(View):
             if ret == 1:
                 # 筛选出激活群
                 wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
-                chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"测试福利社").all()
+                chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"福利社").all()
                 if not chatroom_list:
                     logger.info('%s 发单群为空' % wxuser.nickname)
 
