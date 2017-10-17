@@ -63,7 +63,7 @@ def filter_keyword_rule(wx_id, msg_dict):
                 else:
                     # text = u"""搜索商品 {0} 成功！点击下面链接查看我们给您找到的专属优惠券。
                     # {1}""".format(keyword, iri_to_uri(template_url))
-                    text = "Hello {sender}，搜索{keyword}成功！此次共搜索到相关产品{quant}件，点击链接查看为您找到的天猫高额优惠券。\n" \
+                    text = "Hello {sender}，搜索  {keyword}  成功！此次共搜索到相关产品{quant}件，点击链接查看为您找到的天猫高额优惠券。\n" \
                            "{link}\n" \
                            "「点击上面链接查看宝贝」\n" \
                            "================\n" \
