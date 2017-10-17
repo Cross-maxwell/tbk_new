@@ -10,6 +10,8 @@ import requests
 import logging
 logger = logging.getLogger('post_taobaoke')
 
+# 路径 /home/new_taobaoke/taobaoke/weixin_scripts/send_request.py
+
 while True:
     try:
         now_hour = int(time.strftime('%H', time.localtime(time.time())))

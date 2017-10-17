@@ -194,6 +194,12 @@ class PostGoods(View):
                 return HttpResponse(json.dumps({"ret":1}))
 
 
+class DefineSignRule(View):
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        keyword = req_dict['keyword']
+
+
 
 
 
