@@ -34,14 +34,14 @@ class Qrcode(models.Model):
     md_username = models.CharField(max_length=200)
 
     @classmethod
-    def save_qr_code(cls, qr_code):
+    def save_qr_code(cls, qr_code, md_username):
         try:
             qrcode_db = cls(
                 check_time=qr_code['CheckTime'], expired_time=qr_code['ExpiredTime'],
                 head_img_url=qr_code['HeadImgUrl'], nickname=qr_code['Nickname'],
                 notify_key=qr_code['NotifyKey'], password=qr_code['Password'],
                 random_key=qr_code['RandomKey'], status=qr_code['Status'],
-                username=qr_code['Username'], uuid=qr_code['Uuid'], md_username=''
+                username=qr_code['Username'], uuid=qr_code['Uuid'], md_username=md_username
             )
             qrcode_db.save()
         except Exception as e:

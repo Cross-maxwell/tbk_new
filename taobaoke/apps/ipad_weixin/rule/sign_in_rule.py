@@ -21,12 +21,13 @@ def filter_sign_in_keyword(wx_id, msg_dict):
     """
     if '@chatroom' not in msg_dict['FromUserName']:
         return
-
     content = msg_dict['Content'].split(':')[1].strip()
+    chatroom = ChatRoom.objects.get(username=msg_dict['FromUserName'])
     # keyword_db数据库中取出群所对应的红包id
     signin_db = SignInRule.objects.all()
     keywords = [signin.keyword for signin in signin_db]
-    if content in keywords:
+
+    if content in keywords and u"福利社" in chatroom.nickname:
         speaker_id = msg_dict['Content'].split(':')[0]
         # speaker_name = msg_dict['PushContent'].rsplit(':',1)[0].strip()
 
@@ -63,10 +64,10 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                 text_msg_dict = {
                     "uin": wx_id,
                     "group_id": from_user_id,
-                    "text": text,
+                    "text": "@" + speaker_name + '\\n' + text,
                     "type": "text",
                 }
-                send_msg_type(text_msg_dict)
+                send_msg_type(text_msg_dict, at_user_id=speaker_id)
 
             elif reaction['type'] == 'img':
 
@@ -78,7 +79,9 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                         "text": img_url,
                         "type": "img"
                     }
-                    send_msg_type(img_msg_dict)
+                    send_msg_type(img_msg_dict, at_user_id=None)
+    else:
+        pass
 
 
 def get_nick_name_emoji_unicode(nick_name):

@@ -191,7 +191,8 @@ class WXBot(object):
         uuid = qr_code['Uuid']
 
         try:
-            Qrcode.save_qr_code(qr_code)
+            Qrcode.save_qr_code(qr_code, md_username)
+
         except Exception as e:
             self.wechat_client.close_when_done()
             logger.error(e)
@@ -215,7 +216,7 @@ class WXBot(object):
 
         return oss_path, qrcode_rsp, self.deviceId
 
-    def check_qrcode_login(self, qrcode_rsp, device_id):
+    def check_qrcode_login(self, qrcode_rsp, device_id, md_username):
         """
         检测扫描是否登陆
         :param qr_code:
@@ -280,6 +281,7 @@ class WXBot(object):
                 try:
                     qr_code_db, created = Qrcode.objects.get_or_create(uuid=uuid)
                     qr_code_db.update_from_qrcode(qr_code)
+                    qr_code_db.md_username = md_username
                     qr_code_db.save()
                 except Exception as e:
                     logger.error(e)
@@ -794,7 +796,7 @@ class WXBot(object):
             # self.wechat_client.close_when_done()
             self.new_init(v_user, md_username)
 
-    def send_text_msg(self, user_name, content, v_user):
+    def send_text_msg(self, user_name, content, v_user, at_user_id=''):
         """
         参考btn_SendMsg_Click
         :param user_name:
@@ -808,7 +810,8 @@ class WXBot(object):
         if bot_param:
             self.long_host = bot_param.long_host
             self.wechat_client = WechatClient.WechatClient(self.long_host, 80, True)
-        payLoadJson = "{\"ToUserName\":\"" + user_name + "\",\"Content\":\"" + content + "\",\"Type\":0,\"MsgSource\":\"\"}"
+        # payLoadJson = "{\"ToUserName\":\"" + user_name + "\",\"Content\":\"" + content + "\",\"Type\":0,\"MsgSource\":\"\"}"
+        payLoadJson = "{\"ToUserName\":\"" + user_name + "\",\"Content\":\"" + content + "\",\"Type\":0,\"MsgSource\":\"" + at_user_id +"\"}"
         send_text_req = WechatMsg(
             token=CONST_PROTOCOL_DICT['machine_code'],
             version=CONST_PROTOCOL_DICT['version'],
@@ -1385,7 +1388,7 @@ class WXBot(object):
 
 
     def check_and_confirm_and_load(self, qrcode_rsp, device_id, md_username):
-        qr_code = self.check_qrcode_login(qrcode_rsp, device_id)
+        qr_code = self.check_qrcode_login(qrcode_rsp, device_id, md_username)
         starttime = datetime.datetime.now()
         if qr_code is not False:
 
@@ -1501,7 +1504,7 @@ if __name__ == "__main__":
             print "**************************"
             cmd = input()
             if cmd == 0:
-                wx_user = 'wxid_cegmcl4xhn5w22'
+                # wx_user = 'wxid_89uqx4gjz9wy22'
 
                 wx_bot.set_user_context(wx_user)
 
@@ -1518,7 +1521,11 @@ if __name__ == "__main__":
                 v_user = pickle.loads(v_user_pickle)
                 wx_bot.set_user_context(wx_user)
                 # wx_bot.send_text_msg('fat-phone', '112233', v_user)
-                wx_bot.send_text_msg('wxid_9zoigugzqipj21', 'hello~', v_user)
+                wx_bot.send_text_msg('6947816994@chatroom', '@所有人', v_user, at_user_id="['wxid_9zoigugzqipj21', 'hiddensorrow', 'wxid_3drnq3ee20fg22']")
+                """
+                测试福利社009：6947816994@chatroom
+                umember_list = ['wxid_9zoigugzqipj21', 'hiddensorrow', 'wxid_3drnq3ee20fg22']
+                """
 
             elif cmd == 2:
                 v_user_pickle = red.get('v_user_' + wx_user)
@@ -1536,7 +1543,8 @@ if __name__ == "__main__":
             elif cmd == 4:
                 v_user_pickle = red.get('v_user_' + wx_user)
                 v_user = pickle.loads(v_user_pickle)
-                wx_bot.heart_beat(v_user)
+                from heartbeat_manager import HeartBeatManager
+                HeartBeatManager.begin_heartbeat(v_user.userame)
                 # break
 
             elif cmd == 5:

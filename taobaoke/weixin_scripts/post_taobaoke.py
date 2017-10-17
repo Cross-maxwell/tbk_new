@@ -89,11 +89,11 @@ def post_taobaoke_url(wx_id, group_id, md_username):
     }
 
     PushRecord.objects.create(entry=p, group=group_id)
-    send_msg_type(img_msg_dict)
-    logger.info("%s 向 %s 推送图片 ." % (img_msg_dict['text'], img_msg_dict['group_id']))
+    send_msg_type(img_msg_dict, at_user_id='')
+    logger.info("向 %s 推送图片 \n %s." % (img_msg_dict['group_id'], img_msg_dict['text']))
 
-    send_msg_type(text_msg_dict)
-    logger.info("%s 向 %s 推送文字 ." % (img_msg_dict['text'], img_msg_dict['group_id']))
+    send_msg_type(text_msg_dict, at_user_id='')
+    logger.info("向 %s 推送文字 \n %s." % (text_msg_dict['group_id'], text_msg_dict['text']))
 
 
 
@@ -151,27 +151,6 @@ if __name__ == "__main__":
 
 
 
-    #测试
-    # while True:
-    #     wxuser = WxUser.objects.filter(username='wxid_cegmcl4xhn5w22').order_by('-id').first()
-    #     chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"测试福利社").all()
-    #     wx_id = 'wxid_cegmcl4xhn5w22'
-    #     md_username = '13632909405_l'
-    #
-    #     for chatroom in chatroom_list:
-    #         # 发单人的wx_id, 群的id, 手机号
-    #         try:
-    #             group_id = chatroom.username
-    #             logger.info(u'向 %s 推送商品' % chatroom.nickname)
-    #
-    #             # import thread
-    #             #
-    #             # thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
-    #             # time.sleep(60 * 5)
-    #             post_taobaoke_url(wx_id, group_id, md_username)
-    #             time.sleep(60 * 5)
-    #         except Exception as e:
-    #             logging.error(e)
-    #             print(e)
+
 
 

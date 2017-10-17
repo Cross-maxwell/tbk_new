@@ -29,10 +29,9 @@ sys.path.insert(0, os.path.join(BASE_DIR,'apps'))
 SECRET_KEY = 'tdw1=k(f2=%^*9bj*_+h_05(!wk03^(_jto+m0t6322uo!2y-('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost']
-
 
 # Application definition
 
@@ -93,6 +92,7 @@ DATABASES = {
         'PORT': '50001',
     }
 }
+
 
 
 # DATABASES = {
@@ -193,7 +193,7 @@ LOGGING = {
         },
         'django_views':{
             'handlers': ['error', 'console'],
-            'level': 'ERROR',
+            'level': 'INFO',
             'propagate': True
         },
         'weixin_bot':{

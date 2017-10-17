@@ -7,7 +7,7 @@ django.setup()
 
 from django.utils.encoding import iri_to_uri
 
-from ipad_weixin.models import Qrcode, ChatRoom
+from ipad_weixin.models import Qrcode, ChatRoom, ChatroomMember
 from broadcast.models.user_models import Adzone
 import urllib
 import requests
@@ -22,12 +22,17 @@ def filter_keyword_rule(wx_id, msg_dict):
     if keyword and keyword is not '':
         # 群是淘宝客群，找XX才生效
         gid = ''
+        at_user_id = ''
+        at_user_nickname = ''
         # 情况分类1 机器人自己说找XX
         if msg_dict['FromUserName'] == wx_id and "@chatroom" in msg_dict['ToUserName']:
             gid = msg_dict['ToUserName']
         # 情况分类2 群成员说找XX
         elif "@chatroom" in msg_dict['FromUserName'] and msg_dict['ToUserName'] == wx_id:
             gid = msg_dict['FromUserName']
+            at_user_id = msg_dict['Content'].split(':')[0]
+            at_user_db = ChatroomMember.objects.filter(username=at_user_id).first()
+            at_user_nickname = '@' + at_user_db.nickname
 
         chatroom = ChatRoom.objects.filter(nickname__contains=u"福利社",username=gid).first()
         if chatroom:
@@ -44,13 +49,26 @@ def filter_keyword_rule(wx_id, msg_dict):
                 judge_response = requests.get(judge_url)
                 judge_dict = json.loads(judge_response.content)
 
+                # 重载template_url, 用于从微博api获取短链
+                template_url = urllib.quote(iri_to_uri(template_url))
+                short_url_respose = requests.get(
+                    'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + template_url)
+                short_link = short_url_respose.json()['urls'][0]['url_short']
+
+
+                import random
+                quant=random.randint(1000,2000)
+
                 from ipad_weixin.send_msg_type import send_msg_type
 
                 if judge_dict['result']['items'] == []:
-                    text = u"很抱歉，您需要的{}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(keyword)
+                    text = u"{0}，很抱歉，您需要的{1}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
                 else:
-                    text = u"""搜索商品 {0} 成功！点击下面链接查看我们给您找到的专属优惠券。
-                    {1}""".format(keyword, iri_to_uri(template_url))
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，点击链接查看为您找到的天猫高额优惠券。\n" \
+                           "{3}\n" \
+                           "「点击上面链接查看宝贝」\n" \
+                           "================\n" \
+                           "图片仅供参考，详细信息请点击链接～".format(at_user_nickname, keyword, quant, short_link)
 
                     shop_url = judge_dict['result']['items'][0]['coverImage']
                     img_msg_dict = {
@@ -60,7 +78,7 @@ def filter_keyword_rule(wx_id, msg_dict):
                         "type": "img"
                     }
 
-                    send_msg_type(img_msg_dict)
+                    send_msg_type(img_msg_dict, at_user_id)
                     logger.info('找到商品， 向 %s 推送图片' % gid)
 
                 params_dict = {
@@ -70,7 +88,7 @@ def filter_keyword_rule(wx_id, msg_dict):
                             "type": "text"
                         }
 
-                send_msg_type(params_dict)
+                send_msg_type(params_dict, at_user_id)
                 logger.info("Push text %s to group %s." % (text, gid))
             except Exception as e:
                 logger.error(e)
@@ -98,8 +116,8 @@ if __name__ == "__main__":
                 u'MsgSource': u'<msgsource>\n\t<silence>0</silence>\n\t<membercount>5</membercount>\n</msgsource>\n',
                 u'Content': u'wxid_9zoigugzqipj21:\n\u627e\u62d6\u978b',
                 u'MsgType': 1, u'ImgBuf': None,
-                u'NewMsgId': 1469484974773846106,
-                u'CreateTime': 1506652565
+                u'NewMsgId': 8330079787334973454,
+                u'CreateTime': 1508208110
                 }
     wx_id = 'wxid_ozdmesmnpy5g22'
     filter_keyword_rule(wx_id, msg_dict)
