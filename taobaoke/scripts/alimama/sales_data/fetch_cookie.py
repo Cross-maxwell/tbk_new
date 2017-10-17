@@ -10,7 +10,7 @@ import utils
 import requests
 from PIL import Image
 
-PHANTOM_JS_PATH = 'env/bin/phantomjs'
+PHANTOM_JS_PATH = '/usr/bin/phantomjs'
 COOKIES_PATH = 'scripts/alimama/cookie.txt'
 ADMIN_NAME = "Chong"
 
