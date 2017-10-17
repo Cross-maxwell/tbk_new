@@ -1501,7 +1501,7 @@ if __name__ == "__main__":
             print "**************************"
             cmd = input()
             if cmd == 0:
-                wx_user = 'wxid_cegmcl4xhn5w22'
+                wx_user = 'wxid_89uqx4gjz9wy22'
 
                 wx_bot.set_user_context(wx_user)
 

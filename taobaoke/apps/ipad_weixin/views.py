@@ -68,6 +68,9 @@ class HostList(View):
             print(e)
 
         response_data = {"ret": str(ret), "data": data}
+
+
+
         return HttpResponse(json.dumps(response_data))
 
 
@@ -149,49 +152,48 @@ class IsUuidLogin(View):
 
 class PostGoods(View):
     """
-    接口： s-prod-04.qunzhu666.com/push_product?username=136xxxxxxxx
+    接口： s-prod-04.qunzhu666.com/push_product
     """
     def get(self, request):
-        # 接收用户名 md_username
-        md_username = request.GET.get('md_username')
-        wx_user = WxUser.objects.get(user__username=md_username)
-        if wx_user:
-            chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username, nickname__contains=u'测试福利社')
-            if not chatroom_list:
-                logger.info('%s 发单群为空' % wx_user.nickname)
-                return HttpResponse(json.dumps({"ret": 0, "reason": "发单群为空"}))
-            else:
-                import threading
-                t = threading.Thread(post_taobaoke, (md_username, wx_user, chatroom_list))
-                t.start()
+        user_list = WxUser.objects.filter(login__gt=0).all()
+        logger.info([user.username for user in user_list])
 
-            return HttpResponse(json.dumps({"ret": 1, "reason": "开始发单"}))
+        for user in user_list:
+            logger.info('Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
+            # 发单机器人id
+            wx_id = user.username
+            # 通过 wx_id = hid 筛选出手机号
+            qr_code_db = Qrcode.objects.filter(username=user.username,
+                                               md_username__isnull=False).order_by('-id').first()
+            md_username = qr_code_db.md_username
+            # 10分钟内不可以连续发送同样的请求。
+            rsp = requests.get(
+                "http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id),
+                timeout=4)
+            ret = json.loads(rsp.text)['ret']
+            if ret == 0:
+                logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
+                return HttpResponse(json.dumps({"ret":0}))
 
+            if ret == 1:
+                # 筛选出激活群
+                wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
+                chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"测试福利社").all()
+                if not chatroom_list:
+                    logger.info('%s 发单群为空' % wxuser.nickname)
 
-def post_taobaoke(md_username, wx_user, chatroom_list):
-    while True:
-        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_user.username), timeout=4)
-        ret = json.loads(rsp.text)['ret']
-        if ret == 0:
-            logger.info("%s 请求s-prod-07返回结果为0" % wx_user.nickname)
-            time.sleep(60)
-        if ret == 1:
-        # 筛选出激活群
-            for chatroom in chatroom_list:
-                # 发单人的wx_id, 群的id, 手机号
-                now_hour = int(time.strftime('%H', time.localtime(time.time())))
-                if 7 <= now_hour <= 22:
+                for chatroom in chatroom_list:
+                    # 发单人的wx_id, 群的id, 手机号
                     try:
                         group_id = chatroom.username
-                        logger.info(u'%s 向 %s 推送商品' % (wx_user.nickname, chatroom.nickname))
+                        logger.info(u'%s 向 %s 推送商品' % (wxuser.nickname, chatroom.nickname))
 
                         import thread
-                        thread.start_new_thread(post_taobaoke_url, (wx_user.username, group_id, md_username))
+                        thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
                     except Exception as e:
                         logging.error(e)
                         print(e)
-                else:
-                    time.sleep(20 * 60)
+                return HttpResponse(json.dumps({"ret":1}))
 
 
 
