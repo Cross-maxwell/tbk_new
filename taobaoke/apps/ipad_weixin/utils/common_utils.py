@@ -127,7 +127,7 @@ def random_mac(md_username):
         res.append(temp)
     total += int(md_username[-1])
     temp = candidate[total%16]
-    total += int(md_username[0])
+    total += int(md_username[1])
     temp += candidate[total%16]
     res.append(temp)
     return ":".join(res)
