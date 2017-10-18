@@ -13,6 +13,9 @@ from django.contrib.auth.models import User
 from weixin_scripts.post_taobaoke import post_taobaoke_url
 import requests
 import time
+import datetime
+from django.utils import timezone
+from ipad_weixin.heartbeat_manager import HeartBeatManager
 
 import logging
 logger = logging.getLogger('django_views')
@@ -24,17 +27,6 @@ class GetQrcode(View):
 
         wx_bot = WXBot()
         (oss_path, qrcode_rsp, deviceId) = wx_bot.get_qrcode(md_username)
-
-        # try:
-        #     buffers = qrcode_rsp.baseMsg.payloads
-        #     qr_code = json.loads(buffers)
-        #     uuid = qr_code['Uuid']
-        #     qr_code_db = Qrcode.objects.filter(uuid=uuid).order_by('-id').first()
-        #     qr_code_db.md_username = md_username
-        #     qr_code_db.save()
-        # except Exception as e:
-        #     logger.error(e)
-        #     print(e)
 
         import thread
         thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId, md_username))
@@ -195,13 +187,39 @@ class PostGoods(View):
 
 
 class DefineSignRule(View):
+    """
+    允许用户对群进行勾选，并编辑红包口令
+    对不同的群采用不同的红包口令
+
+    天猫福利社 我爱MMT一起赚.... 每天9点开始 红包数量为群成员数量的10%
+    点金代理群 今天我要好好赚钱 开始时间不定 红包数量不定
+    time 由外包系统决定是否签到成功
+    红包数量   ？ unknown
+    表单设计：
+        设置红包口令：
+
+    """
     def post(self, request):
         req_dict = json.loads(request.body)
         keyword = req_dict['keyword']
 
 
+class ResetHeartBeat(View):
+    def get(self, request):
+        auth_users = WxUser.objects.filter(last_heart_beat__gt=timezone.now() - datetime.timedelta(minutes=300))
+        if not auth_users:
+            logger.info("重启心跳用户数为0")
+        for auth_user in auth_users:
+            logger.info("%s command 开启心跳" % auth_user.nickname)
+            HeartBeatManager.begin_heartbeat(auth_user.username)
+        return HttpResponse(json.dumps({"ret": 1}))
 
 
+class ResetSingleHeartBeat(View):
+    def get(self, request):
+        username = request.GET.get('username')
+        HeartBeatManager.begin_heartbeat(username)
+        return HttpResponse(json.dumps({"ret": 1}))
 
 
 

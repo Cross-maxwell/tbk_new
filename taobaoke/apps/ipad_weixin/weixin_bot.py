@@ -175,7 +175,6 @@ class WXBot(object):
 
         if not grpc_buffers:
             logger.info("%s: grpc返回错误" % md_username)
-            # self.wechat_client.close_when_done()
             return
 
         data = self.wechat_client.sync_send_and_return(grpc_buffers)
@@ -197,9 +196,6 @@ class WXBot(object):
             self.wechat_client.close_when_done()
             logger.error(e)
 
-        # if not Qrcode.save_qr_code(qr_code):
-        #     self.wechat_client.close_when_done()
-        #     return
 
         # 地址规则
         # http://md-bot-service.oss-cn-shenzhen.aliyuncs.com/wxpad/uuid.png
@@ -387,7 +383,6 @@ class WXBot(object):
 
             try:
                 wxuser, created = WxUser.objects.get_or_create(uin=v_user.uin)
-                # print created
                 wxuser.update_wxuser_from_userobject(v_user)
                 wxuser.save()
             except Exception as e:
@@ -627,7 +622,7 @@ class WXBot(object):
                                 chatroom_name = msg_dict['FromUserName']
                                 chatroom_owner = msg_dict['ToUserName']
 
-                            elif '@chatroom' in msg_dict['ToUserName']:
+                            if '@chatroom' in msg_dict['ToUserName']:
                                 chatroom_name = msg_dict['ToUserName']
 
                             if chatroom_name:
@@ -637,28 +632,9 @@ class WXBot(object):
                                     chatroom.save()
 
                                 if not ChatRoom.objects.filter(wx_user__username=v_user.userame,
-                                                               username=chatroom_name):
-                                    group_members_details = self.get_chatroom_detail(v_user,
-                                                                                     chatroom_name.encode('utf-8'))
-
-                                    # 获取群组的整体信息
-                                    chatroom_details = self.get_contact(v_user, chatroom_name.encode('utf-8'))
-                                    chatroom.update_from_msg_dict(chatroom_details[0])
-                                    chatroom.member_nums = len(group_members_details)
-                                    chatroom.save()
-
-                                    wx_user = WxUser.objects.get(username=v_user.userame)
-                                    chatroom.wx_user.add(wx_user.id)
-                                    chatroom.save()
-
-                                    for members_dict in group_members_details:
-                                        group_member = ChatroomMember()
-                                        group_member.update_from_members_dict(members_dict)
-                                        group_member.save()
-
-                                        group_member.chatroom.add(chatroom.id)
-                                        group_member.save()
-
+                                                               username=chatroom_name) \
+                                        or chatroom.nickname == '' or chatroom.nickname == None:
+                                    self.get_and_update_chatroom(v_user, chatroom_name, chatroom)
                                 else:
                                     # 该群存在, 则可能是更改群名称、拉/踢人等。
                                     if msg_dict['Status'] == 4:
@@ -677,6 +653,7 @@ class WXBot(object):
                     return True
 
                     # self.async_check(v_user, new_socket=new_socket)
+
 
     def new_init(self, v_user, md_username):
         """
@@ -1031,6 +1008,26 @@ class WXBot(object):
         search_contact_rsp.baseMsg.payloads = char_to_str(buffers)
         payloads = grpc_client.send(search_contact_rsp)
         print(payloads)
+
+    def get_and_update_chatroom(self, v_user, chatroom_name, chatroom):
+        group_members_details = self.get_chatroom_detail(v_user,chatroom_name.encode('utf-8'))
+        # 获取群组的整体信息
+        chatroom_details = self.get_contact(v_user, chatroom_name.encode('utf-8'))
+        chatroom.update_from_msg_dict(chatroom_details[0])
+        chatroom.member_nums = len(group_members_details)
+        chatroom.save()
+
+        wx_user = WxUser.objects.get(username=v_user.userame)
+        chatroom.wx_user.add(wx_user.id)
+        chatroom.save()
+
+        for members_dict in group_members_details:
+            group_member = ChatroomMember()
+            group_member.update_from_members_dict(members_dict)
+            group_member.save()
+
+            group_member.chatroom.add(chatroom.id)
+            group_member.save()
 
     def update_chatroom_members(self, chatroom_name, v_user):
 
