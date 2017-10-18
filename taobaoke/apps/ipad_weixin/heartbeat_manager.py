@@ -94,6 +94,8 @@ class HeartBeatManager(object):
 
                     # 再一次初始化
                     # temp = wx_bot._auto_retry
+                    wx_bot.wechat_client.close_when_done()
+                    time.sleep(5)
                     is_first = True
                     wx_bot = weixin_bot.WXBot()
                     wx_bot.set_user_context(wx_username)
@@ -108,8 +110,6 @@ class HeartBeatManager(object):
                     while True:
                         res_auto = wx_bot.auto_auth(v_user, UUid, DeviceType, False)
                         if res_auto is True:
-                            # oss_utils.beary_chat("{} auto_auth success in heartbeat".format(wx_username),
-                            #                    user='fatphone777')
                             wx_bot.open_notify_callback()
                             logger.info("{}: 心跳二次登录成功".format(user.nickname))
                             oss_utils.beary_chat("淘宝客{0}: 机器人已上线".format(user.nickname))
@@ -149,8 +149,6 @@ class HeartBeatManager(object):
                         # print "fail"
                         logger.info("%s: 心跳包发送失败" % user.nickname)
                     wx_bot._lock.release()
-                else:
-                    logger.info("%s: 线程同步锁获取失败，跳过心跳包发送" % user.nickname)
                 # print "{} heart best finished".format(wx_username)
                 time.sleep(30)
             except Exception as e:

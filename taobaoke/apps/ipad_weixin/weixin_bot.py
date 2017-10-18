@@ -69,6 +69,7 @@ class WXBot(object):
         user_db = WxUser.objects.filter(username=self.wx_username).first()
         if user_db:
             user_db.login = 1
+            user_db.save()
             logger.info("%s: 重置用户login成功" % user_db.nickname)
         else:
             logger.info("%s: 重置用户login失败，wx_username不存在" % self.wx_username)
@@ -140,6 +141,7 @@ class WXBot(object):
                                 # self.logout_bot(v_user)
                             elif res is 'ERROR' and self._auto_retry == 0:
                                 logger.info("%s: 线程同步返回微信错误，尝试重启心跳" % v_user.nickname)
+                                oss_utils.beary_chat("淘宝客{0}: 线程同步返回微信错误，尝试重启心跳".format(v_user.nickname))
                                 self._auto_retry += 1
                                 # self.wechat_client.close_when_done()
                             else:
@@ -327,6 +329,8 @@ class WXBot(object):
 
         UUid = common_utils.random_uuid(md_username)
         DeviceType = common_utils.random_devicetpye(md_username)
+        print UUid
+        print DeviceType
         payLoadJson = "{\"Username\":\"" + qr_code['Username'] + "\",\"PassWord\":\"" + qr_code[
             'Password'] + "\",\"UUid\":\"" + UUid + "\",\"DeviceType\":\"" + DeviceType + "\"}"
 
@@ -604,6 +608,8 @@ class WXBot(object):
                     wx_user = WxUser.objects.get(username=v_user.userame)
                     UUid = wx_user.uuid
                     DeviceType = wx_user.device_type
+                    print UUid
+                    print DeviceType
                     if self.auto_auth(v_user, UUid, DeviceType, new_socket=new_socket) is True:
                         return True
                     else:
