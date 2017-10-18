@@ -163,7 +163,7 @@ class PostGoods(View):
             ret = json.loads(rsp.text)['ret']
             if ret == 0:
                 logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
-                return HttpResponse(json.dumps({"ret":0}))
+                # return HttpResponse(json.dumps({"ret":0}))
 
             if ret == 1:
                 # 筛选出激活群
@@ -183,7 +183,7 @@ class PostGoods(View):
                     except Exception as e:
                         logging.error(e)
                         print(e)
-                return HttpResponse(json.dumps({"ret":1}))
+        return HttpResponse(json.dumps({"ret":1}))
 
 
 class DefineSignRule(View):
