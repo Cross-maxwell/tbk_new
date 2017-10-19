@@ -79,14 +79,16 @@ class HeartBeatManager(object):
                     # 检测一下socket有没断开，如果断开，重新起一个socket即可
                     # oss_utils.beary_chat("{} heart_beat socket 断开, 准备重新链接".format(wx_username), user='fatphone777')
                     # cls.__print_log("{0} socket state:{1}".format(wx_username, wx_bot.wechat_client.connected))
-
+                    oss_utils.beary_chat("淘宝客{0}: socket断开，尝试进行二次登录".format(user.nickname))
+                    logger.info("{0}: socket断开，尝试重新进行二次登录".format(user.nickname))
                     wx_bot.wechat_client.close_when_done()
-
+                    time.sleep(5)
                     # 再一次初始化
                     is_first = True
                     wx_bot = weixin_bot.WXBot()
                     wx_bot.set_user_context(wx_username)
                     wx_bot.open_notify_callback()
+
 
                 v_user = pickle.loads(red.get('v_user_' + wx_username))
 

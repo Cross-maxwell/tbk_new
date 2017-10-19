@@ -146,8 +146,6 @@ class WXBot(object):
                                 # self.wechat_client.close_when_done()
                             else:
                                 logger.info("%s: 线程执行同步成功" % v_user.nickname)
-                        else:
-                            logger.info("%s: 线程同步锁获取失败，跳过线程同步" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
                     self.__is_async_check = False
 
