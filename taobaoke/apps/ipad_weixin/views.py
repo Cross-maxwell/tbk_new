@@ -50,16 +50,19 @@ class HostList(View):
             # 第一步 筛选出这个人登录了多少个机器人 并且取出它的wx_id
             wxusers = WxUser.objects.filter(user__username=username).all()
             for wxuser in wxusers:
+                robot_chatroom_list = []
                 ret = wxuser.login
                 name = wxuser.nickname
                 chatroom_list = ChatRoom.objects.filter(wx_user__username=wxuser.username, nickname__contains=u"福利社")
                 for chatroom in chatroom_list:
-                    data.append({"ret": ret, "name": name, "group": chatroom.nickname})
+                    robot_chatroom_list.append(chatroom.nickname)
+
+                data.append({"ret": ret, "name": name, "group": robot_chatroom_list})
         except Exception as e:
             logger.error(e)
             print(e)
 
-        response_data = {"ret": str(ret), "data": data}
+        response_data = {"data": data}
 
         return HttpResponse(json.dumps(response_data))
 
