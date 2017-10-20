@@ -13,7 +13,6 @@ import urllib
 import requests
 import json
 
-from ipad_weixin.settings import customer_service_list
 import logging
 logger = logging.getLogger('weixin_bot')
 

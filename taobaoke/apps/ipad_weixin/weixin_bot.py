@@ -40,7 +40,6 @@ from broadcast.models.user_models import TkUser
 from ipad_weixin.models import WxUser, Contact, Message, Qrcode, BotParam, Img, ChatRoom, \
     ChatroomMember
 
-from settings import customer_service_list
 
 import logging
 logger = logging.getLogger('weixin_bot')

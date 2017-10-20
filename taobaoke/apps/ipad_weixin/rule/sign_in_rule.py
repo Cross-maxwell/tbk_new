@@ -28,12 +28,11 @@ def filter_sign_in_keyword(wx_id, msg_dict):
     keywords = [signin.keyword for signin in signin_db]
 
     # 粗略判断
-    if content in keywords and u"福利社" in chatroom.nickname:
+    if content in keywords:
         # 该机器人的所有红包口令
         sign_rule_list = SignInRule.objects.filter(chatroom__wx_user__username=wx_id)
         # 进一步判断
         if content in [sign_rule.keyword for sign_rule in sign_rule_list]:
-
 
             speaker_id = msg_dict['Content'].split(':')[0]
 
@@ -147,20 +146,4 @@ if __name__ == '__main__':
     u'MsgType': 1, u'ImgBuf': None, 
     u'NewMsgId': 1469484974773846106, 
     u'CreateTime': 1506652565}
-    
-
-    {
-      u'Status': 3,
-      u'PushContent': u'',
-      u'FromUserName': u'wxid_cegmcl4xhn5w22',
-      u'MsgId': 1650548067,
-      u'ImgStatus': 1,
-      u'ToUserName': u'6947816994@chatroom',
-      u'MsgSource': u'',
-      u'Content': u'\u4eca\u5929\u6211\u8981\u597d\u597d\u8d5a\u94b1',
-      u'MsgType': 1,
-      u'ImgBuf': None,
-      u'NewMsgId': 6299110954078902469,
-      u'CreateTime': 1507950629
-    }
     """
