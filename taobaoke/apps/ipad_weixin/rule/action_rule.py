@@ -7,12 +7,13 @@ django.setup()
 
 from django.utils.encoding import iri_to_uri
 
-from ipad_weixin.models import Qrcode, ChatRoom, ChatroomMember
+from ipad_weixin.models import Qrcode, ChatRoom, ChatroomMember, WxUser
 from broadcast.models.user_models import Adzone
 import urllib
 import requests
 import json
 
+from ipad_weixin.settings import customer_service_list
 import logging
 logger = logging.getLogger('weixin_bot')
 
@@ -20,6 +21,9 @@ logger = logging.getLogger('weixin_bot')
 def filter_keyword_rule(wx_id, msg_dict):
     keyword = find_buy_start(msg_dict['Content'])
     if keyword and keyword is not '':
+        wx_user_list = WxUser.objects.filter(username=wx_id, is_superuser=True)
+        if wx_id in [wx_user.username for wx_user in wx_user_list]:
+            return
         # 群是淘宝客群，找XX才生效
         gid = ''
         at_user_id = ''
@@ -57,7 +61,7 @@ def filter_keyword_rule(wx_id, msg_dict):
 
 
                 import random
-                quant=random.randint(1000,2000)
+                quant=random.randint(1000, 2000)
 
                 from ipad_weixin.send_msg_type import send_msg_type
 
@@ -122,63 +126,3 @@ if __name__ == "__main__":
     wx_id = 'wxid_ozdmesmnpy5g22'
     filter_keyword_rule(wx_id, msg_dict)
 
-
-
-    """
-    请求 
-    http://dianjin364.123nlw.com/a_api/index/search?wp=&sort=6&pid=mm_122190119_26062749_103284242&search=%E7%BA%BD%E6%9B%BC%E7%82%B9%E8%AF%BB%E7%AC%94&_path=9001.SE.0
-    没有搜索到商品的结果：
-    {
-        "status":{"code":1001,"msg":"ok"},
-        "result":{
-            "search":"\u7ebd\u66fc\u70b9\u8bfb\u7b14",
-            "items":[],
-            "wp":"eyJwYWdlIjoyLCJzb3J0IjoiNiIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU3ZWJkXHU2NmZjXHU3MGI5XHU4YmZiXHU3YjE0IiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6Mn0=",
-            "isEnd":1,"type":null,
-            "title":"\u7ebd\u66fc\u70b9\u8bfb\u7b14-\u963f\u56fd\u798f\u5229\u793e",
-            "pid":"mm_122190119_26062749_103284242"
-            }
-    }
-    
-    有商品返回的结果：
-    {
-    "status":{
-        "code":1001,
-        "msg":"ok"
-    },
-    "result":{
-        "search":"飞机",
-        "items":[
-            {
-                "id":"4470149",
-                "title":"超级飞机耐摔玩具小黄人飞机感应悬浮飞行器遥控飞机儿童玩具礼物",
-                "itemId":"545806621017",
-                "isBaoyou":false,
-                "baoyouImg":"",
-                "tabs":[
-
-                ],
-                "price":"¥33.9",
-                "originPrice":"¥113.9",
-                "amount":80,
-                "totalCount":200000,
-                "surplus":184082,
-                "percentage":7,
-                "coverImage":"http://oss3.lanlanlife.com/ce4006737a6e96a05da5c4edbbf4e48e_800x800.jpg@!1-300-90-jpg",
-                "link":"/saber/detail?activityId=5b6d98a49e524a8db15f8d75a2062adb&itemId=545806621017&pid=mm_122190119_26062749_103284242&forCms=1&_path=9001.CA.0.i.545806621017",
-                "monthSales":640,
-                "activityId":"5b6d98a49e524a8db15f8d75a2062adb",
-                "score":0,
-                "priorityRecommend":""
-            },
-            
-            
-        ],
-        "wp":"eyJwYWdlIjoyLCJzb3J0IjoiNiIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5OGRlXHU2NzNhIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0=",
-        "isEnd":0,
-        "type":null,
-        "title":"飞机-阿国福利社",
-        "pid":"mm_122190119_26062749_103284242"
-    }
-}    
-    """
