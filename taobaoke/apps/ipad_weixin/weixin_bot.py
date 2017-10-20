@@ -135,12 +135,12 @@ class WXBot(object):
 
                             if res is False:
                                 logger.info("%s: 线程执行同步失败" % v_user.nickname)
-                            elif res is 'ERROR' and self._auto_retry == 1:
-                                self._auto_retry = 2
+                            elif res is 'ERROR' and self._auto_retry == 29:
+                                self._auto_retry += 1
                                 logger.info("%s: 即将退出机器人" % v_user.nickname)
                                 # self.wechat_client.close_when_done()
                                 # self.logout_bot(v_user)
-                            elif res is 'ERROR' and self._auto_retry == 0:
+                            elif res is 'ERROR' and self._auto_retry >= 0:
                                 logger.info("%s: 线程同步返回微信错误，尝试重启心跳" % v_user.nickname)
                                 oss_utils.beary_chat("淘宝客{0}: 线程同步返回微信错误，尝试重启心跳".format(v_user.nickname))
                                 self._auto_retry += 1
@@ -604,11 +604,14 @@ class WXBot(object):
                     if self.auto_auth(v_user, UUid, DeviceType, new_socket=new_socket) is True:
                         return True
                     else:
+                        logger.info("%s: 执行二次登录失败， 即将退出机器人" % v_user.nickname)
+                        oss_utils.beary_chat("淘宝客%s: 执行二次登录失败， 即将退出机器人" % v_user.nickname)
                         self.wechat_client.close_when_done()
                         self.logout_bot(v_user)
                         return False
                 else:
-                    logger.info("%s: 微信返回错误" % v_user.nickname)
+                    logger.info("%s: 微信返回错误，即将退出机器人" % v_user.nickname)
+                    oss_utils.beary_chat("%s: 微信返回错误，即将退出机器人" % v_user.nickname)
                     self.wechat_client.close_when_done()
                     self.logout_bot(v_user)
                     return 'ERROR'
