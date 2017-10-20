@@ -619,7 +619,7 @@ class WXBot(object):
                 else:
                     logger.info("%s: 微信返回错误，即将退出机器人" % v_user.nickname)
                     oss_utils.beary_chat("%s: 微信返回错误，即将退出机器人" % v_user.nickname)
-                    # self.wechat_client.close_when_done()
+                    self.wechat_client.close_when_done()
                     self.logout_bot(v_user)
                     return 'ERROR'
 

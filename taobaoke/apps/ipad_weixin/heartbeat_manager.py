@@ -81,7 +81,7 @@ class HeartBeatManager(object):
                     # cls.__print_log("{0} socket state:{1}".format(wx_username, wx_bot.wechat_client.connected))
                     # oss_utils.beary_chat("淘宝客{0}: socket断开，尝试进行二次登录".format(user.nickname))
                     # logger.info("{0}: socket断开，尝试重新进行二次登录".format(user.nickname))
-                    wx_bot.wechat_client.close_when_done()
+                    # wx_bot.wechat_client.close_when_done()
                     time.sleep(5)
                     # 再一次初始化
                     is_first = True
