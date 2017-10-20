@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-淘宝客推送脚本, 向已经激活的、带有“福利社”的群组推送从lanlanlife取得的商品。post_taobaoke_url测试正常
 部署在s-proc-04 supervisor上，可直接访问 s-prod-04.qunzhu666.com:9001 (admin/123456)
-
 """
 import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
@@ -15,7 +13,6 @@ import datetime
 import random
 import requests
 
-BASE_DIRS = '/home/smartkeyerror/PycharmProjects/taobaoke/taobaoke/'
 import os
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
@@ -97,57 +94,7 @@ def post_taobaoke_url(wx_id, group_id, md_username):
 
 
 
-def select():
-    # 筛选出已经登录的User
-    user_list = WxUser.objects.filter(login__gt = 0).all()
-    logger.info([user.username for user in user_list])
 
-    for user in user_list:
-        logger.info('Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
-        # 发单机器人id
-        wx_id = user.username
-        # 通过 wx_id = hid 筛选出手机号
-        qr_code_db = Qrcode.objects.filter(username=user.username, md_username__isnull=False).order_by('-id').first()
-        md_username = qr_code_db.md_username
-        # 10分钟内不可以连续发送同样的请求。
-        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id), timeout=4)
-        ret = json.loads(rsp.text)['ret']
-        if ret == 0:
-            logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
-
-        if ret == 1:
-            # 筛选出激活群
-            wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
-            chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"福利社").all()
-            if not chatroom_list:
-                logger.info('%s 发单群为空' % wxuser.nickname)
-
-            for chatroom in chatroom_list:
-                # 发单人的wx_id, 群的id, 手机号
-                try:
-                    group_id = chatroom.username
-                    logger.info(u'%s 向 %s 推送商品' % (wxuser.nickname, chatroom.nickname))
-
-                    import thread
-                    thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username))
-                except Exception as e:
-                    logging.error(e)
-                    print(e)
-
-if __name__ == "__main__":
-    while True:
-        try:
-            now_hour = int(time.strftime('%H', time.localtime(time.time())))
-            if 7 <= now_hour <= 22:
-                select()
-            else:
-                # 如果不在这个时间段 休眠长一点
-                time.sleep(20 * 60)
-        except Exception as e:
-            logging.error(e)
-            print(e)
-
-        time.sleep(60)
 
 
 
