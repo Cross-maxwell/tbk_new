@@ -10,7 +10,8 @@ import requests
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-
+from bs4 import BeautifulSoup as BS
+from urllib import urlopen
 ### 仅adam本地测试用，部署时此处须更改
 executable_path = '/home/adam/mydev/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
@@ -123,12 +124,18 @@ def handle_product_from_qq(msg):
         item_url = 'https://detail.tmall.com/item.htm?id={}'.format(item_id)
 
         # 使用BeautifulSoup进行页面解析，抓取title和image_url属性：
-        # title : 商品标题，在天猫商品页中位于<h1 data-spm="1000983"中>，生成淘口令的必须参数
+        # title : 商品标题，在天猫商品页中位于<h1 data-spm="1000983"中>，生成淘口令的必须参数         补充：已更换爬取的tag。
         # img_url : 商品图片链接，在天猫商品页中位于<img id="J_ImgBooth"中>，生成淘口令的必须参数
         #
         # 注：通过fetch_lanlan抓取的商品img_url和此法所得的不一样，经测试生成淘口令后会引向同一个商品。
         driver.get(item_url)
-        img_url = driver.find_element_by_id('J_ImgBooth').get_attribute('src')
+        try:
+            img_url = driver.find_element_by_id('J_ImgBooth').get_attribute('src')
+        except:  # 若商品页使用视频介绍，则会在进入页面后加载视频，J_ImgBooth标签会隐藏，故使用BS获取加载前的页面。
+            html = urlopen(item_url)
+            bs_obj = BS(html,'lxml')
+            img_url = 'https://'+bs_obj.find('img',{'id' : 'J_ImgBooth'}).get('src')
+
         try: # 天猫商品页
             title = driver.find_element_by_class_name('tb-detail-hd').find_element_by_tag_name('h1').text.strip('\r\n\t')
         except: # 淘宝商品页
