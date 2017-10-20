@@ -61,11 +61,11 @@ def insert_product_by_msg(request):
 def handle_product_from_qq(msg):
 
     # 商品推送消息可能有多种形式：
-    # case1 : 全文有两个链接（其中一个为图片链接），链接格式为"https://s.click.taobao.com/……"，打开链接后会跳转到类似cupon_url的页面，
+    # case1 : 全文有一个链接，链接格式为"https://s.click.taobao.com/……"，打开链接后会跳转到类似cupon_url的页面，
     #                 但url中仅有activity_id,须做进一步跳转获取item_id。                                          最难搞
-    # case2 : 全文有三个链接（其中一个为图片链接），商品链接形式为"https://s.click.taobao.com/……"，其中没有item_id; 优惠券链接为常规链接，
+    # case2 : 全文有两个链接，商品链接形式为"https://s.click.taobao.com/……"，其中没有item_id; 优惠券链接为常规链接，
     #                 其中有activity_id。                                                                                                                   比较难搞
-    # case3 : 全文有三个链接（其中一个为图片链接），商品链接中包含item_id，优惠券链接中包含activity_id，按照正常逻辑进行处理。
+    # case3 : 全文有两个链接，商品链接中包含item_id，优惠券链接中包含activity_id，按照正常逻辑进行处理。
     #                                                                                                                                                                               一般难搞
     #
     # Attention : 目前默认条件-有两个链接时，优惠券链接中包含activity_id。若之后出现优惠券链接会跳转的情况，须再加判断。
@@ -82,7 +82,7 @@ def handle_product_from_qq(msg):
 
     ### 下面的if…else…用于针对不同的消息类型，获取item_id及activity_id
     # 第一种情形，msg中只有一个链接：
-        if len(re.findall('http', msg)) == 2:
+        if len(re.findall('http', msg)) == 1:
             # first_url : 第一层链接，为"https://s.click.taobao.com/……"形式，进入页面后跳转至优惠券页面，其中包含activity_id。
             first_url = re.findall(s_click_pattern, msg)[0]
             driver.get(first_url)
@@ -186,7 +186,7 @@ def handle_qq_msg(kuq_msg):
     #     2.代理广告或活动预告，有图片和文字，但无上述字眼。
     # 此处仅对商品推送进行处理
 
-    if ("券后" in kuq_msg or ("抢购" in kuq_msg or "下单" in kuq_msg)) and len(re.findall('http', kuq_msg)) > 1:
+    if ("券后" in kuq_msg or ("抢购" in kuq_msg or "下单" in kuq_msg)) and len(re.findall('http', kuq_msg)) > 0:
         print '从QQ群消息导入商品中……'
         handle_product_from_qq(kuq_msg)
     else:
