@@ -28,63 +28,65 @@ def filter_sign_in_keyword(wx_id, msg_dict):
     keywords = [signin.keyword for signin in signin_db]
 
     # 粗略判断
-    if content in keywords:
+    if content in keywords and u"福利社" in chatroom.nickname:
+        """
+        该功能将于后续上线，目前为所有群开放
         # 该机器人的所有红包口令
         sign_rule_list = SignInRule.objects.filter(chatroom__wx_user__username=wx_id)
         # 进一步判断
         if content in [sign_rule.keyword for sign_rule in sign_rule_list]:
+        """
+        speaker_id = msg_dict['Content'].split(':')[0]
 
-            speaker_id = msg_dict['Content'].split(':')[0]
+        speaker = ChatroomMember.objects.filter(username=speaker_id).first()
+        singin_rule = SignInRule.objects.filter(keyword=content).first()
 
-            speaker = ChatroomMember.objects.filter(username=speaker_id).first()
-            singin_rule = SignInRule.objects.filter(keyword=content).first()
+        speaker_name = speaker.nickname
+        speaker_nick_name_trim = get_nick_name_trim(speaker_name)
+        speaker_head_img_url = speaker.small_head_img_url
+        speaker_nick_name_emoji_unicode = get_nick_name_emoji_unicode(speaker_name)
+        from_user_id = msg_dict['FromUserName']
 
-            speaker_name = speaker.nickname
-            speaker_nick_name_trim = get_nick_name_trim(speaker_name)
-            speaker_head_img_url = speaker.small_head_img_url
-            speaker_nick_name_emoji_unicode = get_nick_name_emoji_unicode(speaker_name)
-            from_user_id = msg_dict['FromUserName']
-
-            data = {
-                "speaker_nick_name_trim": speaker_nick_name_trim,
-                "time": {"$date": int(round(time.time()*1000))},
-                "speaker_head_img_url": speaker_head_img_url,
-                "speaker_nick_name_emoji_unicode": speaker_nick_name_emoji_unicode,
-                "from_user_id": from_user_id,
-                "speaker_id": speaker_id
-            }
+        data = {
+            "speaker_nick_name_trim": speaker_nick_name_trim,
+            "time": {"$date": int(round(time.time()*1000))},
+            "speaker_head_img_url": speaker_head_img_url,
+            "speaker_nick_name_emoji_unicode": speaker_nick_name_emoji_unicode,
+            "from_user_id": from_user_id,
+            "speaker_id": speaker_id
+        }
 
 
-            url = 'http://s-poc-02.qunzhu666.com/365/api/clockin/'
-            request_url = url + singin_rule.red_packet_id
-            json_data = json.dumps(data)
-            response = requests.post(request_url, data=json_data)
-            body = json.loads(response.content)
+        url = 'http://s-poc-02.qunzhu666.com/365/api/clockin/'
+        request_url = url + singin_rule.red_packet_id
+        json_data = json.dumps(data)
+        response = requests.post(request_url, data=json_data)
+        body = json.loads(response.content)
 
-            reaction_list = body['reaction_list']
-            for reaction in reaction_list:
-                if reaction['type'] == 'text':
-                    text = reaction['content']
+        reaction_list = body['reaction_list']
+        for reaction in reaction_list:
+            if reaction['type'] == 'text':
+                text = reaction['content']
 
-                    text_msg_dict = {
+                text_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": from_user_id,
+                    "text": "@" + speaker_name + '\\n' + text,
+                    "type": "text",
+                }
+                send_msg_type(text_msg_dict, at_user_id=speaker_id)
+
+            elif reaction['type'] == 'img':
+
+                img_url = reaction['content']
+                if img_url:
+                    img_msg_dict = {
                         "uin": wx_id,
                         "group_id": from_user_id,
-                        "text": "@" + speaker_name + '\\n' + text,
-                        "type": "text",
+                        "text": img_url,
+                        "type": "img"
                     }
-                    send_msg_type(text_msg_dict, at_user_id=speaker_id)
-
-                elif reaction['type'] == 'img':
-
-                    img_url = reaction['content']
-                    if img_url:
-                        img_msg_dict = {
-                            "uin": wx_id,
-                            "group_id": from_user_id,
-                            "text": img_url,
-                            "type": "img"
-                        }
-                        send_msg_type(img_msg_dict, at_user_id=None)
+                    send_msg_type(img_msg_dict, at_user_id=None)
     else:
         pass
 
