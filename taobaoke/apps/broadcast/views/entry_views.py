@@ -72,7 +72,8 @@ def handle_product_from_qq(msg):
     # Attention : 目前默认条件-有两个链接时，优惠券链接中包含activity_id。若之后出现优惠券链接会跳转的情况，须再加判断。
 
     # 预定义正则匹配pattern:
-    item_id_pattern = 'item\.htm\?.{0,15}id=(\d*)'
+    item_id_pattern = 'item\.htm\?[.\W]*id=(\d*)'
+    item_id_pattern_backup = 'itemId=(\d*)'
     activity_id_pattern = 'activity_?[iI]d=([\w\d]*)'
     s_click_pattern = '(https?://s\.click.taobao\.com/[\d\w]*)'
 
@@ -113,7 +114,10 @@ def handle_product_from_qq(msg):
                 tran_item_url = re.findall(s_click_pattern, msg)[0]
                 driver.get(tran_item_url)
                 time.sleep(time_for_load)
-                item_id = re.findall(item_id_pattern, driver.current_url)[0]
+                try:
+                    item_id = re.findall(item_id_pattern, driver.current_url)[0]
+                except:
+                    item_id = re.findall(item_id_pattern_backup, driver.current_url)[0]
 
         # cupon_url : 优惠券url，用商品id及活动id拼接
         cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&src=xsj_lanlan'.format(
