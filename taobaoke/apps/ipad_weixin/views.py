@@ -36,56 +36,56 @@ class GetQrcode(View):
 
 
 # TODO:新版本，待前端完成后推送
-# class HostList(View):
-#         """
-#         接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
-#         """
-#     def get(self, request):
-#         username = request.GET.get('username', '')
-#         data = []
-#         try:
-#             # 第一步 筛选出这个人登录了多少个机器人 并且取出它的wx_id
-#             wxusers = WxUser.objects.filter(user__username=username).all()
-#             for wxuser in wxusers:
-#                 robot_chatroom_list = []
-#                 ret = wxuser.login
-#                 name = wxuser.nickname
-#                 chatroom_list = ChatRoom.objects.filter(wx_user__username=wxuser.username, nickname__contains=u"福利社")
-#                 for chatroom in chatroom_list:
-#                     robot_chatroom_list.append(chatroom.nickname)
-#                 data.append({"ret": ret, "name": name, "group": robot_chatroom_list})
-#         except Exception as e:
-#             logger.error(e)
-#             print(e)
-#         response_data = {"data": data}
-#         return HttpResponse(json.dumps(response_data))
-
-
 class HostList(View):
     """
     接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
     """
     def get(self, request):
         username = request.GET.get('username', '')
-        ret = 0
         data = []
         try:
             # 第一步 筛选出这个人登录了多少个机器人 并且取出它的wx_id
             wxusers = WxUser.objects.filter(user__username=username).all()
             for wxuser in wxusers:
+                robot_chatroom_list = []
                 ret = wxuser.login
                 name = wxuser.nickname
                 chatroom_list = ChatRoom.objects.filter(wx_user__username=wxuser.username, nickname__contains=u"福利社")
                 for chatroom in chatroom_list:
-                    data.append({"ret": ret, "name": name, "group": chatroom.nickname})
+                    robot_chatroom_list.append(chatroom.nickname)
+                data.append({"ret": ret, "name": name, "group": robot_chatroom_list})
         except Exception as e:
             logger.error(e)
             print(e)
+        response_data = {"data": data}
+        return HttpResponse(json.dumps(response_data))
 
-        response_data = {"ret": str(ret), "data": data}
 
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-
+#class HostList(View):
+#    """
+#    接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
+#    """
+#    def get(self, request):
+#        username = request.GET.get('username', '')
+#        ret = 0
+#        data = []
+#        try:
+#            # 第一步 筛选出这个人登录了多少个机器人 并且取出它的wx_id
+#            wxusers = WxUser.objects.filter(user__username=username).all()
+#            for wxuser in wxusers:
+#                ret = wxuser.login
+#                name = wxuser.nickname
+#                chatroom_list = ChatRoom.objects.filter(wx_user__username=wxuser.username, nickname__contains=u"福利社")
+#                for chatroom in chatroom_list:
+#                    data.append({"ret": ret, "name": name, "group": chatroom.nickname})
+#        except Exception as e:
+#            logger.error(e)
+#            print(e)
+#
+#        response_data = {"ret": str(ret), "data": data}
+#
+#        return HttpResponse(json.dumps(response_data), content_type="application/json")
+#
 
 class IsLogin(View):
     """
