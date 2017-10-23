@@ -60,6 +60,31 @@ class HostList(View):
         response_data = {"data": data}
         return HttpResponse(json.dumps(response_data))
 
+# class HostList(View):
+#     """
+#     接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
+#     """
+#     def get(self, request):
+#         username = request.GET.get('username', '')
+#         ret = 0
+#         data = []
+#         try:
+#             # 第一步 筛选出这个人登录了多少个机器人 并且取出它的wx_id
+#             wxusers = WxUser.objects.filter(user__username=username).all()
+#             for wxuser in wxusers:
+#                 ret = wxuser.login
+#                 name = wxuser.nickname
+#                 chatroom_list = ChatRoom.objects.filter(wx_user__username=wxuser.username, nickname__contains=u"福利社")
+#                 for chatroom in chatroom_list:
+#                     data.append({"ret": ret, "name": name, "group": chatroom.nickname})
+#         except Exception as e:
+#             logger.error(e)
+#             print(e)
+#
+#         response_data = {"ret": str(ret), "data": data}
+#
+#         return HttpResponse(json.dumps(response_data), content_type="application/json")
+>>>>>>> 7325a47265def96d6f53b02265712a7ad9cad6a3
 
 #class HostList(View):
 #    """
@@ -153,7 +178,7 @@ class IsUuidLogin(View):
 
 class PostGoods(View):
     """
-    接口： s-prod-04.qunzhu666.com/push_product
+    接口： s-prod-04.qunzhu666.com:8080/push_product
     """
     def get(self, request):
         user_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
@@ -226,6 +251,7 @@ class DefineSignRule(View):
 class ResetHeartBeat(View):
     """
     此方法只能在重启supervisor服务时使用，系统运行时严禁使用该接口
+    http://s-prod-04.qunzhu666.com:8080/reset_heart_beat
     """
     def get(self, request):
         auth_users = WxUser.objects.filter(last_heart_beat__gt=timezone.now() - datetime.timedelta(minutes=300))
@@ -243,7 +269,7 @@ class ResetHeartBeat(View):
 class ResetSingleHeartBeat(View):
     """
     开启单个用户心跳
-    接口： http://s-prod-04.qunzhu666.com/reset_single?username=wx_id
+    接口： http://s-prod-04.qunzhu666.com:8080/reset_single?username=wx_id
     """
     def get(self, request):
         username = request.GET.get('username')
