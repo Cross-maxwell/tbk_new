@@ -153,7 +153,7 @@ class IsUuidLogin(View):
 
 class PostGoods(View):
     """
-    接口： s-prod-04.qunzhu666.com/push_product
+    接口： s-prod-04.qunzhu666.com:8080/push_product
     """
     def get(self, request):
         user_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
@@ -226,6 +226,7 @@ class DefineSignRule(View):
 class ResetHeartBeat(View):
     """
     此方法只能在重启supervisor服务时使用，系统运行时严禁使用该接口
+    http://s-prod-04.qunzhu666.com:8080/reset_heart_beat
     """
     def get(self, request):
         auth_users = WxUser.objects.filter(last_heart_beat__gt=timezone.now() - datetime.timedelta(minutes=300))
@@ -243,7 +244,7 @@ class ResetHeartBeat(View):
 class ResetSingleHeartBeat(View):
     """
     开启单个用户心跳
-    接口： http://s-prod-04.qunzhu666.com/reset_single?username=wx_id
+    接口： http://s-prod-04.qunzhu666.com:8080/reset_single?username=wx_id
     """
     def get(self, request):
         username = request.GET.get('username')
