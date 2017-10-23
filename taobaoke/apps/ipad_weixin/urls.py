@@ -2,7 +2,8 @@
 
 from django.conf.urls import url
 from .views import GetQrcode, HostList, IsLogin, IsUuidLogin, PostGoods, \
-    ResetHeartBeat, ResetSingleHeartBeat, DefineSignRule, AddSuperUser
+    ResetHeartBeat, ResetSingleHeartBeat, DefineSignRule, AddSuperUser, \
+    SendSignNotice
 
 
 
@@ -15,7 +16,8 @@ urlpatterns = [
     url(r'reset_heart_beat', ResetHeartBeat.as_view()),
     url(r'reset_single', ResetSingleHeartBeat.as_view()),
     url(r'define_sign_rule', DefineSignRule.as_view()),
-    url(r'add_super_user', AddSuperUser.as_view())
+    url(r'add_super_user', AddSuperUser.as_view()),
+    url(r'send_signin_notice', SendSignNotice.as_view())
 ]
 
 

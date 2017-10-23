@@ -269,6 +269,36 @@ class AddSuperUser(View):
             return HttpResponse(json.dumps({"ret": u"add superuser failed"}))
 
 
+class SendSignNotice(View):
+    def get(self, request):
+        wxuser_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
+        for wx_user in wxuser_list:
+            chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username,
+                                                    nickname__icontains=u"测试福利社").all()
+            for chatroom in chatroom_list:
+                text_msg_dict = {
+                    # 群主 id
+                    "uin": wx_user.username,
+                    # 群/联系人 id
+                    "group_id": chatroom.username,
+                    "text": "签到开始了，回复 {0} 就可以签到哦～".format("正在测试"),
+                    "type": "text",
+                    "delay_time": 40
+                }
+
+                img_msg_dict = {
+                    "uin": wx_user.username,
+                    "group_id": chatroom.username,
+                    "text": "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1508657613624&di=407a48fabc04e6e445cb26f751f8737b&imgtype=0&src=http%3A%2F%2Fimg4.duitang.com%2Fuploads%2Fitem%2F201507%2F25%2F20150725014419_as3cW.jpeg",
+                    "type": "img"
+                }
+                from ipad_weixin.send_msg_type import send_msg_type
+                send_msg_type(img_msg_dict, at_user_id='')
+
+                send_msg_type(text_msg_dict, at_user_id='')
+        return HttpResponse(json.dumps({"ret": 1}))
+
+
 
 
 
