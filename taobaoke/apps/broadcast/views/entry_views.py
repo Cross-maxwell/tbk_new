@@ -72,7 +72,7 @@ def handle_product_from_qq(msg):
     # Attention : 目前默认条件-有两个链接时，优惠券链接中包含activity_id。若之后出现优惠券链接会跳转的情况，须再加判断。
 
     # 预定义正则匹配pattern:
-    item_id_pattern = 'item\.htm\?[&amp;]*id=(\d*)'
+    item_id_pattern = 'item\.htm\?.{0,15}id=(\d*)'
     activity_id_pattern = 'activity_?[iI]d=([\w\d]*)'
     s_click_pattern = '(https?://s\.click.taobao\.com/[\d\w]*)'
 
