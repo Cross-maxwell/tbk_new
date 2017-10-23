@@ -34,11 +34,12 @@ class GetQrcode(View):
         response_data = {"qrcode_url": oss_path}
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
-"""
-新版本， 待前端完成后推送
-"""
+
+# TODO:新版本，待前端完成后推送
 # class HostList(View):
-#     # username是手机号
+#         """
+#         接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
+#         """
 #     def get(self, request):
 #         username = request.GET.get('username', '')
 #         data = []
@@ -61,6 +62,9 @@ class GetQrcode(View):
 
 
 class HostList(View):
+    """
+    接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
+    """
     def get(self, request):
         username = request.GET.get('username', '')
         ret = 0
@@ -80,7 +84,7 @@ class HostList(View):
 
         response_data = {"ret": str(ret), "data": data}
 
-        return HttpResponse(json.dumps(response_data))
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 class IsLogin(View):
@@ -192,7 +196,6 @@ class PostGoods(View):
         return HttpResponse(json.dumps({"ret": 1}))
 
 
-
 class DefineSignRule(View):
     """
     接口： http://s-prod-04.qunzhu666.com/define_sign_rule
@@ -252,6 +255,7 @@ class ResetSingleHeartBeat(View):
 
 class AddSuperUser(View):
     """
+    添加只有签到功能的customer_service, 即不会发单
     接口: http://s-prod-04.qunzhu666.com/add_super_user?username=wx_id
     """
     def get(self, request):

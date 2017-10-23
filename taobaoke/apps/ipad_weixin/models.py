@@ -123,7 +123,7 @@ class WxUser(models.Model):
         self.nickname = v_user.nickname
         self.session_key = v_user.sessionKey
         self.username = v_user.userame
-        self.login = 1
+        # self.login = 1
 
     def save(self, *args, **kwargs):
         """
