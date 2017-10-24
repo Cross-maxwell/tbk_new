@@ -84,7 +84,7 @@ class HostList(View):
 #         response_data = {"ret": str(ret), "data": data}
 #
 #         return HttpResponse(json.dumps(response_data), content_type="application/json")
->>>>>>> 7325a47265def96d6f53b02265712a7ad9cad6a3
+
 
 #class HostList(View):
 #    """
