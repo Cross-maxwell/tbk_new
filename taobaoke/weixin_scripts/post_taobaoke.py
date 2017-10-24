@@ -7,11 +7,8 @@ import sys
 sys.path.append('/home/new_taobaoke/taobaoke')
 # sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
 
-import json
-import time
 import datetime
 import random
-import requests
 
 import os
 import django
