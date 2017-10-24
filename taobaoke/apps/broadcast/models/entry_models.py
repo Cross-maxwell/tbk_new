@@ -191,22 +191,4 @@ class Product(Entry):
         super(Product, self).save(*args, **kwargs)
 
 
-# from django.contrib.auth.models import User
-# import datetime
-#
-#
-# class PushTime(models.Model):
-#     user = models.OneToOneField(User)
-#     # 发单间隔
-#     interval_time = models.CharField(max_length=20, default=5)
-#     # 每天开始时间
-#     begin_time = models.CharField(max_length=20, default="07:00")
-#     # 每天停止时间
-#     end_time = models.CharField(max_length=20, default='23:00')
-#
-#     is_valid = models.BooleanField(default=True)
-#     update_time = models.DateTimeField(default=datetime.datetime.now())
-#
-#     def save(self, *args, **kwargs):
-#         self.update_time = datetime.datetime.now()
-#         return super(PushTime, self).save(*args, **kwargs)
+

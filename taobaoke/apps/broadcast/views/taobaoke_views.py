@@ -3,11 +3,14 @@ from __future__ import unicode_literals
 
 import json
 import requests
+import datetime
 from django.http import HttpResponse
 from django.views.generic.base import View
+from django.core.cache import cache
 
 from ipad_weixin.models import Qrcode, WxUser, ChatRoom
 from weixin_scripts.post_taobaoke import post_taobaoke_url
+from broadcast.models.user_models import PushTime
 
 import logging
 logger = logging.getLogger('django_views')
@@ -34,6 +37,7 @@ class PostGoods(View):
                 "http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id),
                 timeout=4)
             ret = json.loads(rsp.text)['ret']
+            # ret = is_push(md_username, wx_id)
             if ret == 0:
                 logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
 
@@ -93,5 +97,41 @@ class SendSignNotice(View):
         from ipad_weixin.send_msg_type import send_msg_type
         send_msg_type(img_msg_dict, at_user_id='')
         send_msg_type(text_msg_dict, at_user_id='')
+
+# from django.contrib.auth.models import User
+# def is_push(md_username, wx_id):
+#     """
+#     md_username
+#     wx_id
+#     """
+#     try:
+#         user = User.objects.get(username=md_username)
+#         user_pt = PushTime.objects.get_or_create(user__username=md_username)
+#         push_interval = user_pt.interval_time
+#
+#         cache_key = md_username + '_' + wx_id + '_last_push'
+#         cache_time_format = "%Y-%m-%d %H:%M:%S"
+#
+#         cur_time = datetime.datetime.now()
+#         # 上一次推送的时间
+#         last_push_time = cache.get(cache_key)
+#         if last_push_time is None:
+#             is_within_interval = True
+#         else:
+#             dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
+#             is_within_interval = dt_last_push_time + datetime.timedelta(minutes=push_interval) <= cur_time
+#
+#         dt_begin_pt = datetime.datetime.strptime(user_pt.begin_time.replace('24:00', '23:59'), '%H:%M')
+#         dt_end_pt = datetime.datetime.strptime(user_pt.end_time.replace('24:00', '23:59'), '%H:%M')
+#
+#         if dt_begin_pt.time() < cur_time.time() < dt_end_pt.time() and is_within_interval:
+#             ret_code = 1
+#             cache.set(cache_key, datetime.datetime.strftime(cur_time, cache_time_format), 3600 * 10)
+#         else:
+#             ret_code = 0
+#
+#         return ret_code
+#     except Exception as e:
+#         logger.error(e)
 
 

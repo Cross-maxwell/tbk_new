@@ -79,6 +79,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fuli.wsgi.application'
 
+from broadcast.views.server_settings import REDIS_PORT, S_POC_01_INT
+REDIS_SERVER = S_POC_01_INT
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://'+ REDIS_SERVER +':' + str(REDIS_PORT),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            # "REDIS_CLIENT_CLASS": "fakeredis.FakeStrictRedis",
+        },
+    },
+}
+
+
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
