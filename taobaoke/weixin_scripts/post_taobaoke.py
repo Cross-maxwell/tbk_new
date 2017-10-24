@@ -6,7 +6,7 @@
 """
 import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
-sys.path.append('/home/new_taobaoke/taobaoke')
+sys.path.append('/home/guofenjie/taobaoke')
 # sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
 
 import datetime
@@ -19,6 +19,9 @@ django.setup()
 
 from django.db.models import Q
 from django.utils import timezone
+import requests
+import json
+import time
 
 from ipad_weixin.models import Qrcode, Message, WxUser, Contact, ChatRoom
 from ipad_weixin.send_msg_type import send_msg_type
@@ -93,10 +96,9 @@ def post_taobaoke_url(wx_id, group_id, md_username, p=None):
     logger.info("向 %s 推送文字 \n %s." % (text_msg_dict['group_id'], text_msg_dict['text']))
 
 
-
 def select(p=None):
     # 筛选出已经登录的User
-    user_list = WxUser.objects.filter(login__gt = 0).all()
+    user_list = WxUser.objects.filter(login__gt=0).all()
     logger.info([user.username for user in user_list])
 
     for user in user_list:
@@ -115,7 +117,7 @@ def select(p=None):
         if ret == 1:
             # 筛选出激活群
             wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
-            chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"福利社").all()
+            chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
             if not chatroom_list:
                 logger.info('%s 发单群为空' % wxuser.nickname)
 

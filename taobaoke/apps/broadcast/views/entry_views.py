@@ -13,8 +13,8 @@ from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup as BS
 from urllib import urlopen
 ### 仅adam本地测试用，部署时此处须更改
-# sudo下载的
-executable_path = '/home/adam/mydev/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+# executable_path = '/home/adam/mydev/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+executable_path = '/home/tk/taobaoke/env_bck/selenium/webdriver/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
 from django.utils import timezone
 from django.http import HttpResponse

@@ -56,7 +56,7 @@ def filter_sign_in_keyword(wx_id, msg_dict):
 
         speaker = ChatroomMember.objects.filter(username=speaker_id).first()
         speaker_name = speaker.nickname
-        if u"点金微信" in chatroom.nickname or u"福利社" in chatroom.nickname:
+        if u"果粉街" in chatroom.nickname:
             data = {
                 "speaker_nick_name_trim": get_nick_name_trim(speaker_name),
                 "time": {"$date": int(round(time.time() * 1000))},
