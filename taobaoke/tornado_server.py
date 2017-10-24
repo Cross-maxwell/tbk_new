@@ -10,7 +10,7 @@ import tornado.options
 from django.core.wsgi import get_wsgi_application
 import tornado.log
 
-tornado.options.define('port', default=8080, help="run the given port", type=int)
+tornado.options.define('port', default=9090, help="run the given port", type=int)
 
 
 def main():

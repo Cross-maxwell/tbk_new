@@ -1,6 +1,8 @@
 asn1crypto==0.22.0
 attrs==17.2.0
 Automat==0.6.0
+BeautifulSoup==3.2.1
+beautifulsoup4==4.6.0
 certifi==2017.7.27.1
 cffi==1.11.0
 chardet==3.0.4
@@ -41,6 +43,7 @@ Scrapy==1.4.0
 selenium==3.5.0
 service-identity==17.0.0
 six==1.10.0
+topsdk==1.0.0
 Twisted==17.5.0
 urllib3==1.22
 w3lib==1.18.0

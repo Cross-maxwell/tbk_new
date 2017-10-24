@@ -10,7 +10,7 @@ from django.core.cache import cache
 
 from ipad_weixin.models import Qrcode, WxUser, ChatRoom
 from weixin_scripts.post_taobaoke import post_taobaoke_url
-from broadcast.models.user_models import PushTime
+# from broadcast.models.user_models import PushTime
 
 import logging
 logger = logging.getLogger('django_views')
