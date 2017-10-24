@@ -84,7 +84,7 @@ REDIS_SERVER = S_POC_01_INT
 
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
+        'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': 'redis://'+ REDIS_SERVER +':' + str(REDIS_PORT),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",

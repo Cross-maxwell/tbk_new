@@ -80,18 +80,18 @@ class Adzone(models.Model):
         super(Adzone, self).save(*args, **kwargs)
 
 from django.utils import timezone
-# class PushTime(models.Model):
-#     user = models.OneToOneField(User)
-#     # 发单间隔
-#     interval_time = models.CharField(max_length=20, default=5)
-#     # 每天开始时间
-#     begin_time = models.CharField(max_length=20, default="07:00")
-#     # 每天停止时间
-#     end_time = models.CharField(max_length=20, default='23:00')
-#
-#     is_valid = models.BooleanField(default=True)
-#     update_time = models.DateTimeField(default=timezone.now)
-#
-#     def save(self, *args, **kwargs):
-#         self.update_time = timezone.now()
-#         return super(PushTime, self).save(*args, **kwargs)
+class PushTime(models.Model):
+    user = models.OneToOneField(User)
+    # 发单间隔
+    interval_time = models.CharField(max_length=20, default=5)
+    # 每天开始时间
+    begin_time = models.CharField(max_length=20, default="07:00")
+    # 每天停止时间
+    end_time = models.CharField(max_length=20, default='23:00')
+
+    is_valid = models.BooleanField(default=True)
+    update_time = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        self.update_time = timezone.now()
+        return super(PushTime, self).save(*args, **kwargs)
