@@ -27,6 +27,9 @@ from broadcast.models.user_models import TkUser
 from broadcast.views.server_settings import *
 from weixin_scripts.post_taobaoke import select
 
+import logging
+logger = logging.getLogger('entry_views')
+
 @csrf_exempt
 def insert_product(request):
     req_dict = json.loads(request.body)
@@ -46,7 +49,7 @@ def insert_product(request):
         else:
             p.available = True
         p.save()
-        print 'Product updated.'
+        logger.info('Product updated.')
     else:
         p = Product.objects.create(**{key: req_dict[key] for key in key_list})
     p.refresh_from_db()
@@ -169,25 +172,25 @@ def handle_product_from_qq(msg):
 
             # fetch_lanlan脚本的运行频率为5分钟一次，比QQ消息传入频率高得多，所以当QQ群中发出产品在我库中存在时，直接跳过而不依照QQ消息更新。
             if Product.objects.filter(item_id=item_id).exists():
-                print '库中已存在此商品，本条消息不做存储。'
+                logger.info('库中已存在此商品，本条消息不做存储。')
                 p = Product.objects.filter(item_id=item_id).first()
             else:
                 p = Product.objects.create(title=title, desc='', img_url=img_url, cupon_value=cupon_value,
                                            price=price, sold_qty=sold_qty, cupon_left=cupon_left,
                                            cupon_url=cupon_url)
                 p.save()
-                print '商品存储完成。'
+                logger.info('商品存储完成。')
             # 向微信群中发送该商品推广信息。
-            print '向微信群中推送……'
+            logger.info('向微信群中推送……')
             select(p)
         except NoSuchElementException:
-            print '优惠券已失效。'
+            logger.info('优惠券已失效。')
             if Product.objects.filter(item_id=item_id).exists():
                 p_duplicate = Product.objects.filter(item_id=item_id).first()
                 p_duplicate.available = False
                 p_duplicate.save()
     except:
-        print('商品解析失败，放弃对本条商品的存储')
+        logger.warning('商品解析失败，放弃对本条商品的存储')
 
 
 def handle_qq_msg(kuq_msg):
@@ -199,15 +202,15 @@ def handle_qq_msg(kuq_msg):
     # 此处仅对商品推送进行处理
 
     if ("券后" in kuq_msg or ("抢购" in kuq_msg or "下单" in kuq_msg)) and len(re.findall('http', kuq_msg)) > 0:
-        print '从QQ群消息导入商品中……'
+        logger.info('从QQ群消息导入商品中……')
         handle_product_from_qq(kuq_msg)
     else:
-        print '无关消息, 忽略'
+        logger.info('无关消息, 忽略')
 
 
 @csrf_exempt
 def insert_broadcast_by_msg(request):
-    print '收到来自QQ群的消息。'
+    logger.info('收到来自QQ群的消息。')
     kuq_msg = request.body
 
     import thread

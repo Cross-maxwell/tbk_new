@@ -225,5 +225,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True
         },
+        'entry_views': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
+        }
     }
 }
