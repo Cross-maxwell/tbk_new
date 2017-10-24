@@ -79,6 +79,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fuli.wsgi.application'
 
+from broadcast.views.server_settings import REDIS_PORT, S_POC_01_INT
+REDIS_SERVER = S_POC_01_INT
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': 'redis://'+ REDIS_SERVER +':' + str(REDIS_PORT),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            # "REDIS_CLIENT_CLASS": "fakeredis.FakeStrictRedis",
+        },
+    },
+}
+
+
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -169,10 +184,10 @@ LOGGING = {
             'include_html': True,
         },
         'error': {
-            'level':'ERROR',
-            'class':'logging.handlers.RotatingFileHandler',
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'log', 'error.log'),
-            'maxBytes':1024*1024*5,
+            'maxBytes': 1024*1024*5,
             'backupCount': 5,
             'formatter': 'standard',
         },
@@ -188,24 +203,24 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': False
+            'propagate': True
         },
-        'django_models':{
+        'django_models': {
             'handlers': ['error', 'console'],
             'level': 'ERROR',
             'propagate': True
         },
-        'django_views':{
+        'django_views': {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True
         },
-        'weixin_bot':{
+        'weixin_bot': {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True
         },
-        'post_taobaoke':{
+        'post_taobaoke': {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True

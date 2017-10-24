@@ -91,6 +91,7 @@ class BotParam(models.Model):
             logger.error(e)
             print('---update qrcode failed---')
 
+
 class WxUser(models.Model):
     auto_auth_key = models.CharField(max_length=200)
     cookies = models.CharField(max_length=200)

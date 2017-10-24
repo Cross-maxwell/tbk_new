@@ -189,3 +189,6 @@ class Product(Entry):
         except Exception:
             self.item_id = ''
         super(Product, self).save(*args, **kwargs)
+
+
+
