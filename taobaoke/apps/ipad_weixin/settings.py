@@ -53,5 +53,9 @@ CONST_PROTOCOL_DICT = {
     # 初始化key 此key由授权人员分配
     "random_encry_key": [80, 117, 128, 85, 2, 55, 180, 126, 141, 93, 185, 220, 112, 142, 15, 128],
     # 在不知道用户设备的id的的时候固定或者随机 但必须保持 单一账号使用同一个设备id同一个设备ID 不建议多号登陆 一封就封一批 建议登陆账号的md5作为设备id 或wxid 的md5作为设备id
-    "deviceId": "1cdb5ab6695376cf6049c2d6c4445bc"
+    "deviceId": "1cdb5ab6695376cf6049c2d6c4445bc",
+    "UUid": "667D18B1-BCE3-4AA2-8ED1-1FDC19446567",
 }
+
+
+

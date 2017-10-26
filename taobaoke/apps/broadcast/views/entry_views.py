@@ -132,6 +132,8 @@ def push_product(request):
     return HttpResponse(json.dumps(data), status=200)
 
 
+
+
 @csrf_exempt
 def search_product(request):
     req_dict = json.loads(request.body)

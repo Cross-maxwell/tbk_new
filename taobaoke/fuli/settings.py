@@ -31,8 +31,7 @@ SECRET_KEY = 'tdw1=k(f2=%^*9bj*_+h_05(!wk03^(_jto+m0t6322uo!2y-('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost']
-
+ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost', 'tmp.zhiqun365.com']
 
 # Application definition
 
@@ -45,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'broadcast',
     'rest_framework',
-    'ipad_weixin'
+    'ipad_weixin',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +56,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
 
 ROOT_URLCONF = 'fuli.urls'
 
@@ -78,6 +79,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fuli.wsgi.application'
 
+from broadcast.views.server_settings import REDIS_PORT, S_POC_01_INT
+REDIS_SERVER = S_POC_01_INT
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': 'redis://'+ REDIS_SERVER +':' + str(REDIS_PORT),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            # "REDIS_CLIENT_CLASS": "fakeredis.FakeStrictRedis",
+        },
+    },
+}
+
+
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
@@ -93,6 +109,7 @@ DATABASES = {
         'PORT': '50001',
     }
 }
+
 
 
 # DATABASES = {
@@ -143,6 +160,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+STATIC_ROOT = '/home/smartkeyerror/.virtualenvs/django_env/local/lib/python2.7/site-packages/django/contrib/admin/'
 STATIC_URL = '/static/'
 
 import logging
@@ -165,10 +184,10 @@ LOGGING = {
             'include_html': True,
         },
         'error': {
-            'level':'ERROR',
-            'class':'logging.handlers.RotatingFileHandler',
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'log', 'error.log'),
-            'maxBytes':1024*1024*5,
+            'maxBytes': 1024*1024*5,
             'backupCount': 5,
             'formatter': 'standard',
         },
@@ -184,24 +203,24 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': False
+            'propagate': True
         },
-        'django_models':{
+        'django_models': {
             'handlers': ['error', 'console'],
             'level': 'ERROR',
             'propagate': True
         },
-        'django_views':{
-            'handlers': ['error', 'console'],
-            'level': 'ERROR',
-            'propagate': True
-        },
-        'weixin_bot':{
+        'django_views': {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True
         },
-        'post_taobaoke':{
+        'weixin_bot': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'post_taobaoke': {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True

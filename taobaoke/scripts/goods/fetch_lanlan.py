@@ -22,7 +22,7 @@ from broadcast.models.entry_models import Product
 import logging
 logger = logging.getLogger('fetch_lanlan')
 
-f = open('lanlan_cookie.txt')
+f = open('/home/new_taobaoke/taobaoke/scripts/goods/lanlan_cookie.txt')
 cookie_str = f.read()
 f.close()
 

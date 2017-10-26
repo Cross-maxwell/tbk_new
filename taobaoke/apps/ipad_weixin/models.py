@@ -34,14 +34,14 @@ class Qrcode(models.Model):
     md_username = models.CharField(max_length=200)
 
     @classmethod
-    def save_qr_code(cls, qr_code):
+    def save_qr_code(cls, qr_code, md_username):
         try:
             qrcode_db = cls(
                 check_time=qr_code['CheckTime'], expired_time=qr_code['ExpiredTime'],
                 head_img_url=qr_code['HeadImgUrl'], nickname=qr_code['Nickname'],
                 notify_key=qr_code['NotifyKey'], password=qr_code['Password'],
                 random_key=qr_code['RandomKey'], status=qr_code['Status'],
-                username=qr_code['Username'], uuid=qr_code['Uuid'], md_username=''
+                username=qr_code['Username'], uuid=qr_code['Uuid'], md_username=md_username
             )
             qrcode_db.save()
         except Exception as e:
@@ -91,6 +91,7 @@ class BotParam(models.Model):
             logger.error(e)
             print('---update qrcode failed---')
 
+
 class WxUser(models.Model):
     auto_auth_key = models.CharField(max_length=200)
     cookies = models.CharField(max_length=200)
@@ -111,7 +112,10 @@ class WxUser(models.Model):
     last_update = models.DateTimeField(null=True)
     create_at = models.DateTimeField(null=True)
 
-    last_heart_beat = models.DateTimeField(null=True, blank=True)
+    last_heart_beat = models.DateTimeField(null=True, default=None)
+    uuid = models.CharField(max_length=150, default='')
+
+    is_superuser = models.BooleanField(default=False)
 
     def update_wxuser_from_userobject(self, v_user):
         self.auto_auth_key = ''
@@ -120,7 +124,7 @@ class WxUser(models.Model):
         self.nickname = v_user.nickname
         self.session_key = v_user.sessionKey
         self.username = v_user.userame
-        self.login = 1
+        # self.login = 1
 
     def save(self, *args, **kwargs):
         """
@@ -130,6 +134,9 @@ class WxUser(models.Model):
             self.create_at = timezone.now()
         self.last_update = timezone.now()
         return super(WxUser, self).save(*args, **kwargs)
+
+    def __unicode__(self):
+        return self.nickname
 
 
 class Contact(models.Model):
@@ -221,6 +228,12 @@ class ChatRoom(models.Model):
         self.chat_room_version = msg_dict['ChatroomVersion']
         self.member_nums = len(msg_dict['ExtInfo'].split(','))
 
+    def __unicode__(self):
+        return self.nickname
+
+    class Meta:
+        verbose_name = "chatroom"
+
 
 class ChatroomMember(models.Model):
     username = models.CharField(max_length=100)
@@ -267,11 +280,17 @@ class Message(models.Model):
 
 
 class SignInRule(models.Model):
-    keyword = models.TextField()
+    keyword = models.CharField(max_length=100)
     red_packet_id = models.CharField(max_length=100)
     created = models.DateTimeField(auto_now=True)
 
     chatroom = models.ManyToManyField(ChatRoom)
+
+    def __unicode__(self):
+        return self.keyword
+
+
+
 
 
 
