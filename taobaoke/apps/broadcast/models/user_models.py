@@ -29,7 +29,7 @@ class TkUser(models.Model):
         except Exception as exc:
             requests.post(
                 'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
-                json={'text': '分配PID出现异常.' + exc.message}
+                json={'text': '分配PID出现异常. %s, username=%s' % (exc.message, self.user.username)}
             )
 
     def save(self, *args, **kwargs):
