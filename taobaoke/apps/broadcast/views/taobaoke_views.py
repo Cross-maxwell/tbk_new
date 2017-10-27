@@ -18,13 +18,13 @@ from broadcast.models.user_models import PushTime
 import logging
 logger = logging.getLogger('django_views')
 
-
+#795318
 class PostGoods(View):
     """
     接口： s-prod-04.qunzhu666.com:8080/push_product
     """
     def get(self, request):
-        user_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
+        user_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
         logger.info([user.username for user in user_list])
 
         for user in user_list:
@@ -35,12 +35,13 @@ class PostGoods(View):
             qr_code_db = Qrcode.objects.filter(username=user.username,
                                                md_username__isnull=False).order_by('-id').first()
             md_username = qr_code_db.md_username
+
             # 10分钟内不可以连续发送同样的请求。
-            rsp = requests.get(
-                "http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id),
-                timeout=4)
-            ret = json.loads(rsp.text)['ret']
-            # ret = is_push(md_username, wx_id)
+            # rsp = requests.get(
+            #     "http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id),
+            #     timeout=4)
+            # ret = json.loads(rsp.text)['ret']
+            ret = is_push(md_username, wx_id)
             if ret == 0:
                 logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
 
@@ -70,7 +71,12 @@ class SendSignNotice(View):
     接口： http://s-prod-04.qunzhu666.com/send_signin_notice
     """
     def get(self, request):
-        wxuser_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
+        md = request.user.id
+        print(md)
+
+
+
+        wxuser_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
         for wx_user in wxuser_list:
             chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username,
                                                     nickname__icontains=u"福利社").all()
@@ -102,32 +108,26 @@ class SendSignNotice(View):
         send_msg_type(text_msg_dict, at_user_id='')
 
 
-"""
-需要登录模块的加持
-"""
 class SetPushTime(View):
     @csrf_exempt
     def post(self, request):
-        md_user_id = str(request.user.id)
-        interval_time = int(request.data.get('interval_time', 5))
-        begin_time = request.data.get('begin_time')
-        end_time = request.data.get('end_time')
+        interval_time = int(request.POST.get('interval_time', 5))
+        begin_time = request.POST.get('begin_time')
+        end_time = request.POST.get('end_time')
         try:
-            pushtime = PushTime.objects.get(md_user_id=md_user_id)
+            pushtime = PushTime.objects.get(user=request.user)
             pushtime.interval_time = interval_time
             pushtime.begin_time = begin_time
             pushtime.end_time = end_time
             pushtime.save()
         except PushTime.DoesNotExist:
-            pushtime = PushTime.objects.create(md_user_id=md_user_id,
+            pushtime = PushTime.objects.create(user=request.user,
                                                interval_time=interval_time, begin_time=begin_time, end_time=end_time)
         data = {
-            "md_user_id": md_user_id,
             "interval_time": interval_time,
             "begin_time": begin_time,
             "end_time": end_time,
             "is_valid": True,
-            "update_time": timezone.now()
         }
 
         return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
@@ -153,8 +153,7 @@ def is_push(md_username, wx_id):
     wx_id
     """
     try:
-        user_id = User.objects.get(username=md_username).id
-        user_pt, created = PushTime.objects.get_or_create(user_id=str(user_id))
+        user_pt, created = PushTime.objects.get_or_create(user__username=md_username)
         push_interval = user_pt.interval_time
 
         cache_key = md_username + '_' + wx_id + '_last_push'

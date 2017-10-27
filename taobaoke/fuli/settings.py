@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'broadcast',
     'rest_framework',
     'ipad_weixin',
+    'corsheaders',
+    'user_auth'
 ]
 
 MIDDLEWARE = [
@@ -52,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
 #    'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -98,29 +101,29 @@ CACHES = {
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {'charset': 'utf8mb4'},
-        'NAME': 'ipad_weixin',
-        'USER': 'root',
-        'PASSWORD': 'Xiaozuanfeng',
-        'HOST': 's-prod-02.qunzhu666.com',
-        'PORT': '50001',
-    }
-}
-
-
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
 #         'OPTIONS': {'charset': 'utf8mb4'},
 #         'NAME': 'ipad_weixin',
 #         'USER': 'root',
-#         'PASSWORD': 'keyerror',
+#         'PASSWORD': 'Xiaozuanfeng',
+#         'HOST': 's-prod-02.qunzhu666.com',
+#         'PORT': '50001',
 #     }
 # }
+
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {'charset': 'utf8mb4'},
+        'NAME': 'ipad_weixin_01',
+        'USER': 'root',
+        'PASSWORD': 'keyerror',
+    }
+}
 
 
 
@@ -156,6 +159,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

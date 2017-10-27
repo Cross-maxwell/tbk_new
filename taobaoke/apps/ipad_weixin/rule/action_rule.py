@@ -20,7 +20,7 @@ logger = logging.getLogger('weixin_bot')
 def filter_keyword_rule(wx_id, msg_dict):
     keyword = find_buy_start(msg_dict['Content'])
     if keyword and keyword is not '':
-        wx_user_list = WxUser.objects.filter(username=wx_id, is_superuser=True)
+        wx_user_list = WxUser.objects.filter(username=wx_id, is_customer_server=True)
         if wx_id in [wx_user.username for wx_user in wx_user_list]:
             return
         # 群是淘宝客群，找XX才生效

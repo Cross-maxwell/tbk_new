@@ -185,7 +185,7 @@ class AddSuperUser(View):
         username = request.GET.get('username')
         wx_user = WxUser.objects.get(username=username)
         if wx_user:
-            wx_user.is_superuser = True
+            wx_user.is_customer_server = True
             wx_user.save()
             return HttpResponse(json.dumps({"ret": u"add superuser successfully"}))
         else:
