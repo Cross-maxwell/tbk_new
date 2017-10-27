@@ -15,6 +15,9 @@ class TkUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     adzone = models.ForeignKey('Adzone', db_column='adzone_key', null=True)
     search_url_template = models.CharField(max_length=128, null=True)
+    avatar_url = models.CharField(max_length=256, null=True, blank = True)
+    inviter_id = models.CharField(max_length = 16, null=True)
+    inviter_backup_info = models.CharField(max_length = 128, null=True)
 
     def get_adzone_id(self):
         return self.adzone.pid.split('_')[-1]

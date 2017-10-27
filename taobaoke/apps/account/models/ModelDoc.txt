@@ -1,0 +1,23 @@
+order_models.py
+    Order(models.Model)
+    AgentOrderStatus(models.Model)                                       OneToOne to Order
+
+
+commision_models.py
+    Account(models.Model)                                                              OneToOne to User
+        创建用户时创建
+    AlipayAccount(models.Model)                                                OneToOne to User
+    AccountFlow(models.Model)    # 账户流水
+    Commision(models.Model)                                                        OneToOne to User
+    AgentCommision(models.Model)                                          OneToOne to User
+
+
+
+
+push_time_models.py
+    PushTime(models.Model)
+news_models.py
+    NewsInfoModel(models.Model)
+    NewsPushModel(models.Model)
+
+
