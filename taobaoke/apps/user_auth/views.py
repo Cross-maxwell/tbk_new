@@ -22,17 +22,20 @@ if sys.getdefaultencoding() != defaultencoding:
     reload(sys)
     sys.setdefaultencoding(defaultencoding)
 
-
+"""
+wxf187y8doqur9qkkxqpuixbq4vr9hla
+"""
 class LoginView(View):
     @csrf_exempt
     def post(self, request):
-        username = request.POST.get("username", "")
-        password = request.POST.get("password", "")
+        req_data = json.loads(request.body)
+        username = req_data.get("username", "")
+        password = req_data.get("password", "")
         user = authenticate(username=username, password=password)
         # 这里如果验证通过了，会返回一个user对象;不通过，返回None
         if user:
             login(request, user)
-            return HttpResponse(json.dumps({"ret": 1, "data": "登录成功"}))
+            return HttpResponse(json.dumps({"ret": 1, "data": "登录成功", "user_id": user.id, "username": username}))
         else:
             try:
                 auth_user = User.objects.get(username=username)
@@ -47,10 +50,11 @@ class LoginView(View):
 class RegisterVIew(View):
     @csrf_exempt
     def post(self, request):
-        username = request.POST.get("username", "")
-        password1 = request.POST.get("password1", "")
-        password2 = request.POST.get("password2", "")
-        verifyNum = request.POST.get("verifyNum", "")
+        req_data = json.loads(request.body)
+        username = req_data.get("username", "")
+        password1 = req_data.get("password1", "")
+        password2 = req_data.get("password2", "")
+        verifyNum = req_data.get("verifyNum", "")
 
         cache_key = username + "_sms_send"
         verify_code = cache.get(cache_key)
@@ -73,10 +77,11 @@ class RegisterVIew(View):
 class ResetPassword(View):
     @csrf_exempt
     def post(self, request):
-        username = request.POST.get("username", "")
-        new_password1 = request.POST.get("new_password1", "")
-        new_password2 = request.POST.get("new_password2", "")
-        verifyNum = request.POST.get("verifyNum", "")
+        req_data = json.loads(request.body)
+        username = req_data.get("username", "")
+        new_password1 = req_data.get("new_password1", "")
+        new_password2 = req_data.get("new_password2", "")
+        verifyNum = req_data.get("verifyNum", "")
 
         cache_key = username + "_sms_send"
         verify_code = cache.get(cache_key)
@@ -106,8 +111,9 @@ class Logout(View):
 class SendTextMessage(View):
     @csrf_exempt
     def post(self, request):
-        phone_num = request.POST.get('username', None)
-        platform_id = request.POST.get('platform_id', None)
+        req_data = json.loads(request.body)
+        phone_num = req_data.get('username', None)
+        platform_id = req_data.get('platform_id', None)
 
         p2 = re.compile('^1[34758]\\d{9}$')
         phone_match = p2.match(phone_num)

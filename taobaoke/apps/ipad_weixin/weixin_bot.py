@@ -15,6 +15,7 @@ import time
 import urllib2
 import datetime
 import requests
+import re
 
 import os
 import django
@@ -567,7 +568,6 @@ class WXBot(object):
         :return:
         """
         while True:
-
             sync_req = WechatMsg(
                 token=CONST_PROTOCOL_DICT['machine_code'],
                 version=CONST_PROTOCOL_DICT['version'],
@@ -668,6 +668,8 @@ class WXBot(object):
                                     # 该群存在, 则可能是更改群名称、拉/踢人等。
                                     if msg_dict['Status'] == 4:
                                         self.update_chatroom_members(chatroom_name, v_user)
+                                        if u"邀请" in msg_dict['Content']:
+                                            self.send_invited_message(msg_dict)
 
                             try:
                                 message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])
@@ -681,7 +683,15 @@ class WXBot(object):
                     logger.info("%s: 同步资料完成" % v_user.nickname)
                     return True
 
-                    # self.async_check(v_user, new_socket=new_socket)
+    def send_invited_message(self, msg_dict):
+        nicakname_str = re.match('.*?(".*?").*?', msg_dict['Content'])
+        if nicakname_str:
+            invited_nickname = nicakname_str.group(1).strip('"')
+            chatroom_member = ChatroomMember.objects.filter(nickname=invited_nickname).first()
+            invited_member_id = chatroom_member.username
+
+            message = "@" + invited_nickname + "\n 啊哈，欢迎你的到来~"
+            self.send_text_msg(msg_dict['FromUserName'], message, v_user,at_user_id=invited_member_id)
 
     def new_init(self, v_user, md_username):
         """
@@ -1060,21 +1070,8 @@ class WXBot(object):
 
     def update_chatroom_members(self, chatroom_name, v_user):
 
-        """
-        {u'Status': 4, u'PushContent': u'',
-        u'FromUserName': u'6947816994@chatroom',
-        u'MsgId': 1650547862,
-        u'ImgStatus': 1,
-        u'ToUserName': u'wxid_cegmcl4xhn5w22',
-        u'MsgSource': u'',
-        u'Content': u'\u4f60\u4fee\u6539\u7fa4\u540d\u4e3a\u201c\u798f\u5229\u793e02\u201d',
-        u'MsgType': 10000, u'ImgBuf': None,
-        u'NewMsgId': 6737633150987174322, u'CreateTime': 1507891856}
-
-        """
-
         chatroom = ChatRoom.objects.get(username=chatroom_name)
-        members_db = ChatroomMember.objects.filter(chatroom=chatroom.id, is_delete=False)
+        members_db = ChatroomMember.objects.filter(chatroom__username=chatroom_name, is_delete=False)
         old_members_list = [member.username for member in members_db]
         group_members_details = self.get_chatroom_detail(v_user, chatroom_name)
         new_members_list = [member['Username'] for member in group_members_details]
@@ -1085,7 +1082,7 @@ class WXBot(object):
             for delete_member in delete_members:
                 # 还得是这个群的
                 delete_member_db = ChatroomMember.objects.filter(username=delete_member,
-                                                                 chatroom=chatroom.id).first()
+                                                                 chatroom__username=chatroom_name).first()
                 delete_member_db.is_delete = True
                 delete_member_db.save()
 
