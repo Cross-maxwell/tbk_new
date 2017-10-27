@@ -34,6 +34,8 @@ urlpatterns = [
     url(r'interact/', include(interact_urls)),
     url(r'^admin/', admin.site.urls),
     url(r'broadcast/', include(broadcast_urls)),
-    url(r'', include('ipad_weixin.urls'))
+    url(r'', include('ipad_weixin.urls')),
+    url(r'', include('broadcast.urls')),
+    url(r'auth/', include('user_auth.urls'))
 ]
 

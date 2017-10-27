@@ -10,7 +10,7 @@ constantly==15.1.0
 crcmod==1.7
 cryptography==2.0.3
 cssselect==1.0.1
-Django==1.11.5
+Django==1.9.8
 django-rest-framework==0.1.0
 djangorestframework==3.6.4
 enum34==1.1.6
