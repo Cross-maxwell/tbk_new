@@ -36,11 +36,6 @@ class PostGoods(View):
                                                md_username__isnull=False).order_by('-id').first()
             md_username = qr_code_db.md_username
 
-            # 10分钟内不可以连续发送同样的请求。
-            # rsp = requests.get(
-            #     "http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id),
-            #     timeout=4)
-            # ret = json.loads(rsp.text)['ret']
             ret = is_push(md_username, wx_id)
             if ret == 0:
                 logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)

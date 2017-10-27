@@ -1,5 +1,4 @@
 from django.conf.urls import url
-from django.contrib import admin
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
 urlpatterns = [

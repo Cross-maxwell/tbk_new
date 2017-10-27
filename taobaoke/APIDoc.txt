@@ -1,0 +1,36 @@
+登录：
+    http://s-prod-04.qunzhu666.com:8080/auth/login/
+    参数: username, password
+    method: POST
+    格式: form-data
+
+注册：
+    http://s-prod-04.qunzhu666.com:8080/auth/register/
+    格式: form-data
+    method: POST
+    参数：
+        username
+        password1
+        password2
+        verifyNum
+
+注册时的发送短信：
+    http://s-prod-04.qunzhu666.com:8080/auth/send_verifyNum/
+    格式: form-data
+    method: POST
+    参数：
+        username 手机号
+
+修改密码：
+    http://s-prod-04.qunzhu666.com:8080/auth/reset/
+    格式: form-data
+    method: POST
+    参数：
+        username
+        new_password1
+        new_password2
+        verifyNum
+
+退出登录：
+    http://s-prod-04.qunzhu666.com:8080/auth/logout/
+    method: get

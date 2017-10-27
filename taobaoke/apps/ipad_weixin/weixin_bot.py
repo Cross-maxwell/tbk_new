@@ -396,7 +396,7 @@ class WXBot(object):
         elif qrcode_login_rsp.baseMsg.ret == 0:
             # 返回0代表登陆成功
             logger.info('%s 登录成功' % qr_code['Nickname'])
-            # oss_utils.beary_chat("%s 扫码完成，开启心跳中" % qr_code['Nickname'])
+            oss_utils.beary_chat("%s 扫码完成，开启心跳中--%s" % (qr_code['Nickname'], int(time.time())))
 
             # 将User赋值
             v_user = qrcode_login_rsp.baseMsg.user

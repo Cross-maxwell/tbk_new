@@ -104,7 +104,7 @@ class HeartBeatManager(object):
                         if res_auto is True:
                             wx_bot.open_notify_callback()
                             logger.info("{}: 心跳二次登录成功".format(user.nickname))
-                            oss_utils.beary_chat("淘宝客{0}: 机器人已上线, 心跳开启成功".format(user.nickname))
+                            oss_utils.beary_chat("淘宝客{0}: 机器人已上线, 心跳开启成功--{1}".format(user.nickname, int(time.time())))
                             break
                         elif res_auto is 'Logout':
                             logger.info("{}: 用户主动退出登录，退出心跳，机器人下线".format(user.nickname))

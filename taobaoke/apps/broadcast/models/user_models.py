@@ -30,11 +30,10 @@ class TkUser(models.Model):
             available_adzone = Adzone.objects.filter(tkuser=None)[0]
             self.adzone = available_adzone
         except Exception as exc:
-            pass
-            # requests.post(
-            #     'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
-            #     json={'text': '分配PID出现异常. %s, username=%s' % (exc.message, self.user.username)}
-            # )
+            requests.post(
+                'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
+                json={'text': '分配PID出现异常. %s, username=%s' % (exc.message, self.user.username)}
+            )
 
     def save(self, *args, **kwargs):
         if self.adzone is None:
