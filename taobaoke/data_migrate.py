@@ -3,7 +3,7 @@
 import requests
 import re
 import sys
-# sys.path.append('/home/new_taobaoke/taobaoke/')
+sys.path.append('/home/new_taobaoke/taobaoke/')
 import os
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
@@ -34,9 +34,21 @@ for data in data_list:
     if data['username'] in username_list:
         continue
     try:
-        User.objects.create_user(username=data['username'], password=data['password'])
+        User.objects.create(
+            username=data['username'],
+            password=data['password'],
+            last_login='2017-10-27 00:00:00.000000',
+            is_superuser=0,
+            first_name='',
+            last_name='',
+            email='',
+            is_staff=0,
+            is_active=1,
+            date_joined='2017-10-27 00:00:00.000000'
+        )
     except Exception as e:
         print("Duplicate")
+print("Done")
 
 """
 原 13632909405
