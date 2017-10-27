@@ -30,11 +30,10 @@ class TkUser(models.Model):
             available_adzone = Adzone.objects.filter(tkuser=None)[0]
             self.adzone = available_adzone
         except Exception as exc:
-            pass
-            # requests.post(
-            #     'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
-            #     json={'text': '分配PID出现异常.' + exc.message}
-            # )
+            requests.post(
+                'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
+                json={'text': '分配PID出现异常. %s, username=%s' % (exc.message, self.user.username)}
+            )
 
     def save(self, *args, **kwargs):
         if self.adzone is None:
@@ -88,7 +87,7 @@ class Adzone(models.Model):
         self.last_update = timezone.now()
         super(Adzone, self).save(*args, **kwargs)
 
-
+from django.utils import timezone
 class PushTime(models.Model):
     user = models.OneToOneField(User)
     # 发单间隔

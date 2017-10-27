@@ -143,20 +143,3 @@ if __name__ == '__main__':
     }
 
     filter_sign_in_keyword(wx_id, msg_dict)
-
-
-    """
-    # 机器人自己在群里说话
-    {u'Status': 3, 
-    u'PushContent': u'', 
-    u'FromUserName': u'wxid_cegmcl4xhn5w22', 
-    u'MsgId': 1650554654, 
-    u'ImgStatus': 1, 
-    u'ToUserName': u'6947816994@chatroom', 
-    u'MsgSource': u'', 
-    u'Content': u'\u4f60\u60f3\u8981\u7684\u90fd\u5728\u8fd9\u91cc', 
-    u'MsgType': 1, 
-    u'ImgBuf': None, 
-    u'NewMsgId': 1582711830148784131, 
-    u'CreateTime': 1508809888}
-    """
