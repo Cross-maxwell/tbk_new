@@ -20,6 +20,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from account.utils import account_utils
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password
+
 
 __author__ = 'mingv'
 
@@ -80,11 +83,13 @@ class PostingAccount(APIView):
 修改二级代理的备注信息
 inviter_backup_info放到TkUser
 '''
-
+from django.views.generic.base import View
+from django.http import HttpResponse
 class SetBackUpInfoView(APIView):
     """
     修改二级代理的备注信息
     """
+    @csrf_exempt
     def post(self, request):
         user_id = request.user.id
         sub_agent_username = request.data.get('sub_agent_user', None)

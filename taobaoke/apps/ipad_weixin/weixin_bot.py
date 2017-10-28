@@ -227,7 +227,7 @@ class WXBot(object):
             # print('upload oss error by uuid:{}'.format(uuid))
             return
 
-        return oss_path, qrcode_rsp, self.deviceId
+        return oss_path, qrcode_rsp, self.deviceId, uuid
 
     def check_qrcode_login(self, qrcode_rsp, device_id, md_username):
         """

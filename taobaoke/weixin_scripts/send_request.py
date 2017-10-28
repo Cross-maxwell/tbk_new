@@ -16,7 +16,7 @@ while True:
     try:
         now_hour = int(time.strftime('%H', time.localtime(time.time())))
         if 7 <= now_hour <= 22:
-            requests.get("http://s-prod-04.qunzhu666.com:8080/push_product")
+            requests.get("http://s-prod-04.qunzhu666.com:8080/tk/push_product")
         else:
             # 如果不在这个时间段 休眠长一点
             time.sleep(20 * 60)

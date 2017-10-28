@@ -51,12 +51,12 @@ user_auth:
 
 ipad_weixin:
     1.获取二维码：
-        http://s-prod-04.quinzhu666.com：8080/getqrcode?username=136XXXXXXXX
+        http://s-prod-04.quinzhu666.com：8080/robot/getqrcode?username=136XXXXXXXX
         方法: GET
         参数：
             username: 用户手机号
     2.判断二维码是否被扫描：
-        http://s-prod-04.qunzhu666.com:8080/is_uuid_login?uuid=gZF8miqrkksZ9mrRk7mc
+        http://s-prod-04.qunzhu666.com:8080/robot/is_uuid_login?uuid=gZF8miqrkksZ9mrRk7mc
         方法: GET
         参数：
             uuid: 二维码uuid
@@ -67,7 +67,7 @@ ipad_weixin:
             }
 
     3.用户所有的机器人以及在线情况：
-        http://s-prod-04.quinzhu666.com:8080/host_list?username=136XXXXXXXX
+        http://s-prod-04.quinzhu666.com:8080/robot/host_list?username=136XXXXXXXX
         方法: GET
         参数：
             username: 用户手机号
@@ -97,7 +97,7 @@ ipad_weixin:
                 ],
             }
     4. 设置发单时间
-        http://s-prod-04.quinzhu666.com:8080/set_pushtime/
+        http://s-prod-04.quinzhu666.com:8080/tk/set_pushtime/
         方法: POST
         格式: json
         参数：

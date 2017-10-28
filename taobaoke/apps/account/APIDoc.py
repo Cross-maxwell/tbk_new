@@ -2,16 +2,18 @@
 from django.conf.urls import url, include
 from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, \
     InviterLastLoginView, InviterOrderListView
-from account.views.agent_views import GetCommission, AlipayAccountView, BindingAlipayAccountView
+from account.views.agent_views import GetCommision, AlipayAccountView, BindingAlipayAccountView
 # setPushTimeView, getPushTimeView
 
 account_urls = [
 
-    ''' order_views.py '''
+
+    # order_views.py
+
 
     url(r'^good-pv', GetGoodPv.as_view()),
     url(r'^order-list', OrderList.as_view()),
-    url(r'^order-commission', OrderCommisionView.as_view())
+    url(r'^order-commission', OrderCommisionView.as_view()),
     url(r'^inviter-order-list', InviterOrderListView.as_view()),
     url(r'^inviter-last-login', InviterLastLoginView.as_view()),
     # 设置二级代理备注
@@ -19,11 +21,11 @@ account_urls = [
     # PostingAccount.as_view()
 
 
-    ''' agent_views.py '''
+    # agent_views.py
     #绑定支付宝帐号
     url(r'^user-alipay', AlipayAccountView.as_view()),
     url(r'^bind-alipay',BindingAlipayAccountView.as_view()),
-    url(r'^get-commission',GetCommission.as_view()),
+    url(r'^get-commission',GetCommision.as_view()),
     # # 查询时间段内新增人数
     # url(r'^new-tk', NewUserCount.as_view()),
     # url(r'^check-userconfig', CheckAllUserConfig.as_view()),

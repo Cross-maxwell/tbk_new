@@ -24,12 +24,12 @@ class GetQrcode(View):
         md_username = request.GET.get('username', '')
 
         wx_bot = WXBot()
-        (oss_path, qrcode_rsp, deviceId) = wx_bot.get_qrcode(md_username)
+        (oss_path, qrcode_rsp, deviceId, uuid) = wx_bot.get_qrcode(md_username)
 
         import thread
         thread.start_new_thread(wx_bot.check_and_confirm_and_load, (qrcode_rsp, deviceId, md_username))
 
-        response_data = {"qrcode_url": oss_path}
+        response_data = {"qrcode_url": oss_path, "uuid":uuid}
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 

@@ -22,10 +22,9 @@ if sys.getdefaultencoding() != defaultencoding:
     reload(sys)
     sys.setdefaultencoding(defaultencoding)
 
-"""
-wxf187y8doqur9qkkxqpuixbq4vr9hla
-"""
+
 class LoginView(View):
+
     @csrf_exempt
     def post(self, request):
         req_data = json.loads(request.body)

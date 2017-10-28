@@ -23,6 +23,7 @@ from ipad_weixin.send_msg_type import send_msg_type
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product, PushRecord
 from ipad_weixin.utils.oss_utils import beary_chat
+import requests
 
 
 
