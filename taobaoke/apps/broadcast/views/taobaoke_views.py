@@ -7,6 +7,9 @@ import datetime
 from django.http import HttpResponse
 from django.views.generic.base import View
 from django.core.cache import cache
+from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
 
 from ipad_weixin.models import Qrcode, WxUser, ChatRoom
 from weixin_scripts.post_taobaoke import post_taobaoke_url
@@ -15,13 +18,13 @@ from weixin_scripts.post_taobaoke import post_taobaoke_url
 import logging
 logger = logging.getLogger('django_views')
 
-
+#795318
 class PostGoods(View):
     """
     接口： s-prod-04.qunzhu666.com:8080/push_product
     """
     def get(self, request):
-        user_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
+        user_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
         logger.info([user.username for user in user_list])
 
         for user in user_list:
@@ -32,12 +35,8 @@ class PostGoods(View):
             qr_code_db = Qrcode.objects.filter(username=user.username,
                                                md_username__isnull=False).order_by('-id').first()
             md_username = qr_code_db.md_username
-            # 10分钟内不可以连续发送同样的请求。
-            rsp = requests.get(
-                "http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id),
-                timeout=4)
-            ret = json.loads(rsp.text)['ret']
-            # ret = is_push(md_username, wx_id)
+
+            ret = is_push(md_username, wx_id)
             if ret == 0:
                 logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
 
@@ -67,7 +66,12 @@ class SendSignNotice(View):
     接口： http://s-prod-04.qunzhu666.com/send_signin_notice
     """
     def get(self, request):
-        wxuser_list = WxUser.objects.filter(login__gt=0, is_superuser=False).all()
+        md = request.user.id
+        print(md)
+
+
+
+        wxuser_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
         for wx_user in wxuser_list:
             chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username,
                                                     nickname__icontains=u"福利社").all()
@@ -98,40 +102,78 @@ class SendSignNotice(View):
         send_msg_type(img_msg_dict, at_user_id='')
         send_msg_type(text_msg_dict, at_user_id='')
 
-# from django.contrib.auth.models import User
-# def is_push(md_username, wx_id):
-#     """
-#     md_username
-#     wx_id
-#     """
-#     try:
-#         user = User.objects.get(username=md_username)
-#         user_pt = PushTime.objects.get_or_create(user__username=md_username)
-#         push_interval = user_pt.interval_time
-#
-#         cache_key = md_username + '_' + wx_id + '_last_push'
-#         cache_time_format = "%Y-%m-%d %H:%M:%S"
-#
-#         cur_time = datetime.datetime.now()
-#         # 上一次推送的时间
-#         last_push_time = cache.get(cache_key)
-#         if last_push_time is None:
-#             is_within_interval = True
-#         else:
-#             dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
-#             is_within_interval = dt_last_push_time + datetime.timedelta(minutes=push_interval) <= cur_time
-#
-#         dt_begin_pt = datetime.datetime.strptime(user_pt.begin_time.replace('24:00', '23:59'), '%H:%M')
-#         dt_end_pt = datetime.datetime.strptime(user_pt.end_time.replace('24:00', '23:59'), '%H:%M')
-#
-#         if dt_begin_pt.time() < cur_time.time() < dt_end_pt.time() and is_within_interval:
-#             ret_code = 1
-#             cache.set(cache_key, datetime.datetime.strftime(cur_time, cache_time_format), 3600 * 10)
-#         else:
-#             ret_code = 0
-#
-#         return ret_code
-#     except Exception as e:
-#         logger.error(e)
+
+class SetPushTime(View):
+    @csrf_exempt
+    def post(self, request):
+        interval_time = int(request.POST.get('interval_time', 5))
+        begin_time = request.POST.get('begin_time')
+        end_time = request.POST.get('end_time')
+        try:
+            pushtime = PushTime.objects.get(user=request.user)
+            pushtime.interval_time = interval_time
+            pushtime.begin_time = begin_time
+            pushtime.end_time = end_time
+            pushtime.save()
+        except PushTime.DoesNotExist:
+            pushtime = PushTime.objects.create(user=request.user,
+                                               interval_time=interval_time, begin_time=begin_time, end_time=end_time)
+        data = {
+            "interval_time": interval_time,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "is_valid": True,
+        }
+
+        return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
+
+"""
+{
+    "data":{
+        "id":"59ed9ed7b851f603b7e8187e",
+        "md_user_id":"1695",
+        "interval_time":50,
+        "begin_time":"07:30",
+        "end_time":"23:45",
+        "is_valid":true,
+        "update_time":"2017-10-24T16:40:18.023824"
+    },
+    "retCode":200
+}
+
+"""
+def is_push(md_username, wx_id):
+    """
+    md_username
+    wx_id
+    """
+    try:
+        user_pt, created = PushTime.objects.get_or_create(user__username=md_username)
+        push_interval = user_pt.interval_time
+
+        cache_key = md_username + '_' + wx_id + '_last_push'
+        cache_time_format = "%Y-%m-%d %H:%M:%S"
+
+        cur_time = datetime.datetime.now()
+        # 上一次推送的时间
+        last_push_time = cache.get(cache_key)
+        if last_push_time is None:
+            is_within_interval = True
+        else:
+            dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
+            is_within_interval = dt_last_push_time + datetime.timedelta(minutes=int(push_interval)) <= cur_time
+
+        dt_begin_pt = datetime.datetime.strptime(user_pt.begin_time.replace('24:00', '23:59'), '%H:%M')
+        dt_end_pt = datetime.datetime.strptime(user_pt.end_time.replace('24:00', '23:59'), '%H:%M')
+
+        if dt_begin_pt.time() < cur_time.time() < dt_end_pt.time() and is_within_interval:
+            ret_code = 1
+            cache.set(cache_key, datetime.datetime.strftime(cur_time, cache_time_format), 3600 * 10)
+        else:
+            ret_code = 0
+
+        return ret_code
+    except Exception as e:
+        logger.error(e)
 
 

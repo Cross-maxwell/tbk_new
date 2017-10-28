@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-淘宝客推送脚本, 向已经激活的、带有“福利社”的群组推送从lanlanlife取得的商品。post_taobaoke_url测试正常
 部署在s-proc-04 supervisor上，可直接访问 s-prod-04.qunzhu666.com:9001 (admin/123456)
-
 """
 import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
-sys.path.append('/home/guofenjie/taobaoke')
+sys.path.append('/home/new_taobaoke/taobaoke')
 # sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
 
 import datetime
@@ -19,9 +17,6 @@ django.setup()
 
 from django.db.models import Q
 from django.utils import timezone
-import requests
-import json
-import time
 
 from ipad_weixin.models import Qrcode, Message, WxUser, Contact, ChatRoom
 from ipad_weixin.send_msg_type import send_msg_type
@@ -96,6 +91,7 @@ def post_taobaoke_url(wx_id, group_id, md_username, p=None):
     logger.info("向 %s 推送文字 \n %s." % (text_msg_dict['group_id'], text_msg_dict['text']))
 
 
+
 def select(p=None):
     # 筛选出已经登录的User
     user_list = WxUser.objects.filter(login__gt=0).all()
@@ -132,24 +128,6 @@ def select(p=None):
                 except Exception as e:
                     logging.error(e)
                     print(e)
-
-
-if __name__ == "__main__":
-    while True:
-        try:
-            now_hour = int(time.strftime('%H', time.localtime(time.time())))
-            if 7 <= now_hour <= 22:
-                select()
-            else:
-                # 如果不在这个时间段 休眠长一点
-                time.sleep(20 * 60)
-        except Exception as e:
-            logging.error(e)
-            print(e)
-
-        time.sleep(60)
-
-
 
 
 

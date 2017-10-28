@@ -115,7 +115,7 @@ class WxUser(models.Model):
     last_heart_beat = models.DateTimeField(null=True, default=None)
     uuid = models.CharField(max_length=150, default='')
 
-    is_superuser = models.BooleanField(default=False)
+    is_customer_server = models.BooleanField(default=False)
 
     def update_wxuser_from_userobject(self, v_user):
         self.auto_auth_key = ''
@@ -258,7 +258,7 @@ class Message(models.Model):
     img_buf = models.CharField(max_length=200)
     img_status = models.CharField(max_length=200)
     msg_id = models.CharField(max_length=200, unique=True)
-    msg_source = models.CharField(max_length=200)
+    msg_source = models.TextField()
     msg_type = models.CharField(max_length=200)
     new_msg_id = models.CharField(max_length=200)
     push_content = models.CharField(max_length=200)

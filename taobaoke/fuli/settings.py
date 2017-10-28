@@ -20,7 +20,7 @@ print(BASE_DIR)
 
 
 import sys
-sys.path.insert(0, os.path.join(BASE_DIR,'apps'))
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
@@ -45,17 +45,21 @@ INSTALLED_APPS = [
     'broadcast',
     'rest_framework',
     'ipad_weixin',
+    'corsheaders',
+    'user_auth',
     'account'
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 
@@ -85,17 +89,16 @@ REDIS_SERVER = S_POC_01_INT
 
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
+        'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': 'redis://'+ REDIS_SERVER +':' + str(REDIS_PORT),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            # "REDIS_CLIENT_CLASS": "fakeredis.FakeStrictRedis",
         },
     },
 }
 
 
-
+# CSRF_COOKIE_SECURE = True
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -128,7 +131,7 @@ DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
 #         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'ipad_weixin',
+#         'NAME': 'ipad_weixin_01',
 #         'USER': 'root',
 #         'PASSWORD': 'keyerror',
 #     }
@@ -168,6 +171,7 @@ USE_L10N = True
 
 USE_TZ = True
 
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

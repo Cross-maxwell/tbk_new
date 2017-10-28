@@ -10,6 +10,9 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+import logging
+logger = logging.getLogger('django_models')
+
 
 class TkUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -32,7 +35,7 @@ class TkUser(models.Model):
         except Exception as exc:
             requests.post(
                 'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
-                json={'text': '分配PID出现异常.' + exc.message}
+                json={'text': '分配PID出现异常. %s, username=%s' % (exc.message, self.user.username)}
             )
 
     def save(self, *args, **kwargs):
@@ -46,8 +49,9 @@ class TkUser(models.Model):
             tk_user = TkUser.objects.get(user__username=username)
             return tk_user
         except TkUser.DoesNotExist as exc:
-            user = User.objects.create_user(username=username)
-            return TkUser.objects.get(user=user)
+            logger.error("用户尚未注册，开发人员调试时请确保auth_user已被创建")
+            # user = User.objects.create_user(username=username)
+            # return TkUser.objects.get(user=user)
 
 
 @receiver(post_save, sender=User)
@@ -58,7 +62,11 @@ def create_tkuser(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_tkuser(sender, instance, **kwargs):
-    instance.tkuser.save()
+    try:
+        instance.tkuser.save()
+    except Exception as e:
+        print(Exception)
+        TkUser.objects.create(user=instance, adzone=None)
 
 
 class Adzone(models.Model):
@@ -83,18 +91,24 @@ class Adzone(models.Model):
         super(Adzone, self).save(*args, **kwargs)
 
 from django.utils import timezone
-# class PushTime(models.Model):
-#     user = models.OneToOneField(User)
-#     # 发单间隔
-#     interval_time = models.CharField(max_length=20, default=5)
-#     # 每天开始时间
-#     begin_time = models.CharField(max_length=20, default="07:00")
-#     # 每天停止时间
-#     end_time = models.CharField(max_length=20, default='23:00')
-#
-#     is_valid = models.BooleanField(default=True)
-#     update_time = models.DateTimeField(default=timezone.now)
-#
-#     def save(self, *args, **kwargs):
-#         self.update_time = timezone.now()
-#         return super(PushTime, self).save(*args, **kwargs)
+class PushTime(models.Model):
+    user = models.OneToOneField(User)
+    # 发单间隔
+    interval_time = models.CharField(max_length=20, default=5)
+    # 每天开始时间
+    begin_time = models.CharField(max_length=20, default="07:00")
+    # 每天停止时间
+    end_time = models.CharField(max_length=20, default='23:00')
+
+    is_valid = models.BooleanField(default=True)
+    update_time = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        self.update_time = timezone.now()
+        return super(PushTime, self).save(*args, **kwargs)
+
+
+@receiver(post_save, sender=User)
+def create_pushtime(sender, instance, created, **kwargs):
+    if created:
+        PushTime.objects.create(user=instance)

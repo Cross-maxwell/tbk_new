@@ -396,7 +396,7 @@ class WXBot(object):
         elif qrcode_login_rsp.baseMsg.ret == 0:
             # 返回0代表登陆成功
             logger.info('%s 登录成功' % qr_code['Nickname'])
-            oss_utils.beary_chat("%s 扫码完成，开启心跳中" % qr_code['Nickname'])
+            oss_utils.beary_chat("%s 扫码完成，开启心跳中--%s" % (qr_code['Nickname'], int(time.time())))
 
             # 将User赋值
             v_user = qrcode_login_rsp.baseMsg.user
@@ -792,6 +792,7 @@ class WXBot(object):
                 logger.info("%s 初始化成功！" % v_user.nickname)
             except Exception as e:
                 logger.error(e)
+                sys.exit(1)
 
 
             self.newinitflag = False
@@ -1642,7 +1643,7 @@ if __name__ == "__main__":
                 wx_bot.get_contact(v_user, '6947816994@chatroom')
             elif cmd == 9:
                 v_user = pickle.loads(red.get('v_user_' + wx_user))
-                wx_bot.send_app_msg(v_user, to_user, '<appmsg appid="" sdkver="0"><title>Python2生命期</title><des>升级Python3保平安</des><action></action><type>33</type><showtype>0</showtype><soundtype>0</soundtype><mediatagname></mediatagname><messageext></messageext><messageaction></messageaction><content></content><contentattr>0</contentattr><url>https://mp.weixin.qq.com/mp/waerrpage?appid=wxedac7bb2a64c41f7&amp;type=upgrade&amp;upgradetype=3#wechat_redirect</url><lowurl></lowurl><dataurl></dataurl><lowdataurl></lowdataurl><appattach><totallen>0</totallen><attachid></attachid><emoticonmd5></emoticonmd5><fileext></fileext><cdnthumburl>304f02010004483046020100020406070d8b02033d14b9020464fd03b7020459e42bdd0421777869645f3364726e713365653230666732323237335f313530383132353636310204010800030201000400</cdnthumburl><cdnthumbmd5>b9b12405481c2d5273cf1e850aa1d4f6</cdnthumbmd5><cdnthumblength>206292</cdnthumblength><cdnthumbwidth>750</cdnthumbwidth><cdnthumbheight>1206</cdnthumbheight><cdnthumbaeskey>d40cb038f4f8400594cc78dc01913844</cdnthumbaeskey><aeskey>d40cb038f4f8400594cc78dc01913844</aeskey><encryver>0</encryver></appattach><extinfo></extinfo><sourceusername>gh_95486d903be5@app</sourceusername><sourcedisplayname>Python之禅</sourcedisplayname><thumburl></thumburl><md5></md5><statextstr></statextstr><weappinfo><username><![CDATA[gh_95486d903be5@app]]></username><appid><![CDATA[wxedac7bb2a64c41f7]]></appid><type>2</type><version>6</version><weappiconurl><![CDATA[http://mmbiz.qpic.cn/mmbiz_png/XzlqmpwbLjfFGD6TciaRy2IibOwyFBvQicRSjEeybKuzggG2wFXKMAbM2r54CvnpfKUp2tJMeHojqeoetQdYhdmZw/0?wx_fmt=png]]></weappiconurl><pagepath><![CDATA[pages/index/index.html]]></pagepath><shareId><![CDATA[0_wxedac7bb2a64c41f7_101125515_1508125660_0]]></shareId></weappinfo></appmsg>')
+                wx_bot.send_app_msg(v_user, 'wxid_9zoigugzqipj21', '<appmsg appid="" sdkver="0"><title>Python2生命期</title><des>升级Python3保平安</des><action></action><type>33</type><showtype>0</showtype><soundtype>0</soundtype><mediatagname></mediatagname><messageext></messageext><messageaction></messageaction><content></content><contentattr>0</contentattr><url>https://mp.weixin.qq.com/mp/waerrpage?appid=wxedac7bb2a64c41f7&amp;type=upgrade&amp;upgradetype=3#wechat_redirect</url><lowurl></lowurl><dataurl></dataurl><lowdataurl></lowdataurl><appattach><totallen>0</totallen><attachid></attachid><emoticonmd5></emoticonmd5><fileext></fileext><cdnthumburl>304f02010004483046020100020406070d8b02033d14b9020464fd03b7020459e42bdd0421777869645f3364726e713365653230666732323237335f313530383132353636310204010800030201000400</cdnthumburl><cdnthumbmd5>b9b12405481c2d5273cf1e850aa1d4f6</cdnthumbmd5><cdnthumblength>206292</cdnthumblength><cdnthumbwidth>750</cdnthumbwidth><cdnthumbheight>1206</cdnthumbheight><cdnthumbaeskey>d40cb038f4f8400594cc78dc01913844</cdnthumbaeskey><aeskey>d40cb038f4f8400594cc78dc01913844</aeskey><encryver>0</encryver></appattach><extinfo></extinfo><sourceusername>gh_95486d903be5@app</sourceusername><sourcedisplayname>Python之禅</sourcedisplayname><thumburl></thumburl><md5></md5><statextstr></statextstr><weappinfo><username><![CDATA[gh_95486d903be5@app]]></username><appid><![CDATA[wxedac7bb2a64c41f7]]></appid><type>2</type><version>6</version><weappiconurl><![CDATA[http://mmbiz.qpic.cn/mmbiz_png/XzlqmpwbLjfFGD6TciaRy2IibOwyFBvQicRSjEeybKuzggG2wFXKMAbM2r54CvnpfKUp2tJMeHojqeoetQdYhdmZw/0?wx_fmt=png]]></weappiconurl><pagepath><![CDATA[pages/index/index.html]]></pagepath><shareId><![CDATA[0_wxedac7bb2a64c41f7_101125515_1508125660_0]]></shareId></weappinfo></appmsg>')
 
 
         except Exception as e:
