@@ -41,7 +41,7 @@ account_urls = [
     url(r'^set-backup-info/$', SetBackUpInfoView.as_view()), #ok
     url(r'^bind-alipay/$',BindingAlipayAccountView.as_view()), #ok
     url(r'^user-alipay/$', AlipayAccountView.as_view()),#ok
-    url(r'^user-avatar', UserAvatarView.as_view()) #ok
+    url(r'^user-avatar/$', UserAvatarView.as_view()) #ok
 ]
 
 urlpatterns = [
