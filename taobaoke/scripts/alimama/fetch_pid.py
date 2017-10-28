@@ -2,6 +2,10 @@ import time
 import requests
 import json
 
+import sys
+sys.path.append('/home/guofenjie/taobaoke')
+
+
 import os
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})

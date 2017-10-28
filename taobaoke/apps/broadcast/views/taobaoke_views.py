@@ -13,7 +13,8 @@ from django.utils import timezone
 
 from ipad_weixin.models import Qrcode, WxUser, ChatRoom
 from weixin_scripts.post_taobaoke import post_taobaoke_url
-# from broadcast.models.user_models import PushTime
+from broadcast.models.user_models import PushTime
+
 
 import logging
 logger = logging.getLogger('django_views')
@@ -38,12 +39,12 @@ class PostGoods(View):
 
             ret = is_push(md_username, wx_id)
             if ret == 0:
-                logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
+                logger.info("%s 还没有到发单时间" % user.nickname)
 
             if ret == 1:
                 # 筛选出激活群
                 wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
-                chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"福利社").all()
+                chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
                 if not chatroom_list:
                     logger.info('%s 发单群为空' % wxuser.nickname)
 
@@ -69,7 +70,7 @@ class SendSignNotice(View):
         wxuser_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
         for wx_user in wxuser_list:
             chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username,
-                                                    nickname__icontains=u"福利社").all()
+                                                    nickname__icontains=u"果粉街").all()
             for chatroom in chatroom_list:
                 import thread
                 thread.start_new_thread(self.send_nitice, (wx_user, chatroom))
