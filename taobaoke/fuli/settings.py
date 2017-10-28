@@ -101,29 +101,29 @@ CACHES = {
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {'charset': 'utf8mb4'},
+#         'NAME': 'ipad_weixin',
+#         'USER': 'root',
+#         'PASSWORD': 'Xiaozuanfeng',
+#         'HOST': 's-prod-02.qunzhu666.com',
+#         'PORT': '50001',
+#     }
+# }
+
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {'charset': 'utf8mb4'},
         'NAME': 'ipad_weixin',
         'USER': 'root',
-        'PASSWORD': 'Xiaozuanfeng',
-        'HOST': 's-prod-02.qunzhu666.com',
-        'PORT': '50001',
+        'PASSWORD': 'keyerror',
     }
 }
-
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'ipad_weixin_02',
-#         'USER': 'root',
-#         'PASSWORD': 'keyerror',
-#     }
-# }
 
 
 
