@@ -15,7 +15,7 @@ from account.utils.user_utils import get_ad_zone, get_ad_id
 from broadcast.models.user_models import TkUser
 
 # from rest_framework import generics
-from rest_framework_jwt.serializers import User
+from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny

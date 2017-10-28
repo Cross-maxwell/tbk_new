@@ -1,7 +1,7 @@
 # coding=utf-8
 from math import floor
 
-from rest_framework_jwt.serializers import User
+from django.contrib.auth.models import User
 from account.utils.user_utils import get_ad_id
 from broadcast.models.user_models import  Adzone
 

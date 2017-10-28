@@ -111,7 +111,7 @@ class Order(models.Model):
             commision = Commision.objects.get(user__tkuser__adzone__pid__contains=self.ad_id)
         except Commision.DoesNotExist:
             username = TkUser.objects.get(adzone__pid__contains=self.ad_id).user.username
-            from rest_framework_jwt.serializers import User
+            from django.contrib.auth.models import User
             user = User.objects.get(username=username)
             commision = Commision.objects.create(user_id=str(user.id))
 
