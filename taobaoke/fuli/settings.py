@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'ipad_weixin',
     'corsheaders',
-    'user_auth'
+    'user_auth',
+    'account'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -229,5 +230,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True
         },
+        'entry_views': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
+        }
     }
 }
