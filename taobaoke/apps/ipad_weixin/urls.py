@@ -9,11 +9,12 @@ urlpatterns = [
     url(r'getqrcode/',GetQrcode.as_view()),
     url(r'host_list/', HostList.as_view()),
     url(r'is_login/', IsLogin.as_view()),
-    url(r'is-uuid-login/', IsUuidLogin.as_view()),
-    url(r'reset_heart_beat', ResetHeartBeat.as_view()),
-    url(r'reset_single', ResetSingleHeartBeat.as_view()),
+    url(r'is_uuid_login/', IsUuidLogin.as_view()),
     url(r'define_sign_rule', DefineSignRule.as_view()),
     url(r'add_super_user', AddSuperUser.as_view()),
+
+    url(r'reset_heart_beat', ResetHeartBeat.as_view()),
+    url(r'reset_single', ResetSingleHeartBeat.as_view()),
 ]
 
 

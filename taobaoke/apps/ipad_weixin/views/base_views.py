@@ -17,6 +17,9 @@ logger = logging.getLogger('django_views')
 
 
 class GetQrcode(View):
+    """
+    接口： http://s-prod-04.quinzhu666.com：8080/getqrcode?username=md_username
+    """
     def get(self, request):
         md_username = request.GET.get('username', '')
 
@@ -32,7 +35,7 @@ class GetQrcode(View):
 
 class HostList(View):
     """
-    接口： http://s-prod-04.quinzhu666.com/host_list?username=md_username
+    接口： http://s-prod-04.quinzhu666.com:8080/host_list?username=md_username
     """
     def get(self, request):
         username = request.GET.get('username', '')
@@ -57,7 +60,7 @@ class HostList(View):
 
 class IsLogin(View):
     """
-    http://localhost:5000/is_login?username=15900000010
+    接口： http://s-prod-04.quinzhu666.com:8080/is_login?username=md_username
     """
     def get(self, request):
         username = request.GET.get('username', '')
@@ -88,19 +91,18 @@ class IsLogin(View):
 class IsUuidLogin(View):
     """
     检测该UUID是否被扫描登陆
-    # http://localhost:5000/is-uuid-login?qr-uuid=gZF8miqrkksZ9mrRk7mc
-    :return:返回登陆的微信 nickname 和 login 状态
+    http://s-prod-04.qunzhu666.com:8080/is_uuid_login?uuid=gZF8miqrkksZ9mrRk7mc
     """
     def get(self, request):
-        qr_uuid = request.GET.get('qr-uuid', '')
-        if qr_uuid == '':
-            response_data = {"ret": str(0), "name": "qr-uuid 为空"}
+        uuid = request.GET.get('uuid', '')
+        if uuid == '':
+            response_data = {"ret": str(0), "name": "uuid为空"}
             return HttpResponse(json.dumps(response_data))
         ret = 0
         name = ''
         try:
             # username是手机号
-            qr_code_db = Qrcode.objects.filter(uuid=qr_uuid).first()
+            qr_code_db = Qrcode.objects.filter(uuid=uuid).first()
             if qr_code_db is not None and qr_code_db.username != '':
                 wx_username = qr_code_db.username
                 # 筛选出wx_username
@@ -120,7 +122,7 @@ class IsUuidLogin(View):
 
 class DefineSignRule(View):
     """
-    接口： http://s-prod-04.qunzhu666.com/define_sign_rule
+    接口： http://s-prod-04.qunzhu666.com:8080/define_sign_rule
     """
     @csrf_exempt
     def post(self, request):

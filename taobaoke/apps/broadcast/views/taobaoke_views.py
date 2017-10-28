@@ -66,11 +66,6 @@ class SendSignNotice(View):
     接口： http://s-prod-04.qunzhu666.com/send_signin_notice
     """
     def get(self, request):
-        md = request.user.id
-        print(md)
-
-
-
         wxuser_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
         for wx_user in wxuser_list:
             chatroom_list = ChatRoom.objects.filter(wx_user__username=wx_user.username,
@@ -106,9 +101,10 @@ class SendSignNotice(View):
 class SetPushTime(View):
     @csrf_exempt
     def post(self, request):
-        interval_time = int(request.POST.get('interval_time', 5))
-        begin_time = request.POST.get('begin_time')
-        end_time = request.POST.get('end_time')
+        req_data = json.loads(request.body)
+        interval_time = int(req_data.get('interval_time', 5))
+        begin_time = req_data.get('begin_time')
+        end_time = req_data.get('end_time')
         try:
             pushtime = PushTime.objects.get(user=request.user)
             pushtime.interval_time = interval_time
