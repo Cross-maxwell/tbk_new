@@ -4,7 +4,7 @@
 """
 import sys
 # 脚本加入搜索路径 现在是hard code状态 看看有没有办法改
-sys.path.append('/home/new_taobaoke/taobaoke')
+sys.path.append('/home/guofenjie/taobaoke')
 # sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
 
 import datetime
@@ -24,6 +24,7 @@ from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product, PushRecord
 from ipad_weixin.utils.oss_utils import beary_chat
 import requests
+import json
 
 
 
