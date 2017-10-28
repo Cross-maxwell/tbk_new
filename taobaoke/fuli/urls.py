@@ -36,6 +36,7 @@ urlpatterns = [
     url(r'broadcast/', include(broadcast_urls)),
     url(r'', include('ipad_weixin.urls')),
     url(r'', include('broadcast.urls')),
-    url(r'auth/', include('user_auth.urls'))
+    url(r'auth/', include('user_auth.urls')),
+    url(r'account/', include('account.urls'))
 ]
 

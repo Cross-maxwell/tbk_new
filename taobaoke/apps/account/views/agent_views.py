@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 # from bot_api.settings import tbk_name, tbk_push_url, REMOTE_BOT_SERVER
 
 from account.models.commision_models import AlipayAccount, Commision
-from account.serializers.agent_serializers import AlipayAccountSerializer, CommissionSerializer
+from account.serializers.agent_serializers import AlipayAccountSerializer, CommisionSerializer
 
 
 
@@ -100,17 +100,18 @@ class BindingAlipayAccountView(APIView):
 """
 获取淘宝客账户
 """
-class GetCommission(ListAPIView):
-    serializer_class = CommissionSerializer
+class GetCommision(ListAPIView):
+    serializer_class = CommisionSerializer
 
     def get(self, request):
         try:
             user_id = request.user.id
-            commission = Commision.objects.get(md_user_id=str(user_id))
-            serializer = self.get_serializer(commission)
+            commision = Commision.objects.get(user_id=str(user_id))
+            serializer = self.get_serializer(commision)
         except Exception as e:
             return Response({'data': 'query error' + e.message, 'retCode': 400},
                             status=status.HTTP_400_BAD_REQUEST)
+        print serializer.data
         return Response({'data': serializer.data, 'retCode': 200}, status=status.HTTP_200_OK)
 
 

@@ -9,8 +9,7 @@ class AlipayAccountSerializer(serializers.ModelSerializer):
         fields = ('alipay_id', 'alipay_name', 'identity_num', 'phone_num')
 
 
-class CommissionSerializer(serializers.ModelSerializer):
+class CommisionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Commision
-        fields = ('md_user_id', 'balance', 'sum_earning_amount', 'sum_payed_amount', 'is_valid', 'commision_rate',
-                  'pid', 'ad_id')
+        fields = ('balance', 'sum_earning_amount', 'sum_payed_amount', 'is_valid', 'commision_rate')

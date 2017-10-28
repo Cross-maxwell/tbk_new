@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from account.utils import account_utils
+
 __author__ = 'mingv'
 
 
@@ -29,24 +30,22 @@ __author__ = 'mingv'
 class OrderList(APIView):
     def get(self, request):
         try:
-            sortKey = request.GET.get('sortKey')
-            desc = request.GET.get('desc')
-            order_list = getOrderListByUserName(request.user.username, sortKey, desc)
+            # sortKey = request.GET.get('sortKey')
+            # desc = request.GET.get('desc')
+            order_list = getOrderListByUserName(request.user.username)
         except Exception as e:
             return Response({'retCode': 400, 'data':'Query error:'+e.message})
         return Response({'retCode': 200, 'data': OrderSerializer(order_list, many=True).data})
 
 
-def getOrderListByUserName(username, sort_key=None, desc=None):
+def getOrderListByUserName(username):
     """
     根据手机号获取相应的订单列表
     :param username:
     :return:
     """
     ad_id = get_ad_id(username)
-    if desc is not None and sort_key:
-        sort_key = '-' + sort_key
-    order_list = Order.objects.filter(ad_id=ad_id).order_by(sort_key)
+    order_list = Order.objects.filter(ad_id=ad_id)
     return order_list
 
 
@@ -81,6 +80,7 @@ class PostingAccount(APIView):
 修改二级代理的备注信息
 inviter_backup_info放到TkUser
 '''
+
 class SetBackUpInfoView(APIView):
     """
     修改二级代理的备注信息
@@ -138,8 +138,8 @@ class InviterLastLoginView(APIView):
 class InviterOrderListView(APIView):
     def get(self, request):
         user_id = request.user.id
-        sort_key = request.GET.get('order-sortKey')
-        desc = request.GET.get('order-desc')
+        # sort_key = request.GET.get('order-sortKey')
+        # desc = request.GET.get('order-desc')
         try:
             agent_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
@@ -155,7 +155,7 @@ class InviterOrderListView(APIView):
             agent_id = sub_agent.user_id
 
             # 下级代理的订单列表
-            order_list = getOrderListByUserName(sub_agent_username, sort_key=sort_key, desc=desc)
+            order_list = getOrderListByUserName(sub_agent_username)
 
             # 下级代理产生的二级佣金
             try:
@@ -163,7 +163,7 @@ class InviterOrderListView(APIView):
             except AgentCommision.DoesNotExist:
                 sub_agent_commission = AgentCommision.objects.create(user_id=agent_id)
 
-            sub_commission_rate = sub_agent_commission.commission_rate
+            sub_commission_rate = sub_agent_commission.commision_rate
             print
             # 下级代理订单总额
             order_sum_payed = 0
@@ -182,7 +182,7 @@ class InviterOrderListView(APIView):
                 'order_sum_payed': cut_decimal(order_sum_payed, 2),
                 'user_earning': cut_decimal(user_earning, 2),
                 'sub_agent_balance': cut_decimal(sub_agent_commission.balance, 2),
-                'back_up_info': TkUser.inviter_backup_info
+                'back_up_info': sub_agent.inviter_backup_info
             }
 
             detail_list.append(md_order_json)
@@ -199,23 +199,6 @@ class OrderCommisionView(APIView):
     def get(self, request):
         data = get_all_order()
         return Response({'retCode': 200,'data':data})
-
-
-
-
-
-
-
-
-'''
------------------------------------------等待区--------------------------------------
---------------------等二级代理关系整合进来后调整------------------
-'''
-
-
-
-
-
 
 
 
