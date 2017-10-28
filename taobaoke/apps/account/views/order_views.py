@@ -1,12 +1,11 @@
 # coding=utf-8
-# import json
+import json
 # import traceback
 # from django.db import transaction
-# from rest_framework import generics
+
 
 # from account.temp import admin_phone
 # from account.temp import send_message
-
 from account.models.commision_models import AgentCommision
 from account.models.order_models import Order
 from account.serializers.order_serializers import OrderSerializer
@@ -15,14 +14,14 @@ from account.utils.common_utils import cut_decimal
 from account.utils.user_utils import get_ad_zone, get_ad_id
 from broadcast.models.user_models import TkUser
 
+# from rest_framework import generics
 from rest_framework_jwt.serializers import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from django.views.generic.base import View
 from account.utils import account_utils
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import make_password
-
+from django.http import HttpResponse
 
 __author__ = 'mingv'
 
@@ -30,15 +29,15 @@ __author__ = 'mingv'
 '''
     获取订单列表
 '''
-class OrderList(APIView):
+class OrderList(View):
     def get(self, request):
         try:
             # sortKey = request.GET.get('sortKey')
             # desc = request.GET.get('desc')
             order_list = getOrderListByUserName(request.user.username)
         except Exception as e:
-            return Response({'retCode': 400, 'data':'Query error:'+e.message})
-        return Response({'retCode': 200, 'data': OrderSerializer(order_list, many=True).data})
+            return HttpResponse(json.dumps({'retCode': 400, 'data':'Query error:'+e.message}))
+        return HttpResponse(json.dumps({'retCode': 200, 'data': OrderSerializer(order_list, many=True).data}))
 
 
 def getOrderListByUserName(username):
@@ -52,17 +51,17 @@ def getOrderListByUserName(username):
     return order_list
 
 
-class GetGoodPv(APIView):
+class GetGoodPv(View):
     """
     获取浏览量
     """
     def get(self, request):
         ad_zone = get_ad_zone('username',request.user.username)
         click_30d = ad_zone['click_30d']
-        return Response({'retCode': 200, 'data': click_30d})
+        return HttpResponse(json.dumps({'retCode': 200, 'data': click_30d}))
 
 
-class PostingAccount(APIView):
+class PostingAccount(View):
     """
     提供给第三方调用入账接口
     简版
@@ -70,61 +69,59 @@ class PostingAccount(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request):
-        md_user_id = request.data.get('md_user_id')
-        amount = request.data.get('amount')
-        in_or_out = request.data.get('in_or_out')
-        order_id = request.data.get('order_id')
-        type1 = request.data.get('type')
+        md_user_id = request.GET.get('md_user_id')
+        amount = request.GET.get('amount')
+        in_or_out = request.GET.get('in_or_out')
+        order_id = request.GET.get('order_id')
+        type1 = request.GET.get('type')
         account_utils.post(md_user_id, amount, in_or_out, order_id, type1)
-        return Response({'retCode': 200, 'data': 'successful update the data'})
+        return HttpResponse(json.dumps({'retCode': 200, 'data': 'successful update the data'}))
 
 
 '''
 修改二级代理的备注信息
 inviter_backup_info放到TkUser
 '''
-from django.views.generic.base import View
-from django.http import HttpResponse
-class SetBackUpInfoView(APIView):
+
+class SetBackUpInfoView(View):
     """
     修改二级代理的备注信息
     """
-    @csrf_exempt
     def post(self, request):
         user_id = request.user.id
-        sub_agent_username = request.data.get('sub_agent_user', None)
-        backup_info = request.data.get('back_up_info', None)
+        sub_agent_username = request.POST.get('sub_agent_user', None)
+        backup_info = request.POST.get('back_up_info', None)
 
         try:
             sub_agent_user_id = User.objects.get(username=sub_agent_username).id
         except User.DoesNotExist as e:
-            return Response({'retCode': 400, 'data': "{} user is not exist".format(sub_agent_username)})
+            return HttpResponse(json.dumps({'retCode': 400, 'data': "{} user is not exist".format(sub_agent_username)}))
 
         # 防止接口被恶意使用, 判断此下级代理是否为该用户下级代理
         try:
             tmp = TkUser.objects.get(user_id=sub_agent_user_id)
         except TkUser.DoesNotExist as e:
-            return Response({'retCode': 400, 'data': "{} userid in mduserdata is not exist".format(sub_agent_user_id)})
+            return HttpResponse(json.dumps({'retCode': 400, 'data': "{} userid in tkuser is not exist".format(sub_agent_user_id)}))
 
-        if not tmp.inviter_id == user_id:
-            return Response({'retCode': 400, 'data': "{}'s superior is not you".format(sub_agent_user_id)})
+        if not tmp.inviter_id == str(user_id):
+            return HttpResponse(json.dumps({'retCode': 400, 'data': "{}'s superior is not you".format(sub_agent_user_id)}))
 
 
         tmp.inviter_backup_info = backup_info
         tmp.save()
-        return Response({'retCode': 200, 'data': "success"})
+        return HttpResponse(json.dumps({'retCode': 200, 'data': "success"}))
 
 
 '''
 获取下级代理人员列表，显示最后登录时间
 '''
-class InviterLastLoginView(APIView):
+class InviterLastLoginView(View):
     def get(self, request):
         username = request.user.username
         try:
             agent_user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return Response({'error': 'username does not exist', 'retCode': 400025})
+            return HttpResponse(json.dumps({'error': 'username does not exist', 'retCode': 400025}))
         sub_agent_list = TkUser.objects.filter(inviter_id=agent_user.id)
         data = []
         for sub_agent in sub_agent_list:
@@ -134,13 +131,13 @@ class InviterLastLoginView(APIView):
                 last_login = format(sub_agent.user.last_login, "%Y-%m-%d %H:%M:%S")
             md_list_json = {'username': sa_username, 'last_login': last_login}
             data.append(md_list_json)
-        return Response({'retCode': 200, 'data': data})
+        return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
 
 
 '''
 获取下级代理订单信息，下级代理总赚取佣金，产生总二级佣金
 '''
-class InviterOrderListView(APIView):
+class InviterOrderListView(View):
     def get(self, request):
         user_id = request.user.id
         # sort_key = request.GET.get('order-sortKey')
@@ -148,7 +145,7 @@ class InviterOrderListView(APIView):
         try:
             agent_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return Response({'error': 'username does not exist', 'retCode': '400025'})
+            return HttpResponse(json.dumps({'error': 'username does not exist', 'retCode': '400025'}))
         # 拿到所有下级代理
         sub_agent_list = TkUser.objects.filter(inviter_id=agent_user.id)
         # 下级代理的订单详情列表
@@ -194,16 +191,16 @@ class InviterOrderListView(APIView):
             sum_user_earning += cut_decimal(user_earning, 2)
 
         data = {'sum_user_earning': sum_user_earning, 'detail_list': detail_list}
-        return Response({'retCode': 200, 'data': data})
+        return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
 
 
 '''
   获取所有人的未结算订单
 '''
-class OrderCommisionView(APIView):
+class OrderCommisionView(View):
     def get(self, request):
         data = get_all_order()
-        return Response({'retCode': 200,'data':data})
+        return HttpResponse(json.dumps({'retCode': 200,'data':data}))
 
 
 

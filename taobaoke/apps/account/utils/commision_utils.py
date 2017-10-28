@@ -5,7 +5,10 @@ from django.db import transaction
 from account.utils import user_utils, order_utils, account_utils
 from account.models.commision_models import Commision, AgentCommision
 from account.models.order_models import AgentOrderStatus
-from rest_framework_jwt.serializers import User
+from django.contrib.auth.models import User
+from broadcast.models.user_models import TkUser
+from common_utils import cut_decimal
+
 
 '''
 以下三个方法为链式调用, 用以维护agent_commision数据
@@ -129,8 +132,8 @@ def withdraw_commision(user_id, withdraw_amount):
             commision.sum_payed_amount += withdraw_amount
             commision.save()
     except Exception as e:
-        # TODO: 专门记录在一个logger里头比较好
-        print "withdraw exception" + e.message
+        from account.scripts.tbk_alipay_send_run import log
+        log( "withdraw exception" + e.message)
         return False
     return True
 
@@ -150,5 +153,6 @@ def withdraw_agent_commision(user_id):
                 sub_agent_commision.sum_payed_amount += amount
                 sub_agent_commision.save()
         except Exception as e:
+            from account.scripts.tbk_alipay_send_run import log
             log("with_draw_subagent_commision error:" + e.message + " sub_agent_id:" + str(sub_agent.user_id))
             continue

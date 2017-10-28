@@ -3,7 +3,6 @@
 '''
 进行转账动作.
 '''
-# todo!检查一遍!
 
 from __future__ import print_function
 import json
@@ -16,8 +15,8 @@ from django.db import transaction
 
 reload(sys)
 sys.setdefaultencoding('utf8')
-sys.path.append("/Users/hong/sourcecode/work/BotService")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "BotService.settings")
+# sys.path.append("/Users/hong/sourcecode/work/BotService")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fuli.settings")
 django.setup()
 from account.models.commision_models import Commision, AgentCommision, AlipayAccount
 from account.utils.common_utils import cut_decimal
@@ -119,7 +118,7 @@ def transfer(user_id=None, mode='weekly'):
         if weekly_condition or monthly_condition or all:
             # get alipay account info
             log('-----------------------')
-            log('transfer start user_id:' + commision.user_id)
+            log('transfer start user_id:' + str(commision.user_id))
             try:
                 alipay_account = AlipayAccount.objects.get(user_id=commision.user_id)
             except Exception as e:

@@ -2,124 +2,104 @@
 __author__ = 'mingv'
 
 import datetime
-import json
 from copy import deepcopy
 import time
-import requests
-
-# from blinker import signal
-
+import json
 from django.http.response import HttpResponse
-from django.core.cache import cache
-from rest_framework.generics import ListAPIView
-from rest_framework_jwt.serializers import User
-from rest_framework_mongoengine import generics
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from django.views.decorators.csrf import csrf_exempt
-
-
-# from wx_bot.models.contact_models import Host, GroupContact
-# from bot_api.settings import tbk_name, tbk_push_url, REMOTE_BOT_SERVER
+from django.views.generic.base import View
 
 from account.models.commision_models import AlipayAccount, Commision
 from account.serializers.agent_serializers import AlipayAccountSerializer, CommisionSerializer
 
 
-
-
-"""
-对用户所绑定的支付宝账户 进行查询,修改和删除 
-adam : 并没有办法删除
-done at 14:40
-"""
-class AlipayAccountView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = AlipayAccountSerializer
-    def get_object(self):
+'''
+对用户所绑定的支付宝账户 进行查询,修改
+'''
+class AlipayAccountView(View):
+    def get(self, request):
+        user_id = request.user.id
         try:
-            user_id = str(self.request.user.id)
-            # 额?啥意思
-            if 'user_id' in self.request.data.keys():
-                if user_id != self.request.data['user_id']:
-                    return Response({'data': "user id error", 'retCode': 400}, status=status.HTTP_400_BAD_REQUEST)
             account = AlipayAccount.objects.get(user_id=user_id)
-
-            return account
+            serializer = AlipayAccountSerializer(account)
+            return HttpResponse(json.dumps({'data' : serializer.data,'retCode':200}))
         except AlipayAccount.DoesNotExist:
             return None
         except Exception as e:
-            raise Response({'data': self.request.method + e.message, 'retCode': 400},
-                           status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse(json.dumps({'data': self.request.method + e.message, 'retCode': 400}))
 
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance is None:
-            return Response({'data': '', 'retCode': 404}, status=status.HTTP_200_OK)
-        serializer = self.get_serializer(instance)
-        return Response({'data': serializer.data, 'retCode': 200}, status=status.HTTP_200_OK)
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        if instance is None:
-            return Response({'data': '', 'retCode': 400}, status=status.HTTP_200_OK)
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response({'data': serializer.data, 'retCode': 200}, status=status.HTTP_200_OK)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if instance is None:
-            return Response({'data': '', 'retCode': 204}, status=status.HTTP_204_NO_CONTENT)
-        self.perform_destroy(instance)
-        return Response({'data': '', 'retCode': 204}, status=status.HTTP_204_NO_CONTENT)
+    def post(self, request):
+        user_id = request.user.id
+        try:
+            account = AlipayAccount.objects.get(user_id=user_id)
+            account.alipay_id = request.POST.get('alipay_id')
+            account.alipay_name = request.POST.get('alipay_name')
+            account.identity_num = request.POST.get('identity_num')
+            account.phone_num = request.POST.get('phone_num')
+            account.save()
+            return HttpResponse(json.dumps({'data': 'success'},status=200))
+        except AlipayAccount.DoesNotExist:
+            return HttpResponse(json.dumps({'data':'alipay account doesn\'t exist'},status=400))
+        except Exception as e :
+            return HttpResponse(json.dumps({'data': self.request.method + e.message}, status=400))
 
 
 """
 绑定支付宝账户
-done at 14:40
 """
-class BindingAlipayAccountView(APIView):
+class BindingAlipayAccountView(View):
     def post(self, request):
         try:
             AlipayAccount.objects.create(
                 user_id=str(request.user.id),
-                alipay_id=request.data.get('alipay_id'),
-                alipay_name=request.data.get('alipay_name'),
-                identity_num=request.data.get('identity_num'),
-                phone_num=request.data.get('phone_num')
+                alipay_id=request.POST.get('alipay_id'),
+                alipay_name=request.POST.get('alipay_name'),
+                identity_num=request.POST.get('identity_num'),
+                phone_num=request.POST.get('phone_num')
             )
         except Exception as e:
-            return Response({'data': 'Binding error:' + e.message, 'retCode': 400},
-                            status=status.HTTP_400_BAD_REQUEST)
-        return Response({'data': 'success', 'retCode': 200}, status=status.HTTP_200_OK)
+            return HttpResponse(json.dumps({'data': 'Binding error:' + e.message, 'retCode': 400}))
+        return HttpResponse(json.dumps({'data': 'success', 'retCode': 200}))
 
 
 """
 获取淘宝客账户
 """
-class GetCommision(ListAPIView):
+class GetCommision(View):
     serializer_class = CommisionSerializer
 
     def get(self, request):
         try:
             user_id = request.user.id
             commision = Commision.objects.get(user_id=str(user_id))
-            serializer = self.get_serializer(commision)
+            serializer = CommisionSerializer(commision)
         except Exception as e:
-            return Response({'data': 'query error' + e.message, 'retCode': 400},
-                            status=status.HTTP_400_BAD_REQUEST)
-        print serializer.data
-        return Response({'data': serializer.data, 'retCode': 200}, status=status.HTTP_200_OK)
+            return HttpResponse(json.dumps({'data': 'query error' + e.message, 'retCode': 400}))
+        return HttpResponse(json.dumps({'data': serializer.data, 'retCode': 200}))
 
+"""
+GET或POST修改用户头像
+"""
+class UserAvatarView(View):
+    """
+    获取/修改 用户头像
+    http://{{host}}/api/tk/user/avatar
+    """
+    def get(self, request):
+        ret_data = {}
+        avatar_url = request.user.tkuser.avatar_url
+        ret_data['avatar_url'] = '' if avatar_url is None else avatar_url
+        ret_data['username'] = request.user.username
+        return HttpResponse(json.dumps({'data': ret_data, 'retCode': 200}))
 
+    def post(self, request):
+        try:
+            post_url = request.POST.get('avatar_url')
 
-
-
+            request.user.tkuser.avatar_url = post_url
+            request.user.tkuser.save()
+            return HttpResponse(json.dumps({'data': "success", 'retCode': 200}))
+        except Exception as e:
+            return HttpResponse(json.dumps({'data': "exception occurred:{}".format(e.message), 'retCode': 400}))
 
 
 

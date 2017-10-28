@@ -2,6 +2,11 @@
 
 from django.conf.urls import url, include
 from django.contrib import admin
+from broadcast.views.entry_views import insert_broadcast_by_msg, insert_product_by_msg, insert_product, search_product, push_product, search_product_pad
+from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, get_login_qrcode
+from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, InviterLastLoginView, InviterOrderListView
+from account.views.agent_views import GetCommision, AlipayAccountView, BindingAlipayAccountView, UserAvatarView
+
 from broadcast.views.entry_views import insert_broadcast_by_msg, insert_product_by_msg, \
     insert_product, search_product, push_product, search_product_pad
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
@@ -33,6 +38,19 @@ interact_urls = [
 broadcast_urls = [
     url(r'insert/', insert_broadcast_by_msg),
     url(r'push/', insert_broadcast_by_msg),
+]
+
+account_urls = [
+    url(r'^good-pv/$', GetGoodPv.as_view()),#ok
+    url(r'^order-list/$', OrderList.as_view()), #ok
+    url(r'^order-commision/$', OrderCommisionView.as_view()), #ok
+    url(r'^inviter-order-list/$', InviterOrderListView.as_view()), #ok
+    url(r'^get-commision/$',GetCommision.as_view()), #ok
+    url(r'^inviter-last-login/$', InviterLastLoginView.as_view()),#ok
+    url(r'^set-backup-info/$', SetBackUpInfoView.as_view()), #ok
+    url(r'^bind-alipay/$',BindingAlipayAccountView.as_view()), #ok
+    url(r'^user-alipay/$', AlipayAccountView.as_view()),#ok
+    url(r'^user-avatar', UserAvatarView.as_view()) #ok
 ]
 
 
