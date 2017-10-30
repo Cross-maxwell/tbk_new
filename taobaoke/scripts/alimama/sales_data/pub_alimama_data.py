@@ -10,7 +10,6 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from account.models.order_models import Order
-from account.serializers.order_serializers import OrderSerializer
 
 field_mapping = {u'创建时间': 'create_time',
                  u'点击时间': 'click_time',
@@ -52,21 +51,69 @@ file_path = os.path.join(os.path.abspath('..'), file_name)
 print file_path
 
 
+# def push_data():
+#     data = xlrd.open_workbook(file_path)
+#
+#     # 拿到第一张表
+#     table = data.sheets()[0]
+#
+#     # 获取总行数
+#     nrows = table.nrows
+#
+#     # 第一行是header
+#     headers = table.row_values(0)
+#     result_list = []
+#     result_dict = {}
+#     # print [result_dict for i in range(1, nrows) for j in range(len(headers))]
+#
+#     # 二维遍历, 拼凑出dict用于存库
+#     update_num = 0
+#     insert_num = 0
+#     for i in range(1, nrows):
+#         for j in range(len(headers)):
+#             if table.row_values(i)[j] is not None and table.row_values(i)[j] != "":
+#                 # 映射后端需要的字段
+#                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
+#         order_id = result_dict['order_id']
+#         try:
+#             order = Order.objects.get(order_id=order_id)
+#             serializer = OrderSerializer(order, data=result_dict)
+#             print serializer.data
+#             if serializer.is_valid():
+#                 serializer.save()
+#             print 'update data :' + str(order_id)
+#             update_num += 1
+#         except Order.DoesNotExist:
+#             ## 初始化任意值 , 以便创建对象
+#             result_dict['show_commision_rate'] = ''
+#             result_dict['show_commision_amount'] = 0.00
+#             order = Order.objects.create(**result_dict)
+#             order.__setattr__('show_commision_rate', order.get_show_commision_rate)
+#             order.__setattr__('show_commision_amount', order.get_show_commision_amount)
+#             order.save()
+#             print 'insert data :' + str(order_id)
+#             insert_num += 1
+#         except Exception, e:
+#             print e
+#             continue
+#         result_list.append(result_dict)
+#         result_dict = {}
+#     leave_num = len(result_list) - update_num - insert_num
+#     return_str = '更新 ' + str(update_num) + ' 条已存在订单数据，插入 ' + str(insert_num) + ' 条新订单数据,有 ' + str(
+#         leave_num) + ' 条数据出错.'
+#
+#     print return_str
+
+
 def push_data():
     data = xlrd.open_workbook(file_path)
-
     # 拿到第一张表
     table = data.sheets()[0]
-
     # 获取总行数
     nrows = table.nrows
-
     # 第一行是header
     headers = table.row_values(0)
-    result_list = []
     result_dict = {}
-    # print [result_dict for i in range(1, nrows) for j in range(len(headers))]
-
     # 二维遍历, 拼凑出dict用于存库
     update_num = 0
     insert_num = 0
@@ -75,37 +122,23 @@ def push_data():
             if table.row_values(i)[j] is not None and table.row_values(i)[j] != "":
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
-        order_id = result_dict['order_id']
         try:
-            order = Order.objects.get(order_id=order_id)
-            serializer = OrderSerializer(order, data=result_dict)
-            if serializer.is_valid():
-                serializer.save()
-            print 'update data :' + str(order_id)
-            update_num += 1
-        except Order.DoesNotExist:
-            ## 初始化任意值 , 以便创建对象
-            result_dict['show_commision_rate'] = ''
-            result_dict['show_commision_amount'] = 0.00
-            order = Order.objects.create(**result_dict)
-            order.__setattr__('show_commision_rate', order.get_show_commision_rate)
-            order.__setattr__('show_commision_amount', order.get_show_commision_amount)
-            order.save()
-            print 'insert data :' + str(order_id)
-            insert_num += 1
+            result = Order.objects.update_or_create(**result_dict)
+            status = result[1]
+            if status:
+                insert_num +=1
+            elif not status:
+                update_num +=1
         except Exception, e:
             print e
             continue
-        result_list.append(result_dict)
-        result_dict = {}
-    leave_num = len(result_list) - update_num - insert_num
-    return_str = '更新 ' + str(update_num) + ' 条已存在订单数据，插入 ' + str(insert_num) + ' 条新订单数据,有 ' + str(
-        leave_num) + ' 条数据出错.'
-
+    leave_num = nrows - 1  - update_num - insert_num
+    return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num,insert_num,leave_num)
     print return_str
 
 
 if __name__ == '__main__':
+    # push_data()
     push_data()
     from account.utils.commision_utils import cal_commision, cal_agent_commision
     cal_commision()

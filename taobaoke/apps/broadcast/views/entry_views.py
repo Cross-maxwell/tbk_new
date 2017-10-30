@@ -26,6 +26,8 @@ from broadcast.models.entry_models import Product, PushRecord
 from broadcast.models.user_models import TkUser
 from broadcast.views.server_settings import *
 from weixin_scripts.post_taobaoke import select
+from ipad_weixin.send_msg_type import send_msg_type
+from ipad_weixin.models import WxUser,ChatRoom
 
 import logging
 logger = logging.getLogger('entry_views')
@@ -142,7 +144,7 @@ def handle_product_from_qq(msg):
         except:  # 若商品页使用视频介绍，则会在进入页面后加载视频，J_ImgBooth标签会隐藏，故使用BS获取加载前的页面。
             html = urlopen(item_url)
             bs_obj = BS(html,'lxml')
-            img_url = 'https://'+bs_obj.find('img',{'id' : 'J_ImgBooth'}).get('src')
+            img_url = 'https:'+bs_obj.find('img',{'id' : 'J_ImgBooth'}).get('src')
 
         # try: # 天猫商品页
         #     title = driver.find_element_by_class_name('tb-detail-hd').find_element_by_tag_name('h1').text.strip('\r\n\t')
@@ -196,6 +198,79 @@ def handle_product_from_qq(msg):
         logger.warning('商品解析失败，放弃对本条商品的存储')
 
 
+def handle_livemsg_from_qq(msg):
+    photo_link_pattern = "\[CQ:image,file=(.+)\]"
+    img_url = re.findall(photo_link_pattern, msg)[0]
+    text = re.sub('\[.*\]','',msg).strip('\r\n\t')
+    # 筛选出已经登录的User
+    user_list = WxUser.objects.filter(login__gt=0).all()
+    for user in user_list:
+        logger.info('Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
+        # 发单机器人id
+        wx_id = user.username
+        # 筛选出激活群
+        wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
+        chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
+        if not chatroom_list:
+            logger.info('%s 发单群为空' % wxuser.nickname)
+        for chatroom in chatroom_list:
+            # 发单人的wx_id, 群的id, 手机号
+            try:
+                group_id = chatroom.username
+                logger.info(u'%s 向 %s 推送直播秀' % (wxuser.nickname, chatroom.nickname))
+
+                text_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": group_id,
+                    "text": text,
+                    "type": "text",
+                    "delay_time": 40
+                }
+                img_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": group_id,
+                    "text": img_url,
+                    "type": "img"
+                }
+
+                send_msg_type(img_msg_dict)
+                send_msg_type(text_msg_dict)
+            except Exception as e:
+                logging.error(e)
+                print(e)
+
+
+def handle_textmsg_from_qq(msg):
+    text = msg.strip('\n\r\t')
+    user_list = WxUser.objects.filter(login__gt=0).all()
+    for user in user_list:
+        logger.info('Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
+        # 发单机器人id
+        wx_id = user.username
+        # 筛选出激活群
+        wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
+        chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
+        if not chatroom_list:
+            logger.info('%s 发单群为空' % wxuser.nickname)
+        for chatroom in chatroom_list:
+            # 发单人的wx_id, 群的id, 手机号
+            try:
+                group_id = chatroom.username
+                logger.info(u'%s 向 %s 推送文字消息' % (wxuser.nickname, chatroom.nickname))
+
+                text_msg_dict = {
+                    "uin": wx_id,
+                    "group_id": group_id,
+                    "text": text,
+                    "type": "text",
+                    "delay_time": 40
+                }
+                send_msg_type(text_msg_dict)
+            except Exception as e:
+                logging.error(e)
+                print(e)
+
+
 def handle_qq_msg(kuq_msg):
     #从酷q插件传入的qq群推送商品消息，字符串形式
 
@@ -203,13 +278,17 @@ def handle_qq_msg(kuq_msg):
     #     1.商品推送，带有"券后"、”下单“、”抢购“等字眼, 且至少有两个链接（其中一个为图片链接）。
     #     2.代理广告或活动预告，有图片和文字，但无上述字眼。
     # 此处仅对商品推送进行处理
+    msg_type = kuq_msg.rsplit(".type:")[-1]
 
-    if ("券后" in kuq_msg or ("抢购" in kuq_msg or "下单" in kuq_msg)) and len(re.findall('http', kuq_msg)) > 0:
+    if msg_type =="ProductMsg":
         logger.info('从QQ群消息导入商品中……')
-        handle_product_from_qq(kuq_msg)
-    else:
-        logger.info('无关消息, 忽略')
-
+        handle_product_from_qq(kuq_msg.rsplit(".type:")[0])
+    elif msg_type =="LiveMsg":
+        logger.info('直播秀消息,通过微信转发中......')
+        handle_livemsg_from_qq(kuq_msg.rsplit(".type:")[0])
+    elif msg_type =="TextMsg":
+        logger.info('纯文字信息,通过微信转发中......')
+        handle_textmsg_from_qq(kuq_msg.rsplit(".type:")[0])
 
 @csrf_exempt
 def insert_broadcast_by_msg(request):
