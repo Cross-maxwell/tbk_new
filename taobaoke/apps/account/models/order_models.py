@@ -88,6 +88,8 @@ class Order(models.Model):
     # 是否入账
     enter_account = models.BooleanField(default=False)
 
+    user_id = models.CharField(max_length=16)
+
     # 计算显示出来的佣金比率
     @property
     def get_show_commision_rate(self):
@@ -123,4 +125,6 @@ class Order(models.Model):
         if not (self.show_commision_rate and self.show_commision_amount):
             self.show_commision_rate = self.get_show_commision_rate
             self.show_commision_amount = self.get_show_commision_amount
+        if not self.user_id:
+            self.user_id = TkUser.objects.get(adzone__pid__contains=self.ad_id).user_id
         return super(Order, self).save(*args, **kwargs)
