@@ -96,7 +96,6 @@ class Order(models.Model):
             commision = Commision.objects.get(user__tkuser__adzone__pid__contains=self.ad_id)
             commision_rate = commision.commision_rate
             if commision_rate == '' or commision_rate is None:
-                # username = TkUser.objects.get(adzone__pid__contains=self.ad_id).user.username
                 commision_rate = 0.15
         except Commision.DoesNotExist:
             commision_rate = 0.15
@@ -119,8 +118,9 @@ class Order(models.Model):
         return show_commision_amount
 
     def save(self, *args, **kwargs):
-        # 把传过来的create_time强行转换为同样数字的utc时间
-        # create_time = self.create_time.replace(tzinfo=utc)
         last_update_time = datetime.datetime.now()
         self.last_update_time = last_update_time
+        if not (self.show_commision_rate and self.show_commision_amount):
+            self.show_commision_rate = self.get_show_commision_rate
+            self.show_commision_amount = self.get_show_commision_amount
         return super(Order, self).save(*args, **kwargs)

@@ -1,28 +1,8 @@
 # coding=utf-8
 from account.models.order_models import Order
-
-__author__ = 'mingv'
-
-# import rest_framework_mongoengine.serializers as rs
-# import rest_framework.serializers as drf_serializers
 from rest_framework import serializers
 
 class OrderSerializer(serializers.ModelSerializer):
-    earning_time = serializers.CharField(   allow_blank=True, required=False )
-
-
-    # 佣金金额
-    commision_amount = serializers.FloatField(write_only=True)
-    # 佣金比率
-    commision_rate = serializers.CharField(write_only=True)
-
-    # 显示佣金比率
-    show_commision_rate = serializers.CharField(read_only=True,source='get_show_commision_rate')
-    # 显示佣金金额
-    show_commision_amount = serializers.FloatField(read_only=True,source='get_show_commision_amount')
-
-
-
     class Meta:
         model = Order
         fields = (
