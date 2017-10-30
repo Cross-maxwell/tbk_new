@@ -151,7 +151,7 @@ def handle_product_from_qq(msg):
         ###待实例测试
         html = urlopen(item_url)
         bs_obj = BS(html, 'lxml')
-        title = bs_obj.find('h1',{'data-spm' : '1000983'}).text.split('\r\n\t')
+        title = bs_obj.find('h1',{'data-spm' : '1000983'}).text.strip('\r\n\t')
 
 
         # 抓取优惠券信息
