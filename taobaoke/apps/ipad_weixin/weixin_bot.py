@@ -1508,7 +1508,7 @@ class WXBot(object):
 
     def login(self, md_username):
         res = self.get_qrcode(md_username)
-        if len(res) != 3:
+        if len(res) != 4:
             logger.info("%s: get_qrcode 失败!" % md_username)
             return False
         oss_path, qrcode_rsp, device_id = res[0], res[1], res[2]
@@ -1621,7 +1621,7 @@ if __name__ == "__main__":
 
             elif cmd == 5:
                 # wx_bot.login('15158197021')
-                wx_bot.login('13632909405_mimi')
+                wx_bot.login('smart')
                 # wx_bot.login('15900000010')
 
             elif cmd == 6:

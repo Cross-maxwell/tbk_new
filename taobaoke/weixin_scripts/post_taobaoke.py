@@ -93,7 +93,7 @@ def post_taobaoke_url(wx_id, group_id, md_username, p=None):
     logger.info("向 %s 推送文字 \n %s." % (text_msg_dict['group_id'], text_msg_dict['text']))
 
 
-
+from broadcast.views.taobaoke_views import is_push
 def select(p=None):
     # 筛选出已经登录的User
     user_list = WxUser.objects.filter(login__gt=0).all()
@@ -106,30 +106,28 @@ def select(p=None):
         # 通过 wx_id = hid 筛选出手机号
         qr_code_db = Qrcode.objects.filter(username=user.username, md_username__isnull=False).order_by('-id').first()
         md_username = qr_code_db.md_username
-        # 10分钟内不可以连续发送同样的请求。
-        rsp = requests.get("http://s-prod-07.qunzhu666.com:8000/api/tk/is-push?username={0}&wx_id={1}".format(md_username, wx_id), timeout=4)
-        ret = json.loads(rsp.text)['ret']
-        if ret == 0:
-            logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
-
-        if ret == 1:
+        # ret = is_push(md_username, wx_id)
+        # if ret == 0:
+        #     logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
+        #
+        # if ret == 1:
             # 筛选出激活群
-            wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
-            chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
-            if not chatroom_list:
-                logger.info('%s 发单群为空' % wxuser.nickname)
+        wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
+        chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
+        if not chatroom_list:
+            logger.info('%s 发单群为空' % wxuser.nickname)
 
-            for chatroom in chatroom_list:
-                # 发单人的wx_id, 群的id, 手机号
-                try:
-                    group_id = chatroom.username
-                    logger.info(u'%s 向 %s 推送商品' % (wxuser.nickname, chatroom.nickname))
+        for chatroom in chatroom_list:
+            # 发单人的wx_id, 群的id, 手机号
+            try:
+                group_id = chatroom.username
+                logger.info(u'%s 向 %s 推送商品' % (wxuser.nickname, chatroom.nickname))
 
-                    import thread
-                    thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username,p))
-                except Exception as e:
-                    logging.error(e)
-                    print(e)
+                import thread
+                thread.start_new_thread(post_taobaoke_url, (wx_id, group_id, md_username,p))
+            except Exception as e:
+                logging.error(e)
+                print(e)
 
 
 

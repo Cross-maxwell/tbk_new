@@ -22,7 +22,7 @@ logger = logging.getLogger('django_views')
 #795318
 class PostGoods(View):
     """
-    接口： s-prod-04.qunzhu666.com:8080/push_product
+    接口： s-prod-04.qunzhu666.com:8080/tk/push_product
     """
     def get(self, request):
         user_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
@@ -64,7 +64,7 @@ class PostGoods(View):
 
 class SendSignNotice(View):
     """
-    接口： http://s-prod-04.qunzhu666.com/send_signin_notice
+    接口： http://s-prod-04.qunzhu666.com/tk/send_signin_notice
     """
     def get(self, request):
         wxuser_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()

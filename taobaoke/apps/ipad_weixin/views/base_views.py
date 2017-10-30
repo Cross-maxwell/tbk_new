@@ -91,7 +91,7 @@ class IsLogin(View):
 class IsUuidLogin(View):
     """
     检测该UUID是否被扫描登陆
-    http://s-prod-04.qunzhu666.com:8080/is_uuid_login?uuid=gZF8miqrkksZ9mrRk7mc
+    http://s-prod-04.qunzhu666.com:8080/robot/is_uuid_login?uuid=gZF8miqrkksZ9mrRk7mc
     """
     def get(self, request):
         uuid = request.GET.get('uuid', '')
