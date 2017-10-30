@@ -241,7 +241,7 @@ def handle_livemsg_from_qq(msg):
 
 
 def handle_textmsg_from_qq(msg):
-    text = msg.strip('\n\r\t')
+    text = msg.strip('\n\r\t\s')
     user_list = WxUser.objects.filter(login__gt=0).all()
     for user in user_list:
         logger.info('Handling nickname: {0}, wx_id: {1}'.format(user.nickname, user.username))
@@ -286,7 +286,7 @@ def handle_qq_msg(kuq_msg):
     elif msg_type =="LiveMsg":
         logger.info('直播秀消息,通过微信转发中......')
         handle_livemsg_from_qq(kuq_msg.rsplit(".type:")[0])
-    elif msg_type =="TextMsg":
+    elif msg_type =="TextOnlyMsg":
         logger.info('纯文字信息,通过微信转发中......')
         handle_textmsg_from_qq(kuq_msg.rsplit(".type:")[0])
 
