@@ -36,8 +36,8 @@ class OrderList(View):
             # desc = request.GET.get('desc')
             order_list = getOrderListByUserName(request.user.username)
         except Exception as e:
-            return HttpResponse(json.dumps({'retCode': 400, 'data':'Query error:'+e.message}))
-        return HttpResponse(json.dumps({'retCode': 200, 'data': OrderSerializer(order_list, many=True).data}))
+            return HttpResponse(json.dumps({'data':'Query error:'+e.message}),status=400)
+        return HttpResponse(json.dumps({'data': OrderSerializer(order_list, many=True).data}),status=200)
 
 
 def getOrderListByUserName(username):
@@ -58,7 +58,7 @@ class GetGoodPv(View):
     def get(self, request):
         ad_zone = get_ad_zone('username',request.user.username)
         click_30d = ad_zone['click_30d']
-        return HttpResponse(json.dumps({'retCode': 200, 'data': click_30d}))
+        return HttpResponse(json.dumps({'data': click_30d}),status=200)
 
 
 class PostingAccount(View):
@@ -75,7 +75,7 @@ class PostingAccount(View):
         order_id = request.GET.get('order_id')
         type1 = request.GET.get('type')
         account_utils.post(md_user_id, amount, in_or_out, order_id, type1)
-        return HttpResponse(json.dumps({'retCode': 200, 'data': 'successful update the data'}))
+        return HttpResponse(json.dumps({'data': 'successful update the data'}),status=200)
 
 
 '''
@@ -89,27 +89,28 @@ class SetBackUpInfoView(View):
     """
     def post(self, request):
         user_id = request.user.id
-        sub_agent_username = request.POST.get('sub_agent_user', None)
-        backup_info = request.POST.get('back_up_info', None)
+        req_dict = json.loads(request.body)
+        sub_agent_username = req_dict.get('sub_agent_user', None)
+        backup_info = req_dict.get('back_up_info', None)
 
         try:
             sub_agent_user_id = User.objects.get(username=sub_agent_username).id
         except User.DoesNotExist as e:
-            return HttpResponse(json.dumps({'retCode': 400, 'data': "{} user is not exist".format(sub_agent_username)}))
+            return HttpResponse(json.dumps({'data': "{} user is not exist".format(sub_agent_username)}),status=400)
 
         # 防止接口被恶意使用, 判断此下级代理是否为该用户下级代理
         try:
             tmp = TkUser.objects.get(user_id=sub_agent_user_id)
         except TkUser.DoesNotExist as e:
-            return HttpResponse(json.dumps({'retCode': 400, 'data': "{} userid in tkuser is not exist".format(sub_agent_user_id)}))
+            return HttpResponse(json.dumps({'data': "{} userid in tkuser is not exist".format(sub_agent_user_id)}),status=400)
 
         if not tmp.inviter_id == str(user_id):
-            return HttpResponse(json.dumps({'retCode': 400, 'data': "{}'s superior is not you".format(sub_agent_user_id)}))
+            return HttpResponse(json.dumps({'data': "{}'s superior is not you".format(sub_agent_user_id)}),status=400)
 
 
         tmp.inviter_backup_info = backup_info
         tmp.save()
-        return HttpResponse(json.dumps({'retCode': 200, 'data': "success"}))
+        return HttpResponse(json.dumps({'data': "success"}),status=200)
 
 
 '''
@@ -121,7 +122,7 @@ class InviterLastLoginView(View):
         try:
             agent_user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return HttpResponse(json.dumps({'error': 'username does not exist', 'retCode': 400025}))
+            return HttpResponse(json.dumps({'error': 'username does not exist'}),status=400)
         sub_agent_list = TkUser.objects.filter(inviter_id=agent_user.id)
         data = []
         for sub_agent in sub_agent_list:
@@ -131,7 +132,7 @@ class InviterLastLoginView(View):
                 last_login = format(sub_agent.user.last_login, "%Y-%m-%d %H:%M:%S")
             md_list_json = {'username': sa_username, 'last_login': last_login}
             data.append(md_list_json)
-        return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
+        return HttpResponse(json.dumps({'data': data}),status=200)
 
 
 '''
@@ -145,7 +146,7 @@ class InviterOrderListView(View):
         try:
             agent_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return HttpResponse(json.dumps({'error': 'username does not exist', 'retCode': '400025'}))
+            return HttpResponse(json.dumps({'error': 'username does not exist'}),status=400)
         # 拿到所有下级代理
         sub_agent_list = TkUser.objects.filter(inviter_id=agent_user.id)
         # 下级代理的订单详情列表
@@ -191,7 +192,7 @@ class InviterOrderListView(View):
             sum_user_earning += cut_decimal(user_earning, 2)
 
         data = {'sum_user_earning': sum_user_earning, 'detail_list': detail_list}
-        return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
+        return HttpResponse(json.dumps({'data': data}),status=200)
 
 
 '''
@@ -200,7 +201,7 @@ class InviterOrderListView(View):
 class OrderCommisionView(View):
     def get(self, request):
         data = get_all_order()
-        return HttpResponse(json.dumps({'retCode': 200,'data':data}))
+        return HttpResponse(json.dumps({'data':data}),status=200)
 
 
 

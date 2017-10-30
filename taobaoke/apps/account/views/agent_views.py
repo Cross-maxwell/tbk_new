@@ -21,26 +21,27 @@ class AlipayAccountView(View):
         try:
             account = AlipayAccount.objects.get(user_id=user_id)
             serializer = AlipayAccountSerializer(account)
-            return HttpResponse(json.dumps({'data' : serializer.data,'retCode':200}))
+            return HttpResponse(json.dumps({'data' : serializer.data}),status=200)
         except AlipayAccount.DoesNotExist:
             return None
         except Exception as e:
-            return HttpResponse(json.dumps({'data': self.request.method + e.message, 'retCode': 400}))
+            return HttpResponse(json.dumps({'data': self.request.method + e.message}),status=400)
 
     def post(self, request):
         user_id = request.user.id
+        req_dict = json.loads(request.body)
         try:
             account = AlipayAccount.objects.get(user_id=user_id)
-            account.alipay_id = request.POST.get('alipay_id')
-            account.alipay_name = request.POST.get('alipay_name')
-            account.identity_num = request.POST.get('identity_num')
-            account.phone_num = request.POST.get('phone_num')
+            account.alipay_id = req_dict.get('alipay_id','')
+            account.alipay_name = req_dict.get('alipay_name','')
+            account.identity_num = req_dict.get('identity_num','')
+            account.phone_num = req_dict.get('phone_num','')
             account.save()
-            return HttpResponse(json.dumps({'data': 'success'},status=200))
+            return HttpResponse(json.dumps({'data': 'success'}),status=200)
         except AlipayAccount.DoesNotExist:
-            return HttpResponse(json.dumps({'data':'alipay account doesn\'t exist'},status=400))
+            return HttpResponse(json.dumps({'data':'alipay account doesn\'t exist'}),status=400)
         except Exception as e :
-            return HttpResponse(json.dumps({'data': self.request.method + e.message}, status=400))
+            return HttpResponse(json.dumps({'data': self.request.method + e.message}), status=400)
 
 
 """
@@ -48,17 +49,18 @@ class AlipayAccountView(View):
 """
 class BindingAlipayAccountView(View):
     def post(self, request):
+        req_dict = json.loads(request.body)
         try:
             AlipayAccount.objects.create(
                 user_id=str(request.user.id),
-                alipay_id=request.POST.get('alipay_id'),
-                alipay_name=request.POST.get('alipay_name'),
-                identity_num=request.POST.get('identity_num'),
-                phone_num=request.POST.get('phone_num')
+                alipay_id=req_dict.get('alipay_id',''),
+                alipay_name=req_dict.get('alipay_name',''),
+                identity_num=req_dict.get('identity_num',''),
+                phone_num=req_dict.get('phone_num','')
             )
         except Exception as e:
-            return HttpResponse(json.dumps({'data': 'Binding error:' + e.message, 'retCode': 400}))
-        return HttpResponse(json.dumps({'data': 'success', 'retCode': 200}))
+            return HttpResponse(json.dumps({'data': 'Binding error:' + e.message}),status=400)
+        return HttpResponse(json.dumps({'data': 'success'}),status=200)
 
 
 """
@@ -73,8 +75,8 @@ class GetCommision(View):
             commision = Commision.objects.get(user_id=str(user_id))
             serializer = CommisionSerializer(commision)
         except Exception as e:
-            return HttpResponse(json.dumps({'data': 'query error' + e.message, 'retCode': 400}))
-        return HttpResponse(json.dumps({'data': serializer.data, 'retCode': 200}))
+            return HttpResponse(json.dumps({'data': 'query error' + e.message}),status=400)
+        return HttpResponse(json.dumps({'data': serializer.data}),status=200)
 
 """
 GET或POST修改用户头像
@@ -89,17 +91,18 @@ class UserAvatarView(View):
         avatar_url = request.user.tkuser.avatar_url
         ret_data['avatar_url'] = '' if avatar_url is None else avatar_url
         ret_data['username'] = request.user.username
-        return HttpResponse(json.dumps({'data': ret_data, 'retCode': 200}))
+        return HttpResponse(json.dumps({'data': ret_data}),status=200)
 
     def post(self, request):
         try:
-            post_url = request.POST.get('avatar_url')
+            req_dict = json.loads(request.body)
+            post_url = req_dict.get('avatar_url','')
 
             request.user.tkuser.avatar_url = post_url
             request.user.tkuser.save()
-            return HttpResponse(json.dumps({'data': "success", 'retCode': 200}))
+            return HttpResponse(json.dumps({'data': "success"}),status=200)
         except Exception as e:
-            return HttpResponse(json.dumps({'data': "exception occurred:{}".format(e.message), 'retCode': 400}))
+            return HttpResponse(json.dumps({'data': "exception occurred:{}".format(e.message)}),status=400)
 
 
 
