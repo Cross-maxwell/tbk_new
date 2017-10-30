@@ -93,7 +93,6 @@ def post_taobaoke_url(wx_id, group_id, md_username, p=None):
     logger.info("向 %s 推送文字 \n %s." % (text_msg_dict['group_id'], text_msg_dict['text']))
 
 
-from broadcast.views.taobaoke_views import is_push
 def select(p=None):
     # 筛选出已经登录的User
     user_list = WxUser.objects.filter(login__gt=0).all()
@@ -106,12 +105,7 @@ def select(p=None):
         # 通过 wx_id = hid 筛选出手机号
         qr_code_db = Qrcode.objects.filter(username=user.username, md_username__isnull=False).order_by('-id').first()
         md_username = qr_code_db.md_username
-        # ret = is_push(md_username, wx_id)
-        # if ret == 0:
-        #     logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
-        #
-        # if ret == 1:
-            # 筛选出激活群
+
         wxuser = WxUser.objects.filter(username=user.username).order_by('-id').first()
         chatroom_list = ChatRoom.objects.filter(wx_user=wxuser.id, nickname__contains=u"果粉街").all()
         if not chatroom_list:
