@@ -144,11 +144,14 @@ def handle_product_from_qq(msg):
             bs_obj = BS(html,'lxml')
             img_url = 'https://'+bs_obj.find('img',{'id' : 'J_ImgBooth'}).get('src')
 
-        try: # 天猫商品页
-            title = driver.find_element_by_class_name('tb-detail-hd').find_element_by_tag_name('h1').text.strip('\r\n\t')
-        except: # 淘宝商品页
-            title = driver.find_element_by_class_name('tb-main-title').text.strip('\r\n\t')
+        # try: # 天猫商品页
+        #     title = driver.find_element_by_class_name('tb-detail-hd').find_element_by_tag_name('h1').text.strip('\r\n\t')
+        # except: # 淘宝商品页
+        #     title = driver.find_element_by_class_name('tb-main-title').text.strip('\r\n\t')
         ###待实例测试
+        html = urlopen(item_url)
+        bs_obj = BS(html, 'lxml')
+        title = bs_obj.find('h1',{'data-spm' : '1000983'}).text.strip('\r\n\t')
 
 
         # 抓取优惠券信息
