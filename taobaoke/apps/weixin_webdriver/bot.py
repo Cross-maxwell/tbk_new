@@ -5,7 +5,10 @@ from selenium.webdriver.common.keys import Keys
 from django.db.models import Q
 import logging
 import threading
+from broadcast.models.user_models import PushTime
 import time
+from broadcast.views.taobaoke_views import is_push
+from ipad_weixin.models import WxUser
 logger = logging.getLogger('post_taobaoke')
 
 
@@ -22,9 +25,15 @@ class WebDriverBot(object):
         return elem.get_attribute('src').split('/')[-1]
 
     def __run(self):
+        time.sleep(60)
         while True:
-            self.tick()
-            time.sleep(20)
+            wx_user = WxUser.objects.filter(user=self.user).first()
+            ret = is_push(self.user.username, wx_user.username)
+            if ret == 0:
+                logger.info("%s 未到发单时间" % wx_user.nickname)
+            if ret == 1:
+                self.tick()
+            time.sleep(60)
 
     def run(self):
         import thread
@@ -68,9 +77,9 @@ class WebDriverBot(object):
         # 筛群
         msgs = self.driver.find_elements_by_css_selector('div.chat_item')
         for msg_item in msgs:
-            if u'File Transfer' in msg_item.find_element_by_css_selector('.nickname_text').text:
+            chatroom_nickname = msg_item.find_element_by_css_selector('.nickname_text').text
+            if u'福利社' in chatroom_nickname:
                 # Send img
-
                 msg_item.click()
 
                 self.driver.execute_script('$("input[type=file]").removeAttr("multiple");')
@@ -80,10 +89,16 @@ class WebDriverBot(object):
                 fn = '/tmp/%s-%s-%s' % (self.user.username, time.time(), p.get_img_msg().split('/')[-1])
                 open(fn, 'wb').write(requests.get(p.get_img_msg()).content)
                 file_upload_input.send_keys(fn)
+
+                logger.info("向 %s 推送图片" % chatroom_nickname)
                 time.sleep(3)
 
                 edit_area = self.driver.find_element_by_css_selector('#editArea')
                 edit_area.click()
+                logger.info("向 %s 推送文字" % chatroom_nickname)
                 send_multiline(edit_area, p.get_text_msg(pid))
+
+
+
 
 
