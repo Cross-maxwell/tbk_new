@@ -88,7 +88,7 @@ class Order(models.Model):
     # 是否入账
     enter_account = models.BooleanField(default=False)
 
-    user_id = models.CharField(max_length=16)
+    user_id = models.CharField(max_length=16,null=True)
 
     # 计算显示出来的佣金比率
     @property
