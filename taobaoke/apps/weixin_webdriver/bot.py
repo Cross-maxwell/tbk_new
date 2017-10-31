@@ -74,7 +74,7 @@ class WebDriverBot(object):
                 elem.send_keys(t)
             elem.send_keys(Keys.ENTER)
 
-        # 筛群
+        # Filter groups
         msgs = self.driver.find_elements_by_css_selector('div.chat_item')
         for msg_item in msgs:
             chatroom_nickname = msg_item.find_element_by_css_selector('.nickname_text').text
