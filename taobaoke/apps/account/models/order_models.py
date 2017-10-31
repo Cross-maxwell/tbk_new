@@ -83,6 +83,7 @@ class Order(models.Model):
     # 广告位名称
     ad_name = models.CharField('广告位名称', max_length=255)
 
+
     # 最后更新时间
     last_update_time = models.DateTimeField(default=datetime.datetime.now)
     # 是否入账

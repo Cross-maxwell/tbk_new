@@ -13,14 +13,13 @@ from django.http.response import HttpResponse
 from django.core.cache import cache
 from rest_framework.generics import ListAPIView
 from rest_framework_jwt.serializers import User
-from rest_framework_mongoengine import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.views.decorators.csrf import csrf_exempt
-
+from rest_framework import generics
 
 # from wx_bot.models.contact_models import Host, GroupContact
 # from bot_api.settings import tbk_name, tbk_push_url, REMOTE_BOT_SERVER
