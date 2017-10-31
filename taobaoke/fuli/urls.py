@@ -11,6 +11,7 @@ from ipad_weixin.views.base_views import GetQrcode, HostList, IsUuidLogin, IsLog
 from broadcast.views.taobaoke_views import PostGoods, SendSignNotice, SetPushTime
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
+from weixin_webdriver.views import LoginQrcode
 
 user_urls = [
     url(r'^update-adzone/', update_adzone),
@@ -62,6 +63,9 @@ auth_urls = [
     url(r'logout/$', Logout.as_view())
 ]
 
+webdriver_urls = [
+    url(r'getqrcode', LoginQrcode.as_view())
+]
 
 urlpatterns = [
     url(r'product/', include(product_urls)),
@@ -74,6 +78,8 @@ urlpatterns = [
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
 
-    url(r'account/', include('account.urls'))
+    url(r'account/', include('account.urls')),
+
+    url(r'webdriver', include(webdriver_urls))
 ]
 

@@ -1,9 +1,7 @@
 # coding=utf-8
 from account.models.order_models import Order
 
-__author__ = 'mingv'
 
-# import rest_framework_mongoengine.serializers as rs
 # import rest_framework.serializers as drf_serializers
 from rest_framework import serializers
 
