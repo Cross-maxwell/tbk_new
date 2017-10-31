@@ -13,8 +13,8 @@ from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup as BS
 from urllib import urlopen
 ### 仅adam本地测试用，部署时此处须更改
-# executable_path = '/home/adam/mydev/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
-executable_path = '/home/tk/taobaoke/env_bck/selenium/webdriver/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+executable_path = '/home/adam/mydev/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+# executable_path = '/home/tk/taobaoke/env_bck/selenium/webdriver/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
 from django.utils import timezone
 from django.http import HttpResponse
@@ -151,10 +151,16 @@ def handle_product_from_qq(msg):
         # except: # 淘宝商品页
         #     title = driver.find_element_by_class_name('tb-main-title').text.strip('\r\n\t')
         ###待实例测试
-        html = urlopen(item_url)
-        bs_obj = BS(html, 'lxml')
-        title = bs_obj.find('h1',{'data-spm' : '1000983'}).text.strip('\r\n\t')
-
+        try:
+            html = urlopen(item_url)
+            bs_obj = BS(html, 'lxml')
+            title = bs_obj.find('h1',{'data-spm' : '1000983'}).text.strip('\r\n\t')
+        except AttributeError:
+            driver.get(item_url)
+            new_url = driver.current_url
+            html = urlopen(new_url)
+            bs_obj = BS(html, 'lxml')
+            title = bs_obj.find('h1', {'data-spm': '1000983'}).text.strip('\r\n\t')
 
         # 抓取优惠券信息
         # 优惠券页面为动态加载, 此处用selenium进行采集
