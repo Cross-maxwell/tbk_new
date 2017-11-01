@@ -108,6 +108,16 @@ class PushTime(models.Model):
         self.update_time = timezone.now()
         return super(PushTime, self).save(*args, **kwargs)
 
+    def get_pushtime(self, md_username):
+        try:
+            pushtime = PushTime.objects.get(user__username=md_username)
+        except Exception as e:
+            pushtime = PushTime()
+            pushtime.user = User.objects.get(username=md_username)
+            pushtime.save()
+        return pushtime
+
+
 
 @receiver(post_save, sender=User)
 def create_pushtime(sender, instance, created, **kwargs):
