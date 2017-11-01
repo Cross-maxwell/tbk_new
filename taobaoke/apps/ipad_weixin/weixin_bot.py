@@ -668,8 +668,9 @@ class WXBot(object):
                                     # 该群存在, 则可能是更改群名称、拉/踢人等。
                                     if msg_dict['Status'] == 4:
                                         self.update_chatroom_members(chatroom_name, v_user)
-                                        if u"邀请" in msg_dict['Content']:
-                                            self.send_invited_message(msg_dict)
+                                        # TODO: 目前存在某些问题，待解决。
+                                        # if u"邀请" in msg_dict['Content']:
+                                        #     self.send_invited_message(msg_dict)
 
                             try:
                                 message, created = Message.objects.get_or_create(msg_id=msg_dict['MsgId'])

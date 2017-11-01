@@ -128,10 +128,9 @@ class Product(Entry):
             'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
         self.short_url = short_url_respose.json()['urls'][0]['url_short']
 
-
         msg = self.template.format(**self.__dict__)
-        # if self.cupon_left < 15:
-        #     msg += u'\n（该商品仅剩%s张券，抓紧下单吧\n）' % self.cupon_left
+        if self.cupon_left < 15:
+            msg += u'\n（该商品仅剩%s张券，抓紧下单吧\n）' % self.cupon_left
         msg += self.template_end
         # if random.random() < 0.5:
         #     msg += u'\n本群招代理，如果你也想把优惠带给你身边的朋友，那就赶快加我私聊吧！'
