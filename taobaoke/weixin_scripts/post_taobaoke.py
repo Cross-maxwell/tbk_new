@@ -32,7 +32,7 @@ import logging
 logger = logging.getLogger('post_taobaoke')
 
 
-def post_taobaoke_url(wx_id, group_id, md_username, p=None):
+def post_taobaoke_url(wx_id, group_id, md_username):
     # 发单人的wx_id, 群的id, 手机号
     try:
         tk_user = TkUser.get_user(md_username)
@@ -43,28 +43,27 @@ def post_taobaoke_url(wx_id, group_id, md_username, p=None):
     except Exception as e:
         logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(wx_id, e))
 
-    if not p:
+    qs = Product.objects.filter(
+        ~Q(pushrecord__group__contains=group_id,
+           pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
+        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+    )
+
+    # 用发送过的随机商品替代
+    if qs.count() == 0:
         qs = Product.objects.filter(
-            ~Q(pushrecord__group__contains=group_id,
-               pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
             available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
         )
+        beary_chat('点金推送商品失败：无可用商品')
 
-        # 用发送过的随机商品替代
-        if qs.count() == 0:
-            qs = Product.objects.filter(
-                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-            )
-            beary_chat('点金推送商品失败：无可用商品')
-
-        for _ in range(50):
-            try:
-                r = random.randint(0, qs.count() - 1)
-                p = qs.all()[r]
-                break
-            except Exception as exc:
-                print "Get entry exception. Count=%d." % qs.count()
-                logger.error(exc)
+    for _ in range(50):
+        try:
+            r = random.randint(0, qs.count() - 1)
+            p = qs.all()[r]
+            break
+        except Exception as exc:
+            print "Get entry exception. Count=%d." % qs.count()
+            logger.error(exc)
 
     # img or text
     text_msg_dict = {
