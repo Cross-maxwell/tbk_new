@@ -21,7 +21,13 @@ from broadcast.models.user_models import TkUser
 
 file_path = '/home/adam/mydev/my_scripts/'
 
+def log(msg, file='migration_log.txt'):
+    with open(file,'a') as f:
+        f.write(msg+'\r\n')
+
 def migrate_order(file='order_json.json'):
+    log('=====================================')
+    log('migrating order')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -45,11 +51,14 @@ def migrate_order(file='order_json.json'):
         try:
             data['user_id']=TkUser.objects.get(adzone__pid__contains=data['ad_id']).user_id
         except TkUser.DoesNotExist:
+            log('TkuserDoesNotExist  ,  order id : %s' %  data['order_id'])
             continue
 
         Order.objects.update_or_create(**data)
 
 def migrate_aos(file='aos_json.json'):
+    log('=====================================')
+    log('migrating agentorderstatus')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -57,6 +66,8 @@ def migrate_aos(file='aos_json.json'):
         AgentOrderStatus.objects.create(**data)
 
 def migrate_account(file='account_json.json'):
+    log('=====================================')
+    log('migrating account')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -68,10 +79,12 @@ def migrate_account(file='account_json.json'):
             data.pop('username')
             Account.objects.create(**data)
         except Exception,e:
-            print e.message
-            print data
+            log(e.message)
+            log(str(data))
 
 def migrate_account_flow(file='account_flow_json.json'):
+    log('=====================================')
+    log('migrating accountflow')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -83,6 +96,8 @@ def migrate_account_flow(file='account_flow_json.json'):
         AccountFlow.objects.create(**data)
 
 def migrate_alipay_account(file = 'alipay_account_json.json'):
+    log('=====================================')
+    log('migrating alipayaccount')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -94,6 +109,8 @@ def migrate_alipay_account(file = 'alipay_account_json.json'):
         AlipayAccount.objects.create(**data)
 
 def migrate_commision(file = 'commision_json.json'):
+    log('=====================================')
+    log('migrating commision')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -107,10 +124,12 @@ def migrate_commision(file = 'commision_json.json'):
             data.pop('pid')
             Commision.objects.update_or_create(**data)
         except Exception,e:
-            print e.message
-            print data
+            log( e.message)
+            log( str(data))
 
 def migrate_agent_commision(file='agent_commision_json.json'):
+    log('=====================================')
+    log('migrating agentaccount')
     source = os.path.join(file_path, file)
     with open(source,'r') as f:
         data_list = json.loads(f.read())
@@ -124,16 +143,35 @@ def migrate_agent_commision(file='agent_commision_json.json'):
             data.pop('pid')
             AgentCommision.objects.create(**data)
         except Exception, e:
-            print e.message
-            print data
+            log( e.message)
+            log(str(data))
 
-
+def migrate_tkuser(file='mduserdata_json.json'):
+    log('=====================================')
+    log('migrating tkuser')
+    source = os.path.join(file_path, file)
+    with open(source,'r') as f:
+        data_list = json.loads(f.read())
+    for data in data_list:
+        try:
+            data['user_id']=User.objects.get(username=data['username'])
+            if data['inviter_username']:
+                data['inviter_id']=User.objects.get(username=data['inviter_username']).id
+            data.pop('username')
+            data.pop('invite_code')
+            TkUser.objects.update_or_create(**data)
+        except Exception,e:
+            log( e.message)
+            log(str(data))
 
 if __name__=="__main__":
-    # migrate_order()
-    # migrate_aos()
-    # migrate_account()
-    # migrate_account_flow()
-    # migrate_alipay_account()
-    # migrate_commision()
+    log(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    migrate_order()
+    migrate_aos()
+    migrate_account()
+    migrate_account_flow()
+    migrate_alipay_account()
+    migrate_commision()
     migrate_agent_commision()
+    migrate_tkuser()
+    pass
