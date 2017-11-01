@@ -4,7 +4,7 @@
     2017.10.31  19:33 迁移数据至新库
 '''
 import sys
-sys.path.append('/home/adam/mydev/new_taobaoke/taobaoke')
+sys.path.append('/home/new_taobaoke/taobaoke')
 
 import os
 import django
@@ -19,7 +19,7 @@ from account.models.commision_models import Account,AccountFlow,AlipayAccount,Co
 from django.contrib.auth.models import User
 from broadcast.models.user_models import TkUser
 
-file_path = '/home/adam/mydev/my_scripts/'
+file_path = '/home/new_taobaoke/taobaoke/datas20171101/'
 
 def log(msg, file='migration_log.txt'):
     with open(file,'a') as f:
@@ -124,8 +124,9 @@ def migrate_commision(file = 'commision_json.json'):
             data.pop('pid')
             Commision.objects.update_or_create(**data)
         except Exception,e:
-            log( e.message)
-            log( str(data))
+            log(str(e))
+            log (e.message)
+            log (str(data))
 
 def migrate_agent_commision(file='agent_commision_json.json'):
     log('=====================================')
@@ -154,24 +155,30 @@ def migrate_tkuser(file='mduserdata_json.json'):
         data_list = json.loads(f.read())
     for data in data_list:
         try:
-            data['user_id']=User.objects.get(username=data['username'])
+            data['user_id']=User.objects.get(username=data['username']).id
             if data['inviter_username']:
                 data['inviter_id']=User.objects.get(username=data['inviter_username']).id
+            data.pop('inviter_username')
             data.pop('username')
             data.pop('invite_code')
-            TkUser.objects.update_or_create(**data)
+            tkuser = TkUser.objects.get(user_id=data['user_id'])
+            tkuser.avatar_url=data['avatar_url']
+            tkuser.inviter_id = data['inviter_id']
+            tkuser.inviter_backup_info = data['inviter_backup_info']
+            tkuser.save()
         except Exception,e:
+            log(str(e))
             log( e.message)
             log(str(data))
 
 if __name__=="__main__":
     log(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    migrate_order()
-    migrate_aos()
-    migrate_account()
-    migrate_account_flow()
-    migrate_alipay_account()
+    #migrate_order()
+    #migrate_aos()
+    #migrate_account()
+    #migrate_account_flow()
+    #migrate_alipay_account()
     migrate_commision()
-    migrate_agent_commision()
-    migrate_tkuser()
-    pass
+    #migrate_agent_commision()
+    #migrate_tkuser()
+    
