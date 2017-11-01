@@ -66,11 +66,8 @@ class Commision(models.Model):
     # 账户有效性
     is_valid = models.BooleanField(default=True, null=False)
     # 每个人特有的佣金比例
-    commision_rate = models.FloatField(default=0.15)
-    # pid
-    # pid = models.CharField('pid',  null=True, max_length=64)
-    #
-    # ad_id = models.CharField('ad_id',  max_length=16, null=True)
+    # 2017年11月期间返佣比例为0.2
+    commision_rate = models.FloatField(default=0.2)
 
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
@@ -92,10 +89,6 @@ class AgentCommision(models.Model):
 
     # 代理佣金比例，一般为5%
     commision_rate = models.FloatField(default=0.05)
-    # pid
-    # pid = models.CharField('pid',  null=True, max_length=64)
-    # # adzoneid
-    # ad_id = models.CharField('ad_id',  max_length=16, null=True)
 
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)

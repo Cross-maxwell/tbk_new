@@ -4,14 +4,13 @@
     从www.lanlanlife.com的商品库中取出商品， 存入数据表 broadcast_product
 """
 import sys
-sys.path.append('/home/new_taobaoke/taobaoke')
+sys.path.append('/home/guofenjie/taobaoke')
 # sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
-
+# print(sys.path)
 
 import requests
 import re
-import sys
-sys.path.append('/home/new_taobaoke/taobaoke/')
+
 import os
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})

@@ -68,7 +68,7 @@ def get_all_agent_commission(mode="weekly", user_id=None):
 
         for agc in agent_commision_list:
             # 拿到该下级代理的上级user_id
-            inviter_id = TkUser.objects.get(user_id=int(ag.user_id)).inviter_id
+            inviter_id = TkUser.objects.get(user_id=int(agc.user_id)).inviter_id
 
             if user_id is not None:
                 # 函数传参指定user_id时二级佣金计算

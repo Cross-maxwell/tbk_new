@@ -15,13 +15,14 @@ from ipad_weixin.models import Qrcode, WxUser, ChatRoom
 from weixin_scripts.post_taobaoke import post_taobaoke_url
 from broadcast.models.user_models import PushTime
 
+
 import logging
 logger = logging.getLogger('django_views')
 
 #795318
 class PostGoods(View):
     """
-    接口： s-prod-04.qunzhu666.com:8080/push_product
+    接口： s-prod-04.qunzhu666.com:8080/tk/push_product
     """
     def get(self, request):
         user_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
@@ -38,7 +39,7 @@ class PostGoods(View):
 
             ret = is_push(md_username, wx_id)
             if ret == 0:
-                logger.info("%s 请求s-prod-07返回结果为0" % user.nickname)
+                logger.info("%s 还没有到发单时间" % user.nickname)
 
             if ret == 1:
                 # 筛选出激活群
@@ -63,7 +64,7 @@ class PostGoods(View):
 
 class SendSignNotice(View):
     """
-    接口： http://s-prod-04.qunzhu666.com/send_signin_notice
+    接口： http://s-prod-04.qunzhu666.com/tk/send_signin_notice
     """
     def get(self, request):
         wxuser_list = WxUser.objects.filter(login__gt=0, is_customer_server=False).all()
