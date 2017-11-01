@@ -139,13 +139,15 @@ class SetPushTime(View):
 }
 
 """
+
 def is_push(md_username, wx_id):
     """
     md_username
     wx_id
     """
     try:
-        user_pt, created = PushTime.objects.get_or_create(user__username=md_username)
+        pushtime = PushTime()
+        user_pt = pushtime.get_pushtime(md_username)
         push_interval = user_pt.interval_time
 
         cache_key = md_username + '_' + wx_id + '_last_push'
