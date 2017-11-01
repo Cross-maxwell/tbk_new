@@ -11,12 +11,12 @@ import requests
 from PIL import Image
 
 PHANTOM_JS_PATH = '/usr/bin/phantomjs'
-COOKIES_PATH = 'scripts/alimama/cookie.txt'
+COOKIES_PATH = '/home/new_taobaoke/taobaoke/scripts/alimama/cookie.txt'
 ADMIN_NAME = "Chong"
 
 def fetch_cookie_fromfile():
     # 读取cookie文件
-    with open('scripts/alimama/cookie.txt', 'r') as f:
+    with open(COOKIES_PATH, 'r') as f:
         cookie_str = f.read()
     print cookie_str.strip()
     return cookie_str.strip()

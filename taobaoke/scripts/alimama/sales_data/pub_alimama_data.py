@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke/')
+
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
 
 import xlrd
-import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 

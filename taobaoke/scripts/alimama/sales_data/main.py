@@ -2,6 +2,8 @@
 """
     卖出去的商品结算。
 """
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke/')
 import datetime
 from fetch_excel import fetch_excel
 from fetch_cookie import fetch_cookie_fromfile
@@ -45,14 +47,14 @@ def __main__():
 
 
 if __name__ == "__main__":
-    mtime_before = os.stat('scripts/alimama/cookie.txt').st_mtime - 1
+    mtime_before = os.stat('/home/new_taobaoke/taobaoke/scripts/alimama/cookie.txt').st_mtime - 1
     cookie_effective = True
     N = 0
     while True:
         print('{} time runs'.format(N))
         # 文件已经被更改 或者 cookie上一次是有效的
-        if mtime_before != os.stat('scripts/alimama/cookie.txt').st_mtime or cookie_effective:
-            mtime_before = os.stat('scripts/alimama/cookie.txt').st_mtime
+        if mtime_before != os.stat('/home/new_taobaoke/taobaoke/scripts/alimama/cookie.txt').st_mtime or cookie_effective:
+            mtime_before = os.stat('/home/new_taobaoke/taobaoke/scripts/alimama/cookie.txt').st_mtime
             cookie_effective = __main__()
         time.sleep(5 * 60)
         N = N + 1
