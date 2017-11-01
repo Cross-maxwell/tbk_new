@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from rest_framework_jwt.serializers import User
+from django.contrib.auth.models import User
 from broadcast.models.user_models import  Adzone
 from broadcast.serializers.user_serializers import AdzoneSerializer
 

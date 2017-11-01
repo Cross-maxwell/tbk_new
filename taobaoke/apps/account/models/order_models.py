@@ -89,6 +89,8 @@ class Order(models.Model):
     # 是否入账
     enter_account = models.BooleanField(default=False)
 
+    user_id = models.CharField(max_length=16,null=True)
+
     # 计算显示出来的佣金比率
     @property
     def get_show_commision_rate(self):
@@ -97,7 +99,6 @@ class Order(models.Model):
             commision = Commision.objects.get(user__tkuser__adzone__pid__contains=self.ad_id)
             commision_rate = commision.commision_rate
             if commision_rate == '' or commision_rate is None:
-                # username = TkUser.objects.get(adzone__pid__contains=self.ad_id).user.username
                 commision_rate = 0.15
         except Commision.DoesNotExist:
             commision_rate = 0.15
@@ -112,7 +113,7 @@ class Order(models.Model):
             commision = Commision.objects.get(user__tkuser__adzone__pid__contains=self.ad_id)
         except Commision.DoesNotExist:
             username = TkUser.objects.get(adzone__pid__contains=self.ad_id).user.username
-            from rest_framework_jwt.serializers import User
+            from django.contrib.auth.models import User
             user = User.objects.get(username=username)
             commision = Commision.objects.create(user_id=str(user.id))
 
@@ -120,8 +121,11 @@ class Order(models.Model):
         return show_commision_amount
 
     def save(self, *args, **kwargs):
-        # 把传过来的create_time强行转换为同样数字的utc时间
-        # create_time = self.create_time.replace(tzinfo=utc)
         last_update_time = datetime.datetime.now()
         self.last_update_time = last_update_time
+        if not (self.show_commision_rate and self.show_commision_amount):
+            self.show_commision_rate = self.get_show_commision_rate
+            self.show_commision_amount = self.get_show_commision_amount
+        if not self.user_id:
+            self.user_id = TkUser.objects.get(adzone__pid__contains=self.ad_id).user_id
         return super(Order, self).save(*args, **kwargs)

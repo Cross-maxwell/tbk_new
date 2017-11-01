@@ -6,6 +6,8 @@ import datetime
 from broadcast.models import TkUser
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.dispatch import receiver
+from django.db.models.signals import post_save
 
 import logging
 logger = logging.getLogger('django_models')
@@ -289,6 +291,16 @@ class SignInRule(models.Model):
     def __unicode__(self):
         return self.keyword
 
+
+# 一旦群创建，为签到规则创建默认值
+# @receiver(post_save, sender=ChatRoom)
+# def create_sign_rule(sender, instance, created, **kwargs):
+#     if created:
+#         SignInRule.objects.create(
+#             keyword='我爱果粉街我爱生活',
+#             red_packet_id='J43lMyyodSXCal0QMer7',
+#             chatroom=instance
+#         )
 
 
 
