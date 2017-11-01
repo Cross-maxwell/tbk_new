@@ -101,8 +101,8 @@ class Product(Entry):
 # -----------------
 # {desc}  下单地址： {short_url} """
 
-    template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}\n"
-    template_end ="===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 天猫高额优惠，下单立减，你要的优惠都在这里～"
+    template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
+    template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 天猫高额优惠，下单立减，你要的优惠都在这里～"
 
     update_tao_pwd_url = 'http://www.fuligou88.com/haoquan/details_show00.php?act=zhuan'
 
@@ -130,14 +130,14 @@ class Product(Entry):
 
         msg = self.template.format(**self.__dict__)
         if self.cupon_left < 15:
-            msg += u'\n（该商品仅剩%s张券，抓紧下单吧\n）' % self.cupon_left
+            msg += u'\n该商品仅剩%s张券，抓紧下单吧！' % self.cupon_left
         msg += self.template_end
         # if random.random() < 0.5:
         #     msg += u'\n本群招代理，如果你也想把优惠带给你身边的朋友，那就赶快加我私聊吧！'
         # print self.cupon_url
         msg_activity = '\n天猫双十一现金红包雨来啦，最高抢￥1111元现金，红包每天都能抢，但每日红包数量有限，速速来抢！\nhttp://dianjin.dg15.cn/x/2bffc315 '
         rate = random.random()
-        if rate <= 0.3:
+        if rate <= 0.5:
             msg += msg_activity
         return msg
 
