@@ -58,15 +58,16 @@ class TkUser(models.Model):
 def create_tkuser(sender, instance, created, **kwargs):
     if created:
         TkUser.objects.create(user=instance, adzone=None)
-
-
-@receiver(post_save, sender=User)
-def save_tkuser(sender, instance, **kwargs):
-    try:
+    else:
         instance.tkuser.save()
-    except Exception as e:
-        print(Exception)
-        TkUser.objects.create(user=instance, adzone=None)
+
+# @receiver(post_save, sender=User)
+# def save_tkuser(sender, instance, **kwargs):
+#     try:
+#         instance.tkuser.save()
+#     except Exception as e:
+#         print(Exception)
+#         TkUser.objects.create(user=instance, adzone=None)
 
 
 class Adzone(models.Model):
