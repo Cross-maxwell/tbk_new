@@ -3,7 +3,7 @@ import requests
 import json
 
 import sys
-sys.path.append('/home/guofenjie/taobaoke')
+sys.path.append('/home/new_taobaoke/taobaoke')
 
 
 import os

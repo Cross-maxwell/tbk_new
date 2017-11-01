@@ -2,6 +2,7 @@
 from broadcast.models.entry_models import *
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from django.db.models import Q
 import logging
 import threading
@@ -15,7 +16,16 @@ logger = logging.getLogger('post_taobaoke')
 class WebDriverBot(object):
     def __init__(self, user):
         self.user = user
-        self.driver = webdriver.PhantomJS(service_args=['--ignore-ssl-errors=true'])
+        d = DesiredCapabilities.CHROME
+        d['loggingPrefs'] = {'performance': 'ALL'}
+        options = webdriver.ChromeOptions()
+        options.add_argument('headless')
+        self.driver = webdriver.Chrome(
+            executable_path='./chromedriver',
+            service_args=['--verbose', '--log-path=/tmp/%s-webdriver.log'],
+            desired_capabilities=d,
+            chrome_options=options,
+        )
 
     def get_qrcode(self):
         self.driver.get('https://wx.qq.com')
@@ -32,7 +42,10 @@ class WebDriverBot(object):
             if ret == 0:
                 logger.info("%s 未到发单时间" % wx_user.nickname)
             if ret == 1:
-                self.tick()
+                try:
+                    self.tick()
+                except Exception as exc:
+                    logger.exception(exc)
             time.sleep(60)
 
     def run(self):
@@ -86,7 +99,7 @@ class WebDriverBot(object):
                 file_upload_input = self.driver.find_element_by_css_selector('input[type=file]')
                 file_upload_btn = self.driver.find_element_by_css_selector('a.web_wechat_pic')
                 file_upload_btn.click()
-                fn = '/tmp/%s-%s-%s' % (self.user.username, time.time(), p.get_img_msg().split('/')[-1])
+                fn = '/tmp/%s-%s-%s.jpg' % (self.user.username, time.time(), p.get_img_msg().split('/')[-1])
                 open(fn, 'wb').write(requests.get(p.get_img_msg()).content)
                 file_upload_input.send_keys(fn)
 
@@ -97,8 +110,3 @@ class WebDriverBot(object):
                 edit_area.click()
                 logger.info("向 %s 推送文字" % chatroom_nickname)
                 send_multiline(edit_area, p.get_text_msg(pid))
-
-
-
-
-
