@@ -2,28 +2,16 @@
 from __future__ import unicode_literals
 
 import json
-import random
-import re
 import threading
-import time
-import datetime
-import requests
-from django.utils import timezone
-
-import scrapy
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.utils.encoding import iri_to_uri
-from django.views.decorators.csrf import csrf_exempt
-from scrapy.crawler import CrawlerProcess
-from django.db.models import Q
 
-from broadcast.models.entry_models import Product, PushRecord
 from broadcast.models.user_models import TkUser, Adzone
-from broadcast.management.commands.push import push_product
 from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSerializer
 
+from broadcast.utils import generatePoster_ran
 
 @csrf_exempt
 def update_adzone(request):
@@ -66,3 +54,11 @@ def get_login_qrcode(request):
     from scripts.alimama.sales_data.fetch_cookie import fetch_cookie_from_network
     threading.Thread(target=fetch_cookie_from_network).start()
     return Response(u"Bot is sending qr code snap through Bearychat, you can close this website now")
+
+@csrf_exempt
+def poster_url(request):
+    if request.method == 'GET':
+        url = request.GET['url'] or None
+        pic_url = generatePoster_ran(url)
+        response_data = {'url': pic_url}
+        return JsonResponse(response_data, status=200)
