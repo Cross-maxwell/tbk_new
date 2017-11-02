@@ -2,6 +2,8 @@
 """
     卖出去的商品结算。
 """
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke/')
 import datetime
 from fetch_excel import fetch_excel
 from fetch_cookie import fetch_cookie_fromfile

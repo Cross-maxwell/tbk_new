@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
+from broadcast.models.user_models import TkUser
 
 import json
 import re
@@ -58,6 +59,7 @@ class RegisterVIew(View):
         password1 = req_data.get("password1", "")
         password2 = req_data.get("password2", "")
         verifyNum = req_data.get("verifyNum", "")
+        inviter_id = req_data.get("inviter_id", None)
 
         cache_key = username + "_sms_send"
         verify_code = cache.get(cache_key)
@@ -74,6 +76,10 @@ class RegisterVIew(View):
             username=username,
             password=password1
         )
+        if inviter_id:
+            tkuser = TkUser.objects.get(user_id = user.id)
+            tkuser.inviter_id=inviter_id
+            tkuser.save()
         return HttpResponse(json.dumps({"ret": 1, "data": "注册成功"}))
 
 

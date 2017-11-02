@@ -2,15 +2,13 @@
 
 from django.conf.urls import url, include
 from django.contrib import admin
-from broadcast.views.entry_views import  insert_product_by_msg, insert_product, search_product, push_product, search_product_pad
-from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, get_login_qrcode
+
 from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, InviterLastLoginView, InviterOrderListView
 from account.views.agent_views import GetCommision, AlipayAccountView, BindingAlipayAccountView, UserAvatarView
 
-from broadcast.views.entry_views import  insert_product_by_msg, \
-    insert_product, search_product, push_product, search_product_pad
+from broadcast.views.entry_views import insert_product, search_product, push_product, search_product_pad
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
-    get_login_qrcode
+    get_login_qrcode, poster_url
 from ipad_weixin.views.base_views import GetQrcode, HostList, IsUuidLogin, IsLogin, \
     DefineSignRule, AddSuperUser, ResetSingleHeartBeat, ResetHeartBeat
 from broadcast.views.taobaoke_views import PostGoods, SendSignNotice, SetPushTime, GetPushTIme
@@ -22,11 +20,12 @@ user_urls = [
     url(r'^update-adzone/', update_adzone),
     url(r'^get-adzone-info/', get_adzone_info),
     url(r'^get-tkuser-info/', get_tkuser_info),
+    url(r'^poster/', poster_url)
+
 ]
 
 product_urls = [
     url(r'insert/', insert_product),
-    url(r'insert-by-msg/', insert_product_by_msg),
     url(r'qrcode/', get_login_qrcode),
 ]
 

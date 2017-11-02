@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
+sys.path.append('/home/new_taobaoke/taobaoke/')
+
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
 
 import xlrd
-import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 from account.models.order_models import Order
+from account.utils.commision_utils import cal_commision, cal_agent_commision
 
 field_mapping = {u'创建时间': 'create_time',
                  u'点击时间': 'click_time',
@@ -136,10 +139,9 @@ def push_data():
     return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num,insert_num,leave_num)
     print return_str
 
-
-if __name__ == '__main__':
-    # push_data()
-    push_data()
-    from account.utils.commision_utils import cal_commision, cal_agent_commision
     cal_commision()
     cal_agent_commision()
+
+if __name__ == '__main__':
+    push_data()
+
