@@ -117,7 +117,15 @@ ipad_weixin:
                 "retCode":200
             }
 
-
+    5. 果粉街设置红包口令
+        http://s-prod-04.qunzhu666.com:9090/robot/define_sign_rule/
+        方法： POST
+        参数：
+            keyword
+            md_username  用户手机号
+        返回结果：
+            {"ret": 0} 表示发单群为空或添加失败
+            {"ret": 1} 添加成功
 
 
 
