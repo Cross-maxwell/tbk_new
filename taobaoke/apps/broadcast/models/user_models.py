@@ -9,7 +9,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from broadcast.utils import random_str
 import logging
 logger = logging.getLogger('django_models')
 
@@ -19,6 +19,7 @@ class TkUser(models.Model):
     adzone = models.ForeignKey('Adzone', db_column='adzone_key', null=True)
     search_url_template = models.CharField(max_length=128, null=True)
     avatar_url = models.CharField(max_length=256, null=True, blank=True)
+    invite_code = models.CharField(max_length=16, null=True, blank=True)
     inviter_id = models.CharField(max_length=16, null=True)
     inviter_backup_info = models.CharField(max_length=128, null=True)
 
@@ -41,6 +42,8 @@ class TkUser(models.Model):
     def save(self, *args, **kwargs):
         if self.adzone is None:
             self.assign_pid()
+        if self.invite_code is None:
+            self.invite_code=random_str(8)
         super(TkUser, self).save(*args, **kwargs)
 
     @classmethod

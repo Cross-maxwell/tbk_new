@@ -28,6 +28,7 @@ from broadcast.views.server_settings import *
 from weixin_scripts.post_taobaoke import select
 from ipad_weixin.send_msg_type import send_msg_type
 from ipad_weixin.models import WxUser,ChatRoom
+from broadcast.utils import Item_info
 
 import logging
 logger = logging.getLogger('entry_views')
@@ -125,59 +126,23 @@ def handle_product_from_qq(msg):
                 except:
                     item_id = re.findall(item_id_pattern_backup, driver.current_url)[0]
 
+        # 使用接口获取商品的title  ,  img_url  ,  销量属性
+        item_info = Item_info(item_id)
+        title = item_info.title
+        img_url = item_info.img_url
+        sold_qty = item_info.sold_qty
+
         # cupon_url : 优惠券url，用商品id及活动id拼接
         cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&src=xsj_lanlan'.format(
             activity_id, item_id)
-
-        # item_url : 天猫商城商品页，从页面中获取商品的title , image_url
-        # 重新赋值，覆盖case1中的赋值。
-        item_url = 'https://detail.tmall.com/item.htm?id={}'.format(item_id)
-
-        # 使用BeautifulSoup进行页面解析，抓取title和image_url属性：
-        # title : 商品标题，在天猫商品页中位于<h1 data-spm="1000983"中>，生成淘口令的必须参数         补充：已更换爬取的tag。
-        # img_url : 商品图片链接，在天猫商品页中位于<img id="J_ImgBooth"中>，生成淘口令的必须参数
-        #
-        # 注：通过fetch_lanlan抓取的商品img_url和此法所得的不一样，经测试生成淘口令后会引向同一个商品。
-        driver.get(item_url)
-        try:
-            img_url = driver.find_element_by_id('J_ImgBooth').get_attribute('src')
-        except:  # 若商品页使用视频介绍，则会在进入页面后加载视频，J_ImgBooth标签会隐藏，故使用BS获取加载前的页面。
-            html = urlopen(item_url)
-            bs_obj = BS(html,'lxml')
-            img_url = 'https:'+bs_obj.find('img',{'id' : 'J_ImgBooth'}).get('src')
-
-        # try: # 天猫商品页
-        #     title = driver.find_element_by_class_name('tb-detail-hd').find_element_by_tag_name('h1').text.strip('\r\n\t')
-        # except: # 淘宝商品页
-        #     title = driver.find_element_by_class_name('tb-main-title').text.strip('\r\n\t')
-        ###待实例测试
-        try:
-            html = urlopen(item_url)
-            bs_obj = BS(html, 'lxml')
-            title = bs_obj.find('h1',{'data-spm' : '1000983'}).text.strip('\r\n\t')
-        except AttributeError:
-            driver.get(item_url)
-            new_url = driver.current_url
-            html = urlopen(new_url)
-            bs_obj = BS(html, 'lxml')
-            title = bs_obj.find('h1', {'data-spm': '1000983'}).text.strip('\r\n\t')
-
         # 抓取优惠券信息
         # 优惠券页面为动态加载, 此处用selenium进行采集
         driver.get(cupon_url)
         time.sleep(time_for_load)
-
         # 若页面中无class="coupons-price"及"sale"的标签，则优惠券已失效 。
         try:
             cupon_value = float(driver.find_element_by_class_name("coupons-price").text.strip(u'\xa5'))
             price = float(driver.find_element_by_class_name("sale").text.strip(u'\xa5'))
-            # 销量格式为”XXX笔成交“，将“笔成交”三字去除
-            sold_qty = driver.find_element_by_class_name("dealNum").text.strip(u'\u7b14\u6210\u4ea4')
-            # 销量可能以“万”字结尾，此处加以处理
-            if u'\u4e07' in sold_qty:
-                sold_qty = int(float(sold_qty.strip(u'\u4e07')) * 10000) + random.randint(0, 9999)
-            else:
-                sold_qty = int(sold_qty)
             # 剩余券数未找到可抓取源，鉴于在项目中基本未使用(Product.cupon_left 和 Entry.available 均未使用)，此处手动赋值为1。
             cupon_left = 1
 
@@ -202,6 +167,8 @@ def handle_product_from_qq(msg):
                 p_duplicate.save()
     except:
         logger.warning('商品解析失败，放弃对本条商品的存储')
+    finally:
+        driver.quit()
 
 
 def handle_livemsg_from_qq(msg):
