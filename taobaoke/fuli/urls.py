@@ -2,18 +2,18 @@
 
 from django.conf.urls import url, include
 from django.contrib import admin
-from broadcast.views.entry_views import insert_broadcast_by_msg, insert_product_by_msg, insert_product, search_product, push_product, search_product_pad
+from broadcast.views.entry_views import  insert_product_by_msg, insert_product, search_product, push_product, search_product_pad
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, get_login_qrcode
 from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, InviterLastLoginView, InviterOrderListView
 from account.views.agent_views import GetCommision, AlipayAccountView, BindingAlipayAccountView, UserAvatarView
 
-from broadcast.views.entry_views import insert_broadcast_by_msg, insert_product_by_msg, \
+from broadcast.views.entry_views import  insert_product_by_msg, \
     insert_product, search_product, push_product, search_product_pad
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode
 from ipad_weixin.views.base_views import GetQrcode, HostList, IsUuidLogin, IsLogin, \
     DefineSignRule, AddSuperUser, ResetSingleHeartBeat, ResetHeartBeat
-from broadcast.views.taobaoke_views import PostGoods, SendSignNotice, SetPushTime
+from broadcast.views.taobaoke_views import PostGoods, SendSignNotice, SetPushTime, GetPushTIme
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
 from weixin_webdriver.views import LoginQrcode
@@ -37,8 +37,8 @@ interact_urls = [
 ]
 
 broadcast_urls = [
-    url(r'insert/', insert_broadcast_by_msg),
-    url(r'push/', insert_broadcast_by_msg),
+    # url(r'insert/', insert_broadcast_by_msg),
+    # url(r'push/', insert_broadcast_by_msg),
 ]
 
 account_urls = [
@@ -70,7 +70,8 @@ robot_urls = [
 tk_urls = [
     url(r'push_product', PostGoods.as_view()),
     url(r'send_signin_notice', SendSignNotice.as_view()),
-    url(r'set_pushtime', SetPushTime.as_view())
+    url(r'set_pushtime', SetPushTime.as_view()),
+    url(r'get_pushtime', GetPushTIme.as_view())
 ]
 
 auth_urls = [

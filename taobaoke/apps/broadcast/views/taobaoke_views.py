@@ -124,6 +124,16 @@ class SetPushTime(View):
 
         return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
 
+
+class GetPushTIme(View):
+    def get(self, request):
+        user = request.user
+        pushtime = PushTime.objects.get(user=user)
+        interval_time = pushtime.interval_time
+        begin_time = pushtime.begin_time
+        end_time = pushtime.end_time
+        return HttpResponse(json.dumps({"interval_time": interval_time,
+                                        "begin_time": begin_time, "end_time": end_time}))
 """
 {
     "data":{
