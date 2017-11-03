@@ -66,6 +66,9 @@ class Product(Entry):
 
     recommend = models.CharField(max_length=128, null=True)
 
+    commision_rate = models.CharField('佣金比率',max_length=255, default='')
+    commision_amount = models.FloatField(default=0)
+
     @property
     def org_price(self):
         return self.price + self.cupon_value
