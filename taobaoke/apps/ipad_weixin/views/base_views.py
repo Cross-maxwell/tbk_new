@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import random
+import time
 import json
 import datetime
+
 from django.http import HttpResponse
 from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
@@ -11,6 +14,7 @@ from django.utils import timezone
 from ipad_weixin.weixin_bot import WXBot
 from ipad_weixin.models import Qrcode, WxUser, ChatRoom, SignInRule
 from ipad_weixin.heartbeat_manager import HeartBeatManager
+
 
 import logging
 logger = logging.getLogger('django_views')
@@ -157,6 +161,8 @@ class ResetHeartBeat(View):
         if not auth_users:
             logger.info("重启心跳用户数为0")
         for auth_user in auth_users:
+            random_num = random.randint(0, 5)
+            time.sleep(random_num)
             logger.info("%s command 开启心跳" % auth_user.nickname)
             # 清空心跳列表
             if auth_user.username in HeartBeatManager.heartbeat_thread_dict:
