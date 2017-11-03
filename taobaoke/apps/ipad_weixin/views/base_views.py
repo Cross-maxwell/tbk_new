@@ -14,6 +14,7 @@ from django.utils import timezone
 from ipad_weixin.weixin_bot import WXBot
 from ipad_weixin.models import Qrcode, WxUser, ChatRoom, SignInRule
 from ipad_weixin.heartbeat_manager import HeartBeatManager
+from django.contrib.auth.decorators import login_required
 
 
 import logging

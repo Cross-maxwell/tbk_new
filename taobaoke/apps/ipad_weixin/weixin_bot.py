@@ -1470,6 +1470,7 @@ class WXBot(object):
         if qr_code is not False:
 
             if self.confirm_qrcode_login(qr_code, md_username, keep_heart_beat=False) == -301:
+                oss_utils.beary_chat("%s 进入check_and_confirm_and_load -301" % md_username)
                 if self.confirm_qrcode_login(qr_code, md_username, keep_heart_beat=False):
                     v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                     v_user = pickle.loads(v_user_pickle)
@@ -1488,6 +1489,7 @@ class WXBot(object):
                     logger.info("GG 重新登录吧大兄弟")
 
             if self.confirm_qrcode_login(qr_code, md_username, keep_heart_beat=False):
+                oss_utils.beary_chat("%s 未进入check_and_confirm_and_load -301" % md_username)
                 v_user_pickle = red.get('v_user_' + str(qr_code['Username']))
                 v_user = pickle.loads(v_user_pickle)
                 self.new_init(v_user, md_username)
