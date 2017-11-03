@@ -21,9 +21,9 @@ red_text_list = [u"#让有远见的人先富起来#",
                                   u"#赚钱真是令人着迷#"]
 
 # 服务器项目目录
-# base_path = '/home/new_taobaoke/taobaoke/apps'
+base_path = '/home/new_taobaoke/taobaoke/apps'
 # adam 本地项目目录
-base_path = '/home/adam/mydev/new_taobaoke/taobaoke/apps'
+# base_path = '/home/adam/mydev/projects/taobaoke/taobaoke/apps'
 
 bg_path  = os.path.join(base_path,'broadcast/statics/poster/background/')
 font_path  = os.path.join(base_path,'broadcast/statics/poster/fonts/')
