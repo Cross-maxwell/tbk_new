@@ -10,7 +10,7 @@ class Account(models.Model):
      通过 account.scripts.clearing_account.py 脚本维护
         API :  order_views.PostingAccount
     '''
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     # 待提现佣金
     amount = models.FloatField('金额', default=0, null=False)
     create_time = models.DateTimeField(auto_now_add=True)
@@ -21,7 +21,7 @@ class AlipayAccount(models.Model):
     和用户绑定的支付宝账户
     通过API - BindingAlipayAccountView 创建
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     alipay_id = models.CharField('支付宝账户', max_length=40)
     alipay_name = models.CharField('支付宝用户姓名', max_length=10)
     identity_num = models.CharField('身份证号码', max_length=18)
@@ -45,7 +45,7 @@ class AccountFlow(models.Model):
     # 出账，提现 False
     in_or_out = models.BooleanField('出入账', default=True, null=False)
     amount = models.FloatField('金额', default=0, null=False)
-    order_id = models.CharField('订单ID', max_length=50)
+    order_id = models.CharField('订单ID', max_length=50, db_index=True)
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
 
@@ -55,7 +55,7 @@ class Commision(models.Model):
     在user_model中监听User创建.
     通过order_views.py 中的AutoCalCommisionView 进行维护
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     # 待提现佣金
     balance = models.FloatField('账户金额', default=0)
 
@@ -79,7 +79,7 @@ class AgentCommision(models.Model):
     在user_model中监听User创建.
     ##
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     # 待提现佣金
     balance = models.FloatField('账户金额', default=0)
 

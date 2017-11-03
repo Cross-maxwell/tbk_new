@@ -18,7 +18,7 @@ sys.setdefaultencoding("utf-8")
 
 class Entry(models.Model):
     create_time = models.DateTimeField(default=None)
-    last_update = models.DateTimeField(default=None)
+    last_update = models.DateTimeField(default=None, db_index=True)
     # valid_until = models.DateTimeField(default=None)
 
     available = models.BooleanField(default=True)
