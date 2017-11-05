@@ -121,7 +121,7 @@ class Product(Entry):
         self.tao_pwd = self.tao_pwd[1:-1]
 
 
-        long_url = 'https://yiqizhuang.github.io/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
+        long_url = 'http://tkl.di25.cn/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
         # 微博short_url平台
         # source为ipad微博AppKey
         short_url_respose = requests.get(
