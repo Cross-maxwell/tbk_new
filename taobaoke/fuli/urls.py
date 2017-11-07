@@ -8,7 +8,7 @@ from account.views.agent_views import GetCommision, AlipayAccountView, BindingAl
 
 from broadcast.views.entry_views import insert_product, search_product, push_product, search_product_pad
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
-    get_login_qrcode, poster_url
+    get_login_qrcode, poster_url,get_invite_code
 from ipad_weixin.views.base_views import GetQrcode, HostList, IsUuidLogin, IsLogin, \
     DefineSignRule, AddSuperUser, ResetSingleHeartBeat, ResetHeartBeat
 from broadcast.views.taobaoke_views import PostGoods, SendSignNotice, SetPushTime, GetPushTIme
@@ -20,9 +20,11 @@ user_urls = [
     url(r'^update-adzone/', update_adzone),
     url(r'^get-adzone-info/', get_adzone_info),
     url(r'^get-tkuser-info/', get_tkuser_info),
+    url(r'^get-invite-code/', get_invite_code),
     url(r'^poster/', poster_url)
-
 ]
+## 新增了获取邀请码的接口,用于poster生成海报
+
 
 product_urls = [
     url(r'insert/', insert_product),

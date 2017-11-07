@@ -16,7 +16,7 @@ class AgentOrderStatus(models.Model):
 
 class Order(models.Model):
     # 创建时间
-    create_time = models.DateTimeField()
+    create_time = models.DateTimeField(db_index=True)
     # 点击时间
     click_time = models.DateTimeField(null=True)
     # 商品信息
@@ -79,7 +79,7 @@ class Order(models.Model):
     # 来源媒体
     source_media = models.CharField('来源媒体', max_length=255)
     # 广告位ID
-    ad_id = models.CharField('广告位id', max_length=255)
+    ad_id = models.CharField('广告位id', max_length=255, db_index=True)
     # 广告位名称
     ad_name = models.CharField('广告位名称', max_length=255)
 
@@ -87,9 +87,9 @@ class Order(models.Model):
     # 最后更新时间
     last_update_time = models.DateTimeField(default=datetime.datetime.now)
     # 是否入账
-    enter_account = models.BooleanField(default=False)
+    enter_account = models.BooleanField(default=False, db_index=True)
 
-    user_id = models.CharField(max_length=16,null=True)
+    user_id = models.CharField(max_length=16,null=True, db_index=True)
 
     # 计算显示出来的佣金比率
     @property

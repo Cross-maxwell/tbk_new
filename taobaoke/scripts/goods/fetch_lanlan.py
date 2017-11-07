@@ -55,6 +55,8 @@ def main():
                     'sold_qty': item['monthSales'],
                     'cupon_left': item['surplus'],
                     'is_finished': item['isFinished'],
+                    'commision_rate' : item['tkRate'],
+                    'commision_amount': float(item['tkPrice'].strip(u'\xa5'))
                 }
 
                 key_list = [

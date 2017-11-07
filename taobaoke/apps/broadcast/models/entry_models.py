@@ -18,7 +18,7 @@ sys.setdefaultencoding("utf-8")
 
 class Entry(models.Model):
     create_time = models.DateTimeField(default=None)
-    last_update = models.DateTimeField(default=None)
+    last_update = models.DateTimeField(default=None, db_index=True)
     # valid_until = models.DateTimeField(default=None)
 
     available = models.BooleanField(default=True)
@@ -65,6 +65,9 @@ class Product(Entry):
     cupon_short_url = models.URLField(db_index=True, null=True)
 
     recommend = models.CharField(max_length=128, null=True)
+
+    commision_rate = models.CharField('佣金比率',max_length=255, default='')
+    commision_amount = models.FloatField(default=0)
 
     @property
     def org_price(self):

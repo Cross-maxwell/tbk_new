@@ -62,3 +62,15 @@ def poster_url(request):
         pic_url = generatePoster_ran(url)
         response_data = {'url': pic_url}
         return JsonResponse(response_data, status=200)
+
+def get_invite_code(request):
+    if request.method == 'GET':
+        user = request.user
+        try:
+            invite_code = user.tkuser.invite_code
+            data = {'invite_code':invite_code}
+            return  HttpResponse(json.dumps({'data': data}),status=200)
+        except TkUser.DoesNotExist:
+            return  HttpResponse(json.dumps({'error':'TkUser does not exist.'}),status=400)
+        except Exception,e:
+            return  HttpResponse(json.dumps({'error': e.message}),status=400)
