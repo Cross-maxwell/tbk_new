@@ -120,9 +120,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {'charset': 'utf8mb4'},
-        'NAME': 'ipad_weixin_02',
+        'NAME': 'newvenv_weixin',
         'USER': 'root',
-        'PASSWORD': 'keyerror',
+        'PASSWORD': 'maxwell',
     }
 }
 

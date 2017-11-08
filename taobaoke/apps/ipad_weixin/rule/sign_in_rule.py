@@ -11,9 +11,11 @@ import re
 from ipad_weixin.send_msg_type import send_msg_type
 import requests
 import json
+import logging
+logger = logging.getLogger('weixin_bot')
 
 
-def filter_sign_in_keyword(wx_id, msg_dict):
+def filter_sign_in_keyword(nickname, wx_id, msg_dict):
     """
     # 机器人自己在群里说话
     {u'Status': 3,
@@ -42,6 +44,7 @@ def filter_sign_in_keyword(wx_id, msg_dict):
     chatroom = ''
     from_user_id = ''
     if content in keywords:
+        logger.info("%s: 进入签到" % nickname)
         singin_rule = SignInRule.objects.filter(keyword=content).first()
         # 机器人自己在群里说话
         if '@chatroom' in msg_dict['ToUserName']:
@@ -84,6 +87,7 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                         "type": "text",
                     }
                     send_msg_type(text_msg_dict, at_user_id=speaker_id)
+                    logger.info("%s: 签到发送文字" % nickname)
 
                 elif reaction['type'] == 'img':
 
@@ -96,6 +100,7 @@ def filter_sign_in_keyword(wx_id, msg_dict):
                             "type": "img"
                         }
                         send_msg_type(img_msg_dict, at_user_id=None)
+                    logger.info("%s: 签到发送图片" % nickname)
     else:
         pass
 

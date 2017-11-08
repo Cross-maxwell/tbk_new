@@ -13,7 +13,8 @@ SHORT_SERVER = "short.weixin.qq.com"
 
 channel_option_name = "grpc.ssl_target_name_override"
 channel_option_value = "wechat@root"
-red = redis.Redis(host='s-poc-01.qunzhu666.com', port=50002)
+# red = redis.Redis(host='s-poc-01.qunzhu666.com', port=50002)
+red = redis.Redis(host='localhost', port=6379)
 
 ROOT_CERTIFICATES = r'''-----BEGIN CERTIFICATE-----
 MIIFLjCCAxYCAQEwDQYJKoZIhvcNAQELBQAwXTELMAkGA1UEBhMCQ04xCzAJBgNV

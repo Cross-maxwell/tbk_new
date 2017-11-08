@@ -17,13 +17,14 @@ import logging
 logger = logging.getLogger('weixin_bot')
 
 
-def filter_keyword_rule(wx_id, msg_dict):
+def filter_keyword_rule(nickname, wx_id, msg_dict):
     keyword = find_buy_start(msg_dict['Content'])
     if keyword and keyword is not '':
         wx_user_list = WxUser.objects.filter(username=wx_id, is_customer_server=True)
         if wx_id in [wx_user.username for wx_user in wx_user_list]:
             return
         # 群是淘宝客群，找XX才生效
+        logger.info("%s: 进入关键词搜索..." % nickname)
         gid = ''
         at_user_id = ''
         at_user_nickname = ''
@@ -84,7 +85,7 @@ def filter_keyword_rule(wx_id, msg_dict):
                     }
 
                     send_msg_type(img_msg_dict, at_user_id)
-                    logger.info('找到商品， 向 %s 推送图片' % gid)
+                    logger.info('%s: 找到商品， 向 %s 推送图片' % (nickname, gid))
 
                 params_dict = {
                             "uin": wx_id,
@@ -94,9 +95,10 @@ def filter_keyword_rule(wx_id, msg_dict):
                         }
 
                 send_msg_type(params_dict, at_user_id)
-                logger.info("Push text %s to group %s." % (text, gid))
+                logger.info("%s: Push text %s to group %s." % (nickname, text, gid))
             except Exception as e:
                 logger.error(e)
+
 
 
 def find_buy_start(s):
