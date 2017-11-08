@@ -37,7 +37,11 @@ def cal_agent_commision():
                     if not get_or_update_AgentOrderStatus(order.id):
 
                         # 计算这笔佣金
-                        order_commision = order.pay_amount * agent_commision.commision_rate
+                        order_commision_rate  = round(float(order.commision_amount)/order.pay_amount,2)
+                        if order.pay_amount >500 and order_commision_rate <0.25:
+                            order_commision = order.pay_amount * order_commision_rate*0.1
+                        else:
+                            order_commision = order.pay_amount * agent_commision.commision_rate
 
                         # 入账到agent_commision中
                         agent_commision.sum_earning_amount += order_commision
@@ -97,7 +101,11 @@ def cal_commision():
         with transaction.atomic():
             for order in order_list:
                 pay_amount = order.pay_amount
-                order_commision = pay_amount * commision.commision_rate
+                order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
+                if pay_amount >500 and order_commision_rate<0.25:
+                    order_commision = pay_amount * order_commision_rate*0.5
+                else:
+                    order_commision = pay_amount * commision.commision_rate
                 new_earning_amount += order_commision
                 order.enter_account = True
                 order.save()

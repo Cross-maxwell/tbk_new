@@ -177,7 +177,14 @@ class InviterOrderListView(View):
             for order in order_list:
                 if order.enter_account is True:
                     order_sum_payed += order.pay_amount
-                    user_earning += order.pay_amount * sub_commission_rate
+                    # 在这里加上计算逻辑，保证结算与显示一致
+                    order_commision_rate = round(float(order.commision_amount) / order.pay_amount, 2)
+                    if order.pay_amount > 500 and order_commision_rate < 0.25:
+                        # order_commision = order.pay_amount * order_commision_rate * 0.1
+                        user_earning += order.pay_amount * order_commision_rate*0.1
+                    else:
+                        user_earning += order.pay_amount * sub_commission_rate
+                        # order_commision = order.pay_amount * agent_commision.commision_rate
 
             md_order_json = {
                 'username': sub_agent_username,
