@@ -1495,9 +1495,19 @@ class WXBot(object):
                             if (datetime.datetime.now() - starttime).seconds >= 100:
                                 return False
                             time.sleep(3)
+                        if red.get('v_user_heart_' + str(qr_code['Username'])):
+                            if int(red.get('v_user_heart_' + str(qr_code['Username']))) is not 1:
+                                red.set('v_user_heart_' + str(qr_code['Username']), 0)
+                                from ipad_weixin.heartbeat_manager import HeartBeatManager
+                                HeartBeatManager.begin_heartbeat(v_user.userame)
+                            else:
+                                logger.info("%s: 心跳已经存在" % md_username)
+                                oss_utils.beary_chat("%s: 心跳已经存在，无需启动心跳" % md_username)
 
-                        from ipad_weixin.heartbeat_manager import HeartBeatManager
-                        HeartBeatManager.begin_heartbeat(v_user.userame)
+                        else:
+                            red.set('v_user_heart_' + str(qr_code['Username']), 0)
+                            from ipad_weixin.heartbeat_manager import HeartBeatManager
+                            HeartBeatManager.begin_heartbeat(v_user.userame)
                         return True
                 else:
                     logger.info("GG 重新登录吧大兄弟")
@@ -1514,13 +1524,19 @@ class WXBot(object):
                             return False
                         time.sleep(3)
 
-                    if int(red.get('v_user_heart_' + str(qr_code['Username']))) is not 1:
+                    if red.get('v_user_heart_' + str(qr_code['Username'])):
+                        if int(red.get('v_user_heart_' + str(qr_code['Username']))) is not 1:
+                            red.set('v_user_heart_' + str(qr_code['Username']), 0)
+                            from ipad_weixin.heartbeat_manager import HeartBeatManager
+                            HeartBeatManager.begin_heartbeat(v_user.userame)
+                        else:
+                            logger.info("%s: 心跳已经存在" % md_username)
+                            oss_utils.beary_chat("%s: 心跳已经存在，无需启动心跳" % md_username)
+
+                    else:
                         red.set('v_user_heart_' + str(qr_code['Username']), 0)
                         from ipad_weixin.heartbeat_manager import HeartBeatManager
                         HeartBeatManager.begin_heartbeat(v_user.userame)
-                    else:
-                        logger.info("%s: 心跳已经存在" % md_username)
-                        oss_utils.beary_chat("%s: 心跳已经存在，无需启动心跳" % md_username)
                     return True
 
 
