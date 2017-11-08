@@ -1495,8 +1495,10 @@ class WXBot(object):
                             if (datetime.datetime.now() - starttime).seconds >= 100:
                                 return False
                             time.sleep(3)
-                        if red.get('v_user_heart_' + str(qr_code['Username'])):
-                            if int(red.get('v_user_heart_' + str(qr_code['Username']))) is not 1:
+
+                        heart_status = red.get('v_user_heart_' + str(qr_code['Username']))
+                        if heart_status:
+                            if int(heart_status) is not 1:
                                 red.set('v_user_heart_' + str(qr_code['Username']), 0)
                                 from ipad_weixin.heartbeat_manager import HeartBeatManager
                                 HeartBeatManager.begin_heartbeat(v_user.userame)
@@ -1524,8 +1526,9 @@ class WXBot(object):
                             return False
                         time.sleep(3)
 
-                    if red.get('v_user_heart_' + str(qr_code['Username'])):
-                        if int(red.get('v_user_heart_' + str(qr_code['Username']))) is not 1:
+                    heart_status = red.get('v_user_heart_' + str(qr_code['Username']))
+                    if heart_status:
+                        if int(heart_status) is not 1:
                             red.set('v_user_heart_' + str(qr_code['Username']), 0)
                             from ipad_weixin.heartbeat_manager import HeartBeatManager
                             HeartBeatManager.begin_heartbeat(v_user.userame)

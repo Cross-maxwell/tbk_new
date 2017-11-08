@@ -76,14 +76,16 @@ class HeartBeatManager(object):
                         return
 
                     # 防止心跳无法关闭，采用外部控制
-                    if int(red.get('v_user_heart_' + wx_username)) == 2:
-                        v_user = pickle.loads(red.get('v_user_' + wx_username))
-                        wx_bot.logout_bot(v_user)
-                        del HeartBeatManager.heartbeat_thread_dict[wx_username]
-                        logger.info("{}: 用户下线".format(user.nickname))
-                        oss_utils.beary_chat("{}: 用户下线".format(user.nickname))
-                        wx_bot.wechat_client.close_when_done()
-                        return
+                    heart_status = red.get('v_user_heart_' + wx_username)
+                    if heart_status:
+                        if int(heart_status) == 2:
+                            v_user = pickle.loads(red.get('v_user_' + wx_username))
+                            wx_bot.logout_bot(v_user)
+                            del HeartBeatManager.heartbeat_thread_dict[wx_username]
+                            logger.info("{}: 心跳终止成功".format(user.nickname))
+                            oss_utils.beary_chat("{}: 心跳终止成功".format(user.nickname))
+                            wx_bot.wechat_client.close_when_done()
+                            return
 
                 if not wx_bot.wechat_client.connected:
                     # 测试过后发现好像没有哪个包能阻止socket断开，断开只是时间问题
