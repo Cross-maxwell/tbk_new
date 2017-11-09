@@ -64,12 +64,12 @@ class HeartBeatManager(object):
         # 防止该socket断开，每30秒发一次同步消息包
         heart_beat_count = 0
         while True:
-            if (datetime.datetime.now() - wx_bot.start_time).seconds >= 300:
-                logger.info("%s: 同步超过5分钟，超时，重启心跳" % wx_username)
-                wx_bot.wechat_client.close_when_done()
-                wx_bot.start_time = datetime.datetime.now()
-                red.set('v_user_heart_' + wx_username, 0)
-                continue
+            # if (datetime.datetime.now() - wx_bot.start_time).seconds >= 300:
+            #     logger.info("%s: 同步超过5分钟，超时，重启心跳" % wx_username)
+            #     wx_bot.wechat_client.close_when_done()
+            #     wx_bot.start_time = datetime.datetime.now()
+            #     red.set('v_user_heart_' + wx_username, 0)
+            #     continue
             try:
                 user = WxUser.objects.filter(username=wx_username).first()
                 if user is not None:
