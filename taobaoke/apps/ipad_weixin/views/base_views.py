@@ -196,6 +196,8 @@ class ResetSingleHeartBeat(View):
                     time.sleep(30)
 
             red.set('v_user_heart_' + username, 0)
+        if username in HeartBeatManager.heartbeat_thread_dict:
+            del HeartBeatManager.heartbeat_thread_dict[username]
         HeartBeatManager.begin_heartbeat(username)
         return HttpResponse(json.dumps({"ret": 1}))
 
