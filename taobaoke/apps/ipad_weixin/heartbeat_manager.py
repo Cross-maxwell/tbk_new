@@ -86,7 +86,7 @@ class HeartBeatManager(object):
                     if heart_status:
                         if int(heart_status) == 2:
                             v_user = pickle.loads(red.get('v_user_' + wx_username))
-                            wx_bot.logout_bot(v_user)
+                            # wx_bot.logout_bot(v_user)
                             del HeartBeatManager.heartbeat_thread_dict[wx_username]
                             logger.info("{}: 心跳终止成功".format(user.nickname))
                             oss_utils.beary_chat("{}: 心跳终止成功".format(user.nickname))
