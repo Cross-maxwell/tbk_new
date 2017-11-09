@@ -63,7 +63,7 @@ class WXBot(object):
         self.__retry_num = 1
         self._auto_retry = 0
         self.nickname = None
-        self.start_time = datetime.datetime.now()
+        # self.start_time = datetime.datetime.now()
 
     def set_user_context(self, wx_username):
         # TODO：self.wx_username 不该在这初始化，待修改
@@ -141,7 +141,7 @@ class WXBot(object):
                         # starttime = datetime.datetime.now()
 
                         res = self.async_check(v_user)
-                        self.start_time = datetime.datetime.now()
+                        # self.start_time = datetime.datetime.now()
 
                         if res is False:
                             logger.info("%s: 线程执行同步失败" % v_user.nickname)
@@ -566,15 +566,15 @@ class WXBot(object):
                 logger.error(e)
                 ret_reason = "未知"
 
-            logger.info("淘宝客{0}: 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
-            oss_utils.beary_chat("淘宝客{0}: 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+            logger.info("{0}: 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
+            oss_utils.beary_chat("{0}: 已掉线,原因:{1}".format(v_user.nickname, ret_reason))
             self.wechat_client.close_when_done()
             return 'Logout'
         else:
             logger.info("二次登陆未知返回码")
             ret_code = auto_auth_rsp_2.baseMsg.ret
-            oss_utils.beary_chat("淘宝客{0}: 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
-            logger.info("淘宝客：{0} 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
+            oss_utils.beary_chat("{0}: 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
+            logger.info("{0}: 已掉线,未知返回码:{1}".format(v_user.nickname, ret_code))
             self.wechat_client.close_when_done()
             return False
 
@@ -625,7 +625,7 @@ class WXBot(object):
                         return True
                     else:
                         logger.info("%s: 执行二次登录失败， 即将退出机器人" % v_user.nickname)
-                        oss_utils.beary_chat("淘宝客%s: 执行二次登录失败， 即将退出机器人" % v_user.nickname)
+                        oss_utils.beary_chat("%s: 执行二次登录失败， 即将退出机器人" % v_user.nickname)
                         self.wechat_client.close_when_done()
                         self.logout_bot(v_user)
                         return False
