@@ -64,6 +64,12 @@ class HeartBeatManager(object):
         # 防止该socket断开，每30秒发一次同步消息包
         heart_beat_count = 0
         while True:
+            if (datetime.datetime.now() - wx_bot.start_time).seconds >= 300:
+                logger.info("%s: 同步超过5分钟，超时，重启心跳" % wx_username)
+                wx_bot.wechat_client.close_when_done()
+                wx_bot.start_time = datetime.datetime.now()
+                red.set('v_user_heart_' + wx_username, 0)
+                continue
             try:
                 user = WxUser.objects.filter(username=wx_username).first()
                 if user is not None:
@@ -115,13 +121,16 @@ class HeartBeatManager(object):
                     while True:
                         res_auto = wx_bot.auto_auth(v_user, UUid, DeviceType, False)
                         if res_auto is True:
-                            wx_bot.open_notify_callback()
-                            wx_bot.set_user_login(wx_username)
-                            red.set('v_user_heart_' + wx_username, 1)
-                            logger.info("{}: 心跳二次登录成功".format(user.nickname))
-                            oss_utils.beary_chat("{0}: 机器人已上线, 心跳开启成功--{1}, {2}".format(user.nickname,
-                                                                                        time.asctime(time.localtime(time.time())),
-                                                                                        user.username))
+                            if  wx_bot.set_user_login(wx_username):
+                                wx_bot.open_notify_callback()
+                                red.set('v_user_heart_' + wx_username, 1)
+                                user = WxUser.objects.filter(username=wx_username).first()
+                                logger.info("{}: 心跳二次登录成功".format(user.nickname))
+                                oss_utils.beary_chat("{0}: 机器人已上线, 心跳开启成功--{1}, {2}, login为{3}".format(user.nickname,
+                                                                                            time.asctime(time.localtime(time.time())),
+                                                                                            user.username, user.login))
+                            else:
+                                logger.info("{}: 用户设置login失败" % user.nickname)
                             break
                         elif res_auto is 'Logout':
                             red.set('v_user_heart_' + wx_username, 0)

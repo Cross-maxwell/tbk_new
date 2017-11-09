@@ -63,6 +63,7 @@ class WXBot(object):
         self.__retry_num = 1
         self._auto_retry = 0
         self.nickname = None
+        self.start_time = datetime.datetime.now()
 
     def set_user_context(self, wx_username):
         # TODO：self.wx_username 不该在这初始化，待修改
@@ -84,9 +85,10 @@ class WXBot(object):
             user_db.login = 1
             user_db.save()
             logger.info("%s: 重置用户login成功" % self.nickname)
+            return True
         else:
             logger.info("%s: 重置用户login失败，wx_username不存在" % self.wx_username)
-            return
+            return False
 
     def open_notify_callback(self):
         # 注册回调
@@ -126,35 +128,40 @@ class WXBot(object):
                     # 因为用户ipad登陆的同时登陆其他平台，socket仍然会收到notify包
 
                     user_db = WxUser.objects.filter(username=self.wx_username).first()
-                    is_login = user_db.login == 1
+                    is_login = user_db.login
+                    v_user = pickle.loads(red.get('v_user_' + self.wx_username))
 
                     if is_login:
                         # bot = WXBot()
-                        v_user = pickle.loads(red.get('v_user_' + self.wx_username))
+
                         # bot_param = BotParam.objects.filter(username=v_user.userame).first()
                         # if bot_param:
                         #     bot.long_host = bot_param.long_host
                         #     bot.wechat_client = WechatClient.WechatClient(bot.long_host, 80, True)
                         # starttime = datetime.datetime.now()
-                        if self._lock.acquire():
-                            res = self.async_check(v_user)
-                            self._lock.release()
 
-                            if res is False:
-                                logger.info("%s: 线程执行同步失败" % v_user.nickname)
-                            elif res is 'ERROR' and self._auto_retry == 29:
-                                self._auto_retry += 1
-                                logger.info("%s: 即将退出机器人" % v_user.nickname)
-                                # self.wechat_client.close_when_done()
-                                # self.logout_bot(v_user)
-                            elif res is 'ERROR' and self._auto_retry >= 0:
-                                logger.info("%s: 线程同步返回微信错误，尝试重启心跳" % v_user.nickname)
-                                oss_utils.beary_chat("淘宝客{0}: 线程同步返回微信错误，尝试重启心跳".format(v_user.nickname))
-                                self._auto_retry += 1
-                                # self.wechat_client.close_when_done()
-                            else:
-                                logger.info("%s: 线程执行同步成功" % v_user.nickname)
+                        res = self.async_check(v_user)
+                        self.start_time = datetime.datetime.now()
+
+                        if res is False:
+                            logger.info("%s: 线程执行同步失败" % v_user.nickname)
+                        elif res is 'ERROR' and self._auto_retry == 29:
+                            self._auto_retry += 1
+                            logger.info("%s: 即将退出机器人" % v_user.nickname)
+                            red.set('v_user_heart_' + self.wx_username, 0)
+                            # self.wechat_client.close_when_done()
+                            # self.logout_bot(v_user)
+                        elif res is 'ERROR' and self._auto_retry >= 0:
+                            logger.info("%s: 线程同步返回微信错误，尝试重启心跳" % v_user.nickname)
+                            oss_utils.beary_chat("淘宝客{0}: 线程同步返回微信错误，尝试重启心跳".format(v_user.nickname))
+                            self._auto_retry += 1
+                            red.set('v_user_heart_' + self.wx_username, 0)
+                            # self.wechat_client.close_when_done()
+                        else:
+                            logger.info("%s: 线程执行同步成功" % v_user.nickname)
                         # bot.wechat_client.close_when_done()
+                    else:
+                        logger.info("%s login为0！" % v_user.nickname)
                     self.__is_async_check = False
             else:
                 logger.info("%s: selector小于等于0，未执行线程同步" % self.nickname)
@@ -166,6 +173,7 @@ class WXBot(object):
         user_db = WxUser.objects.filter(username=v_user.userame).first()
         user_db.login = 0
         user_db.save()
+        logger.info("%s: 退出机器人，当前login为%s" % (user_db.nickname, user_db.login))
 
     def get_qrcode(self, md_username):
         """
@@ -578,6 +586,7 @@ class WXBot(object):
         :param new_socket:
         :return:
         """
+        self.start_time = datetime.datetime.now()
         while True:
             sync_req = WechatMsg(
                 token=CONST_PROTOCOL_DICT['machine_code'],
