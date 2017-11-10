@@ -8,13 +8,11 @@ from account.views.agent_views import GetCommision, AlipayAccountView, BindingAl
 
 from broadcast.views.entry_views import insert_product, search_product, push_product, search_product_pad
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
-    get_login_qrcode, poster_url,get_invite_code
-from ipad_weixin.views.base_views import GetQrcode, HostList, IsUuidLogin, IsLogin, \
-    DefineSignRule, AddSuperUser, ResetSingleHeartBeat, ResetHeartBeat
-from broadcast.views.taobaoke_views import PostGoods, SendSignNotice, SetPushTime, GetPushTIme
+    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime
+
+from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
-from weixin_webdriver.views import LoginQrcode
 
 user_urls = [
     url(r'^update-adzone/', update_adzone),
@@ -56,21 +54,11 @@ account_urls = [
 ]
 
 
-robot_urls = [
-    url(r'getqrcode/', GetQrcode.as_view()),
-    url(r'host_list/', HostList.as_view()),
-    url(r'is_login/', IsLogin.as_view()),
-    url(r'is_uuid_login/', IsUuidLogin.as_view()),
-    url(r'define_sign_rule', DefineSignRule.as_view()),
-    url(r'add_super_user', AddSuperUser.as_view()),
-
-    url(r'reset_heart_beat', ResetHeartBeat.as_view()),
-    url(r'reset_single', ResetSingleHeartBeat.as_view()),
-]
 
 tk_urls = [
-    url(r'push_product', PostGoods.as_view()),
-    url(r'send_signin_notice', SendSignNotice.as_view()),
+    url(r'push_product', PushProduct.as_view()),
+    url(r'search_product', AcceptSearchView.as_view()),
+    # url(r'send_signin_notice', SendSignNotice.as_view()),
     url(r'set_pushtime', SetPushTime.as_view()),
     url(r'get_pushtime', GetPushTIme.as_view())
 ]
@@ -83,9 +71,6 @@ auth_urls = [
     url(r'logout/$', Logout.as_view())
 ]
 
-webdriver_urls = [
-    url(r'getqrcode', LoginQrcode.as_view())
-]
 
 urlpatterns = [
     url(r'product/', include(product_urls)),
@@ -94,12 +79,10 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'broadcast/', include(broadcast_urls)),
 
-    url(r'robot/', include(robot_urls)),
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
 
     url(r'account/', include('account.urls')),
 
-    url(r'webdriver', include(webdriver_urls))
 ]
 

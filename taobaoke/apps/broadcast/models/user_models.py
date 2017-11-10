@@ -53,8 +53,7 @@ class TkUser(models.Model):
             return tk_user
         except TkUser.DoesNotExist as exc:
             logger.error("用户尚未注册，开发人员调试时请确保auth_user已被创建")
-            # user = User.objects.create_user(username=username)
-            # return TkUser.objects.get(user=user)
+
 
 
 @receiver(post_save, sender=User)
@@ -64,13 +63,6 @@ def create_tkuser(sender, instance, created, **kwargs):
     else:
         instance.tkuser.save()
 
-# @receiver(post_save, sender=User)
-# def save_tkuser(sender, instance, **kwargs):
-#     try:
-#         instance.tkuser.save()
-#     except Exception as e:
-#         print(Exception)
-#         TkUser.objects.create(user=instance, adzone=None)
 
 
 class Adzone(models.Model):
@@ -94,35 +86,3 @@ class Adzone(models.Model):
         self.last_update = timezone.now()
         super(Adzone, self).save(*args, **kwargs)
 
-from django.utils import timezone
-class PushTime(models.Model):
-    user = models.OneToOneField(User)
-    # 发单间隔
-    interval_time = models.CharField(max_length=20, default=5)
-    # 每天开始时间
-    begin_time = models.CharField(max_length=20, default="07:00")
-    # 每天停止时间
-    end_time = models.CharField(max_length=20, default='23:00')
-
-    is_valid = models.BooleanField(default=True)
-    update_time = models.DateTimeField(default=timezone.now)
-
-    def save(self, *args, **kwargs):
-        self.update_time = timezone.now()
-        return super(PushTime, self).save(*args, **kwargs)
-
-    def get_pushtime(self, md_username):
-        try:
-            pushtime = PushTime.objects.get(user__username=md_username)
-        except Exception as e:
-            pushtime = PushTime()
-            pushtime.user = User.objects.get(username=md_username)
-            pushtime.save()
-        return pushtime
-
-
-
-@receiver(post_save, sender=User)
-def create_pushtime(sender, instance, created, **kwargs):
-    if created:
-        PushTime.objects.create(user=instance)

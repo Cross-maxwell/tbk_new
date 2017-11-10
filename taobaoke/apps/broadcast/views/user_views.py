@@ -10,8 +10,9 @@ from rest_framework.response import Response
 
 from broadcast.models.user_models import TkUser, Adzone
 from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSerializer
-
 from broadcast.utils import generatePoster_ran
+from user_auth.models import PushTime
+from django.views.generic.base import View
 
 @csrf_exempt
 def update_adzone(request):
@@ -74,3 +75,40 @@ def get_invite_code(request):
             return  HttpResponse(json.dumps({'error':'TkUser does not exist.'}),status=400)
         except Exception,e:
             return  HttpResponse(json.dumps({'error': e.message}),status=400)
+
+
+class SetPushTime(View):
+    @csrf_exempt
+    def post(self, request):
+        req_data = json.loads(request.body)
+        interval_time = int(req_data.get('interval_time', 5))
+        begin_time = req_data.get('begin_time')
+        end_time = req_data.get('end_time')
+        try:
+            pushtime = PushTime.objects.get(user=request.user)
+            pushtime.interval_time = interval_time
+            pushtime.begin_time = begin_time
+            pushtime.end_time = end_time
+            pushtime.save()
+        except PushTime.DoesNotExist:
+            pushtime = PushTime.objects.create(user=request.user,
+                                               interval_time=interval_time, begin_time=begin_time, end_time=end_time)
+        data = {
+            "interval_time": interval_time,
+            "begin_time": begin_time,
+            "end_time": end_time,
+            "is_valid": True,
+        }
+
+        return HttpResponse(json.dumps({'retCode': 200, 'data': data}))
+
+
+class GetPushTIme(View):
+    def get(self, request):
+        user = request.user
+        pushtime = PushTime.objects.get(user=user)
+        interval_time = pushtime.interval_time
+        begin_time = pushtime.begin_time
+        end_time = pushtime.end_time
+        return HttpResponse(json.dumps({"interval_time": interval_time,
+                                        "begin_time": begin_time, "end_time": end_time}))

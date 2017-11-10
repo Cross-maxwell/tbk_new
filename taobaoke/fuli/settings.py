@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'broadcast',
     'rest_framework',
-    'ipad_weixin',
     'corsheaders',
     'user_auth',
     'account'
@@ -115,14 +114,14 @@ CSRF_COOKIE_SECURE = True
 # }
 
 
-#
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {'charset': 'utf8mb4'},
-        'NAME': 'ipad_weixin_02',
+        'NAME': 'new_taobaoke_sys',
         'USER': 'root',
-        'PASSWORD': 'maxwell',
+        'PASSWORD': 'keyerror',
     }
 }
 
