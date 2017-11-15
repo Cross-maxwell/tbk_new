@@ -25,7 +25,7 @@ logger = logging.getLogger('fetch_lanlan')
 # f = open('/home/new_taobaoke/taobaoke/scripts/goods/lanlan_cookie.txt')
 
 # 本地测试
-f = open('scripts/goods/lanlan_cookie.txt')
+f = open('lanlan_cookie.txt')
 cookie_str = f.read()
 f.close()
 
@@ -39,7 +39,7 @@ def main():
             #'http://www.lanlanlife.com/taoke/sendlist/gatherList?uuid=803cef07c9c80627cd75d1bf8c97683a&page=%d' % (i+1),
             headers={'Cookie': cookie_str.strip()}
         )
-        if resp.json()['status']['code']== 1001 :
+        if resp.json()['status']['code'] == 1001 :
             for item in resp.json()['result']['items']:
                 try:
                     if item['status'] != '1':
