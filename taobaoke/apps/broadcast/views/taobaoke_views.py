@@ -19,7 +19,9 @@ from user_auth.models import PushTime
 import urllib
 from broadcast.models.user_models import Adzone
 from django.utils.encoding import iri_to_uri
+from fuli.oss_utils import beary_chat
 import random
+from broadcast.models.entry_models import PushRecord
 
 import logging
 logger = logging.getLogger('django_views')
@@ -28,37 +30,17 @@ logger = logging.getLogger('django_views')
 class PushProduct(View):
     def get(self, request):
         # 随机筛选商品
-        # TODO: 暂时先不考虑推送记录问题
-        # pushrecord__group__contains=group_id,
-        qs = Product.objects.filter(
-            # ~Q(
-            #    pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
-            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-        )
-
-        # 用发送过的随机商品替代
-        if qs.count() == 0:
-            qs = Product.objects.filter(
-                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-            )
-            # beary_chat('点金推送商品失败：无可用商品')
-
-        for _ in range(50):
-            try:
-                r = random.randint(0, qs.count() - 1)
-                p = qs.all()[r]
-                break
-            except Exception as exc:
-                print "Get entry exception. Count=%d." % qs.count()
-                logger.error(exc)
-        # print goods_picture_list
-
-        platform_id = 'yiqizhuan'
+        # TODO: 为了解决推送记录的记录，则先筛选user，而非先筛选商品
+        platform_id = 'make_money_together'
 
         # 本地测试
         # 获取登录了一起赚平台的所有user列表
-        url = "http://localhost:10024/robot/platform_user_list?platform_id={}".format(platform_id)
-        send_msg_url = 'http://localhost:10024/robot/send_msg/'
+        # url = "http://localhost:10024/robot/platform_user_list?platform_id={}".format(platform_id)
+        # send_msg_url = 'http://localhost:10024/robot/send_msg/'
+
+        url = "http://s-prod-04.qunzhu666.com:10024/robot/platform_user_list?platform_id={}".format(platform_id)
+
+        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/robot/send_msg/'
         # url = "http://s-prod-04.qunzhu666.com:8080/robot/xxxx?platform_key={}".format(platform_id)
 
         response = requests.get(url)
@@ -77,6 +59,7 @@ class PushProduct(View):
         """
         for user_object in login_user_list:
             user = user_object["user"]
+
             # 找到该user所对应的pid
             try:
                 tk_user = TkUser.get_user(user)
@@ -94,6 +77,29 @@ class PushProduct(View):
             if ret == 0:
                 logger.info("%s 未到发单时间" % wxuser_list)
             if ret == 1:
+                qs = Product.objects.filter(
+                    ~Q(pushrecord__user_key__icontains=user,
+                       pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
+                    available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+                )
+
+                # 用发送过的随机商品替代
+                if qs.count() == 0:
+                    qs = Product.objects.filter(
+                        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+                    )
+                    beary_chat('点金推送商品失败：%s:%s 无可用商品' % (user, user_object["wxuser_list"]))
+
+                for _ in range(50):
+                    try:
+                        r = random.randint(0, qs.count() - 1)
+                        p = qs.all()[r]
+                        break
+                    except Exception as exc:
+                        print "Get entry exception. Count=%d." % qs.count()
+                        logger.error(exc)
+
+
                 text = p.get_text_msg(pid=pid)
                 img_url = p.get_img_msg()
                 data = [img_url, text]
@@ -102,6 +108,7 @@ class PushProduct(View):
                     "md_username": user,
                     "data": data
                 }
+                PushRecord.objects.create(entry=p, user_key=user)
                 send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
 
         return HttpResponse(json.dumps({"ret": 1}))

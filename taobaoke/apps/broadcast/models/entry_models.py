@@ -42,7 +42,7 @@ class Entry(models.Model):
 class PushRecord(models.Model):
     create_time = models.DateTimeField(auto_now=True)
     entry = models.ForeignKey('Entry')
-    group = models.CharField(max_length=64)
+    user_key = models.CharField(max_length=64)
     data_string = models.TextField(max_length=4096, default='')
 
 
