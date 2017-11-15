@@ -99,7 +99,6 @@ class PushProduct(View):
                         print "Get entry exception. Count=%d." % qs.count()
                         logger.error(exc)
 
-
                 text = p.get_text_msg(pid=pid)
                 img_url = p.get_img_msg()
                 data = [img_url, text]
@@ -190,6 +189,10 @@ def is_push(md_username, wx_id):
         logger.error(e)
 
 
+class AppProductJsonView(View):
+    def get(self, request):
+        # 返回商品的类别，
+        pass
 
 
 # class SendSignNotice(View):
