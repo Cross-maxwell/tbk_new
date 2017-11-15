@@ -23,6 +23,11 @@ from fuli.oss_utils import beary_chat
 import random
 from broadcast.models.entry_models import PushRecord
 
+from selenium import webdriver
+phantomjs_path = '/home/adam/mydev/tools/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+import re
+
+
 import logging
 logger = logging.getLogger('django_views')
 
@@ -123,34 +128,80 @@ class AcceptSearchView(View):
 
         adzone_db = Adzone.objects.filter(tkuser__user__username=username).first()
         pid = adzone_db.pid
+        url_to_show='http://dianjin.dg15.cn/saber/index/search?pid={0}&search={1}'
+        url_for_data = 'http://dianjin.dg15.cn/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'
+        try:
+            if 'http' in keyword :
+                # 直接从淘宝分享消息进行搜索
+                # 从分享的消息中拿到商品链接（短链）和商品标题title
+                link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
+                to_search_title = re.findall('（(.+)）', keyword)[0]
+                # 打开短链，从跳转后的url中获取到item_id, 用title去dianjin平台搜索，并比对搜索结果的item_id，如果一致则搜索到指定商品。如果有搜索结果，但不一致，
+                # 返回搜索链接，供用户浏览类似商品。
+                driver = webdriver.PhantomJS(phantomjs_path)
+                driver.get(link)
+                to_search_item_id = re.findall('[&\?]id=(\d+)', driver.current_url)[0]
+                resp_dj = requests.get(url_for_data.format(pid,to_search_title))
+                resp_dict_dj = json.loads(resp_dj.content)
+                dj_products = resp_dict_dj['result']['items']
 
-        template_url = 'http://dianjin.dg15.cn/saber/index/search?pid={0}&search={1}'.format(pid, keyword)
-        judge_url = 'http://dianjin.dg15.cn/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'.format(
-            pid, keyword)
-        judge_response = requests.get(judge_url)
-        judge_dict = json.loads(judge_response.content)
+                found = False
+                other_found = False
+                for dj_p in dj_products:
+                    if dj_p['itemId'] == to_search_item_id:
+                        found=True
+                        cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
+                            dj_p['activityId'],dj_p['itemId'],pid)
+                        text='找到指定商品的优惠券，点击链接领取 : {}'.format(get_short_url(cupon_url))
+                        img_url = dj_p['coverImage']
+                        break
+                    else:
+                        other_found=True
 
-        if not judge_dict['result']['items']:
-            text = u"{0}，很抱歉，您需要的{1}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
-            data = [text]
-        else:
-            # 重载template_url, 用于从微博api获取短链
-            template_url = urllib.quote(iri_to_uri(template_url))
-            short_url_respose = requests.get(
-                'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + template_url)
-            short_url = short_url_respose.json()['urls'][0]['url_short']
+                if found:
+                    data = [text,img_url]
+                elif (not found) and other_found :
+                    text= '抱歉，没有找到指定商品，点击链接查看类似商品 : \n' + get_short_url(url_to_show.format(pid, to_search_title))
+                    data=[text]
+                else:
+                    text = '抱歉，没有找到商品'
+                    data=[text]
+                return HttpResponse(json.dumps({"data": data}))
 
-            random_seed = random.randint(1000, 2000)
-            text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，点击链接查看为您找到的天猫高额优惠券。\n" \
-                   "{3}\n" \
-                   "「点击上面链接查看宝贝」\n" \
-                   "================\n" \
-                   "图片仅供参考，详细信息请点击链接～".format(at_user_nickname, keyword, random_seed, short_url)
+            else :
+                # 普通搜索，"找xx"、"买XX"
+                template_url = url_to_show.format(pid, keyword)
+                judge_url = url_for_data.format(
+                    pid, keyword)
+                judge_response = requests.get(judge_url)
+                judge_dict = json.loads(judge_response.content)
 
-            img_url = judge_dict['result']['items'][0]['coverImage']
-            data = [img_url, text]
+                if not judge_dict['result']['items']:
+                    text = u"{0}，很抱歉，您需要的{1}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
+                    data = [text]
+                else:
+                    # 从微博api获取短链
+                    short_url = get_short_url(template_url)
+                    random_seed = random.randint(1000, 2000)
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，点击链接查看为您找到的天猫高额优惠券。\n" \
+                           "{3}\n" \
+                           "「点击上面链接查看宝贝」\n" \
+                           "================\n" \
+                           "图片仅供参考，详细信息请点击链接～".format(at_user_nickname, keyword, random_seed, short_url)
 
-        return HttpResponse(json.dumps({"data": data}))
+                    img_url = judge_dict['result']['items'][0]['coverImage']
+                    data = [img_url, text]
+                return HttpResponse(json.dumps({"data": data}))
+        except :
+            return HttpResponse(json.dumps({"data": ['搜索失败']}))
+
+
+def get_short_url(long_url):
+    template_url = urllib.quote(iri_to_uri(long_url))
+    short_url_respose = requests.get(
+        'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + template_url)
+    short_url = short_url_respose.json()['urls'][0]['url_short']
+    return short_url
 
 
 def is_push(md_username, wx_id):
