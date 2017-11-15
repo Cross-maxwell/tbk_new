@@ -6,7 +6,7 @@ from django.contrib import admin
 from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, InviterLastLoginView, InviterOrderListView
 from account.views.agent_views import GetCommision, AlipayAccountView, BindingAlipayAccountView, UserAvatarView
 
-from broadcast.views.entry_views import insert_product, search_product, push_product, search_product_pad
+from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime
 
@@ -29,17 +29,6 @@ product_urls = [
     url(r'qrcode/', get_login_qrcode),
 ]
 
-interact_urls = [
-    url(r'search-product/', search_product),
-    url(r'search-product-pad/', search_product_pad),
-    url(r'push-product/', push_product),
-]
-
-broadcast_urls = [
-    # url(r'insert/', insert_broadcast_by_msg),
-    # url(r'push/', insert_broadcast_by_msg),
-]
-
 account_urls = [
     url(r'^good-pv/$', GetGoodPv.as_view()),#ok
     url(r'^order-list/$', OrderList.as_view()), #ok
@@ -58,7 +47,6 @@ account_urls = [
 tk_urls = [
     url(r'push_product', PushProduct.as_view()),
     url(r'search_product', AcceptSearchView.as_view()),
-    # url(r'send_signin_notice', SendSignNotice.as_view()),
     url(r'set_pushtime', SetPushTime.as_view()),
     url(r'get_pushtime', GetPushTIme.as_view())
 ]
@@ -75,14 +63,9 @@ auth_urls = [
 urlpatterns = [
     url(r'product/', include(product_urls)),
     url(r'^user/', include(user_urls)),
-    url(r'interact/', include(interact_urls)),
     url(r'^admin/', admin.site.urls),
-    url(r'broadcast/', include(broadcast_urls)),
-
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
-
     url(r'account/', include('account.urls')),
-
 ]
 
