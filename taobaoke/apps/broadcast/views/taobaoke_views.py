@@ -24,7 +24,7 @@ import random
 from broadcast.models.entry_models import PushRecord
 
 from selenium import webdriver
-phantomjs_path = '/home/adam/mydev/tools/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+phantomjs_path = '/home/smartkeyerror/.virtualenvs/django_env/lib/python2.7/site-packages/selenium/webdriver/phantomjs'
 import re
 
 
@@ -192,7 +192,8 @@ class AcceptSearchView(View):
                     img_url = judge_dict['result']['items'][0]['coverImage']
                     data = [img_url, text]
                 return HttpResponse(json.dumps({"data": data}))
-        except :
+        except Exception as e:
+            print e
             return HttpResponse(json.dumps({"data": ['搜索失败']}))
 
 
