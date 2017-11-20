@@ -24,8 +24,12 @@ import random
 from broadcast.models.entry_models import PushRecord
 
 from selenium import webdriver
+
 # 本地测试
-phantomjs_path = '/home/smartkeyerror/.virtualenvs/django_env/lib/python2.7/site-packages/selenium/webdriver/phantomjs'
+# phantomjs_path = '/home/smartkeyerror/PycharmProjects/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
+
+# 07服务器
+phantomjs_path = '/home/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 import re
 
 
@@ -129,10 +133,10 @@ class AcceptSearchView(View):
 
         adzone_db = Adzone.objects.filter(tkuser__user__username=username).first()
         pid = adzone_db.pid
-        url_to_show='http://dianjin.dg15.cn/saber/index/search?pid={0}&search={1}'
+        url_to_show = 'http://dianjin.dg15.cn/saber/index/search?pid={0}&search={1}'
         url_for_data = 'http://dianjin.dg15.cn/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'
         try:
-            if 'http' in keyword :
+            if 'http' in keyword:
                 # 直接从淘宝分享消息进行搜索
                 # 从分享的消息中拿到商品链接（短链）和商品标题title
                 link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
@@ -142,7 +146,7 @@ class AcceptSearchView(View):
                 driver = webdriver.PhantomJS(phantomjs_path)
                 driver.get(link)
                 to_search_item_id = re.findall('[&\?]id=(\d+)', driver.current_url)[0]
-                resp_dj = requests.get(url_for_data.format(pid,to_search_title))
+                resp_dj = requests.get(url_for_data.format(pid, to_search_title))
                 resp_dict_dj = json.loads(resp_dj.content)
                 dj_products = resp_dict_dj['result']['items']
 
@@ -150,26 +154,27 @@ class AcceptSearchView(View):
                 other_found = False
                 for dj_p in dj_products:
                     if dj_p['itemId'] == to_search_item_id:
-                        found=True
+                        found = True
                         cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
-                            dj_p['activityId'],dj_p['itemId'],pid)
-                        text='找到指定商品的优惠券，点击链接领取 : {}'.format(get_short_url(cupon_url))
+                            dj_p['activityId'], dj_p['itemId'],pid)
+                        text = '找到指定商品的优惠券，点击链接领取 : {}'.format(get_short_url(cupon_url))
                         img_url = dj_p['coverImage']
                         break
                     else:
-                        other_found=True
+                        other_found = True
+                driver.close()
 
                 if found:
-                    data = [text,img_url]
-                elif (not found) and other_found :
-                    text= '抱歉，没有找到指定商品，点击链接查看类似商品 : \n' + get_short_url(url_to_show.format(pid, to_search_title))
-                    data=[text]
+                    data = [text, img_url]
+                elif (not found) and other_found:
+                    text = '{0} 抱歉，没有找到指定商品，点击链接查看类似商品 : \n'.format(at_user_nickname) + get_short_url(url_to_show.format(pid, to_search_title))
+                    data = [text]
                 else:
-                    text = '抱歉，没有找到商品'
-                    data=[text]
+                    text = '{0} 抱歉，没有找到商品'.format(at_user_nickname)
+                    data = [text]
                 return HttpResponse(json.dumps({"data": data}))
 
-            else :
+            else:
                 # 普通搜索，"找xx"、"买XX"
                 template_url = url_to_show.format(pid, keyword)
                 judge_url = url_for_data.format(
