@@ -118,11 +118,6 @@ class Product(Entry):
         msg += self.template_end
         if random.random() < 0.5:
             msg += u'\n本群招代理，如果你也想把优惠带给你身边的朋友，那就赶快加我私聊吧！'
-        # print self.cupon_url
-        # msg_activity = '\n天猫双十一现金红包雨来啦，最高抢￥1111元现金，红包每天都能抢，但每日红包数量有限，速速来抢！\nhttp://dianjin.dg15.cn/x/2bffc315 '
-        # rate = random.random()
-        # if rate <= 0.5:
-        #     msg += msg_activity
         return msg
 
     def get_img_msg(self):
