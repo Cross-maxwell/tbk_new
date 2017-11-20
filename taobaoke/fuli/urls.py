@@ -62,7 +62,7 @@ auth_urls = [
 
 urlpatterns = [
     url(r'product/', include(product_urls)),
-    url(r'^user/', include(user_urls)),
+    url(r'user/', include(user_urls)),
     url(r'^admin/', admin.site.urls),
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),

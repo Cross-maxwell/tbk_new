@@ -25,5 +25,5 @@ class TkUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = TkUser
         fields = (
-            'user', 'adzone', 'search_url_template'
+            'user', 'adzone', 'avatar_url', 'invite_code', 'inviter_id', 'inviter_backup_info'
         )

@@ -44,9 +44,10 @@ def get_adzone_info(request):
 
 @api_view(['GET'])
 def get_tkuser_info(request):
-    adzone_id = request.GET.get('adzone_id')
-    if adzone_id is not None:
-        tk_user = TkUser.objects.get(adzone__pid__contains=adzone_id)
+    # adzone_id = request.GET.get('adzone_id')
+    # if adzone_id is not None:
+    #     tk_user = TkUser.objects.get(adzone__pid__contains=adzone_id)
+    tk_user = request.user.tkuser
     return Response(TkUserSerializer(tk_user).data)
 
 
