@@ -47,10 +47,12 @@ class PushRecord(models.Model):
 
 
 class Product(Entry):
+    # 商品标题
     title = models.CharField(max_length=256, db_index=True)
+    # 商品描述
     desc = models.TextField(max_length=200)
+    # 主图链接
     img_url = models.TextField(max_length=512)
-
     # 券面值
     cupon_value = models.FloatField()
     # 券后价格
@@ -59,15 +61,20 @@ class Product(Entry):
     sold_qty = models.IntegerField()
     # 剩余券数
     cupon_left = models.IntegerField()
-
+    # 淘口令
     tao_pwd = models.CharField(max_length=32, null=True)
+    # 优惠券链接
     cupon_url = models.TextField(max_length=1024)
+    # Should be 优惠券的短链接。目前是直接与优惠券链接一致
     cupon_short_url = models.URLField(db_index=True, null=True)
-
+    # 评论
     recommend = models.CharField(max_length=128, null=True)
-
+    # 淘宝联盟给我司的佣金比率
     commision_rate = models.CharField('佣金比率',max_length=255, default='')
+    # 淘宝联盟给我司的佣金
     commision_amount = models.FloatField(default=0)
+    # 商品id
+    item_id = models.CharField(max_length=64, unique=True, db_index=True, null=False)
 
     @property
     def org_price(self):
@@ -81,34 +88,9 @@ class Product(Entry):
     def quality(self):
         return math.log(self.sold_qty)
 
-    item_id = models.CharField(max_length=64, unique=True, db_index=True, null=False)
-
-
-#     template = \
-# """
-# 【商品名称】{title}
-# 【券后劲爆价】￥{price}
-# 【劲省】{cupon_value}元!!
-# -----------------
-# {desc}
-# 【淘口令】{tao_pwd}
-# 复制这条消息，打开“手机淘宝”即可领券之后再下单
-# 也可以点击此链接直接下单：{cupon_url}
-# """
-
-#     template = \
-# """{title}
-# 【标价】{org_price}元
-# 【本群价】￥{price}!!
-# 【已疯抢】超过{sold_qty}件
-# -----------------
-# {desc}  下单地址： {short_url} """
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
     template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 天猫高额优惠，下单立减，你要的优惠都在这里～"
-
-    update_tao_pwd_url = 'http://www.fuligou88.com/haoquan/details_show00.php?act=zhuan'
-
     def get_text_msg(self, pid=None):
         if pid is not None:
             if re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
@@ -122,7 +104,6 @@ class Product(Entry):
         })
 
         self.tao_pwd = self.tao_pwd[1:-1]
-
 
         long_url = 'http://tkl.di25.cn/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
         # 微博short_url平台
@@ -158,9 +139,7 @@ class Product(Entry):
                 req.url = self.cupon_url
 
                 resp = req.getResponse()
-
                 self.tao_pwd = resp['tbk_tpwd_create_response']['data']['model']
-
                 self.cupon_short_url = self.cupon_url
                 break
             except Exception as e:
@@ -197,4 +176,10 @@ class Product(Entry):
         super(Product, self).save(*args, **kwargs)
 
 
+class ProductDetail(Product):
+    pass
 
+
+class ProductCategory(models.Model):
+    cat_name = models.CharField(max_length=128, null=True)
+    cat_leaf_name = models.CharField(max_length=128, null=True)

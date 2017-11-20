@@ -58,7 +58,7 @@ class RegisterVIew(View):
         password1 = req_data.get("password1", "")
         password2 = req_data.get("password2", "")
         verifyNum = req_data.get("verifyNum", "")
-        inviter_id = req_data.get("inviter_id", None)
+        invite_code = req_data.get("invite_code", None)
 
         cache_key = username + "_sms_send"
         verify_code = cache.get(cache_key)
@@ -75,9 +75,10 @@ class RegisterVIew(View):
             username=username,
             password=password1
         )
-        if inviter_id:
+        if invite_code:
             tkuser = TkUser.objects.get(user_id = user.id)
-            tkuser.inviter_id=inviter_id
+            inviter = TkUser.objects.get(invite_code=invite_code)
+            tkuser.inviter_id=inviter.user_id
             tkuser.save()
         return HttpResponse(json.dumps({"ret": 1, "data": "注册成功"}))
 

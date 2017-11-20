@@ -105,7 +105,7 @@ def cal_commision():
                 if pay_amount >500 and order_commision_rate<0.25:
                     order_commision = pay_amount * order_commision_rate*0.5
                 else:
-                    order_commision = pay_amount * commision.commision_rate
+                    order_commision = order.show_commision_amount
                 new_earning_amount += order_commision
                 order.enter_account = True
                 order.save()
