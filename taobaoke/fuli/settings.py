@@ -102,29 +102,29 @@ CSRF_COOKIE_SECURE = True
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'mmt',
-#         'USER': 'root',
-#         'PASSWORD': 'Xiaozuanfeng',
-#         'HOST': 's-prod-02.qunzhu666.com',
-#         'PORT': '50001',
-#     }
-# }
-
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {'charset': 'utf8mb4'},
-        'NAME': 'new_taobaoke_sys',
+        'NAME': 'mmt',
         'USER': 'root',
-        'PASSWORD': 'keyerror',
+        'PASSWORD': 'Xiaozuanfeng',
+        'HOST': 's-prod-02.qunzhu666.com',
+        'PORT': '50001',
     }
 }
+
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'OPTIONS': {'charset': 'utf8mb4'},
+#         'NAME': 'new_taobaoke_sys',
+#         'USER': 'root',
+#         'PASSWORD': 'keyerror',
+#     }
+# }
 
 
 
