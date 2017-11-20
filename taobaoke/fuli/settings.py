@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE_CLASSES = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',   # 跨域解决方案
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -105,7 +106,7 @@ CSRF_COOKIE_SECURE = True
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
 #         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'ipad_weixin',
+#         'NAME': 'mmt',
 #         'USER': 'root',
 #         'PASSWORD': 'Xiaozuanfeng',
 #         'HOST': 's-prod-02.qunzhu666.com',
@@ -161,13 +162,41 @@ USE_L10N = True
 
 USE_TZ = True
 
+# 跨域解决方案
 CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = ('*',)
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Pragma',
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 
-STATIC_ROOT = '/home/smartkeyerror/.virtualenvs/django_env/local/lib/python2.7/site-packages/django/contrib/admin/'
+# STATIC_ROOT = '/home/smartkeyerror/.virtualenvs/django_env/local/lib/python2.7/site-packages/django/contrib/admin/'
 STATIC_URL = '/static/'
 
 import logging

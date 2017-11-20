@@ -24,6 +24,7 @@ import random
 from broadcast.models.entry_models import PushRecord
 
 from selenium import webdriver
+# 本地测试
 phantomjs_path = '/home/smartkeyerror/.virtualenvs/django_env/lib/python2.7/site-packages/selenium/webdriver/phantomjs'
 import re
 
@@ -43,9 +44,9 @@ class PushProduct(View):
         # url = "http://localhost:10024/robot/platform_user_list?platform_id={}".format(platform_id)
         # send_msg_url = 'http://localhost:10024/robot/send_msg/'
 
-        url = "http://s-prod-04.qunzhu666.com:10024/robot/platform_user_list?platform_id={}".format(platform_id)
+        url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
 
-        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/robot/send_msg/'
+        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
         # url = "http://s-prod-04.qunzhu666.com:8080/robot/xxxx?platform_key={}".format(platform_id)
 
         response = requests.get(url)
