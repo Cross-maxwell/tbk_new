@@ -156,7 +156,7 @@ class AcceptSearchView(View):
                     if dj_p['itemId'] == to_search_item_id:
                         found = True
                         cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
-                            dj_p['activityId'], dj_p['itemId'],pid)
+                            dj_p['activityId'], dj_p['itemId'], pid)
                         text = '找到指定商品的优惠券，点击链接领取 : {}'.format(get_short_url(cupon_url))
                         img_url = dj_p['coverImage']
                         break
@@ -167,8 +167,8 @@ class AcceptSearchView(View):
                 if found:
                     data = [text, img_url]
                 elif (not found) and other_found:
-                    text = '{0} ，很抱歉，我们没有找到指定商品，但是我们找到了类似商品，点击链接查看类似商品 : \n'.format(at_user_nickname) + get_short_url(url_to_show.format(pid, to_search_title))
-                    data = [text]
+                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看类似商品 : \n'.format(at_user_nickname) + get_short_url(url_to_show.format(pid, to_search_title))
+                    data = [text, dj_products[0]['coverImage']]
                 else:
                     text = '{0} 抱歉，没有找到商品'.format(at_user_nickname)
                     data = [text]
@@ -177,8 +177,7 @@ class AcceptSearchView(View):
             else:
                 # 普通搜索，"找xx"、"买XX"
                 template_url = url_to_show.format(pid, keyword)
-                judge_url = url_for_data.format(
-                    pid, keyword)
+                judge_url = url_for_data.format(pid, keyword)
                 judge_response = requests.get(judge_url)
                 judge_dict = json.loads(judge_response.content)
 
