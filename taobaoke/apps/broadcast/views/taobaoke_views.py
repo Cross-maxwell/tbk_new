@@ -24,16 +24,13 @@ from fuli.oss_utils import beary_chat
 import random
 from broadcast.models.entry_models import PushRecord
 
-from selenium import webdriver
-
 # 本地测试
 # phantomjs_path = '/home/smartkeyerror/PycharmProjects/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
 # 07服务器
-phantomjs_path = '/home/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
-import re
-import signal
+# phantomjs_path = '/home/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
+import re
 import logging
 logger = logging.getLogger('django_views')
 
@@ -141,25 +138,19 @@ class AcceptSearchView(View):
             if 'http' in keyword:
                 # 直接从淘宝分享消息进行搜索
                 # 从分享的消息中拿到商品链接（短链）和商品标题title
-
                 link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
                 to_search_title = re.findall('（(.+)）', keyword)[0]
                 # 打开短链，从跳转后的url中获取到item_id, 用title去dianjin平台搜索，并比对搜索结果的item_id，如果一致则搜索到指定商品。如果有搜索结果，但不一致，
                 # 返回搜索链接，供用户浏览类似商品。
-                driver = webdriver.PhantomJS(phantomjs_path)
-                driver.get(link)
-                time.sleep(1)
-                logger.info("driver.current_url: {}".format(driver.current_url))
+                resp_html = requests.get(link).content
                 try:
-                    to_search_item_id = re.findall('[&\?]id=(\d+)', driver.current_url)[0]
+                    to_search_item_id = re.findall('[&\?]id=(\d+)', resp_html)[0]
                     resp_dj = requests.get(url_for_data.format(pid, to_search_title))
                     resp_dict_dj = json.loads(resp_dj.content)
                     dj_products = resp_dict_dj['result']['items']
                 except Exception as e:
                     logger.error(e)
-                finally:
-                    driver.service.process.send_signal(signal.SIGTERM)
-                    driver.quit()
+                    return HttpResponse(json.dumps({"data" : "获取商品信息失败"}), status=403)
 
                 found = False
                 other_found = False
