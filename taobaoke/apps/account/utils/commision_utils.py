@@ -42,7 +42,6 @@ def cal_agent_commision():
                             order_commision = order.pay_amount * order_commision_rate*0.1
                         else:
                             order_commision = order.pay_amount * agent_commision.commision_rate
-
                         # 入账到agent_commision中
                         agent_commision.sum_earning_amount += order_commision
                         agent_commision.balance += order_commision
@@ -102,8 +101,12 @@ def cal_commision():
             for order in order_list:
                 pay_amount = order.pay_amount
                 order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
+                # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。
+                # adam 2017.11.20  19:50
                 if pay_amount >500 and order_commision_rate<0.25:
                     order_commision = pay_amount * order_commision_rate*0.5
+                    order.show_commision_amount = order_commision
+                    order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
                 else:
                     order_commision = order.show_commision_amount
                 new_earning_amount += order_commision
