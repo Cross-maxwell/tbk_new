@@ -167,7 +167,7 @@ class AcceptSearchView(View):
                 if found:
                     data = [text, img_url]
                 elif (not found) and other_found:
-                    text = '{0} 抱歉，没有找到指定商品，点击链接查看类似商品 : \n'.format(at_user_nickname) + get_short_url(url_to_show.format(pid, to_search_title))
+                    text = '{0} ，很抱歉，我们没有找到指定商品，但是我们找到了类似商品，点击链接查看类似商品 : \n'.format(at_user_nickname) + get_short_url(url_to_show.format(pid, to_search_title))
                     data = [text]
                 else:
                     text = '{0} 抱歉，没有找到商品'.format(at_user_nickname)
@@ -183,7 +183,7 @@ class AcceptSearchView(View):
                 judge_dict = json.loads(judge_response.content)
 
                 if not judge_dict['result']['items']:
-                    text = u"{0}，很抱歉，您需要的{1}没有找到，您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
+                    text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
                     data = [text]
                 else:
                     # 从微博api获取短链
@@ -199,7 +199,7 @@ class AcceptSearchView(View):
                     data = [img_url, text]
                 return HttpResponse(json.dumps({"data": data}))
         except Exception as e:
-            print e
+            logger.error(e)
             return HttpResponse(json.dumps({"data": ['搜索失败']}))
 
 
