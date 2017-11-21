@@ -149,6 +149,7 @@ class AcceptSearchView(View):
                 resp_dj = requests.get(url_for_data.format(pid, to_search_title))
                 resp_dict_dj = json.loads(resp_dj.content)
                 dj_products = resp_dict_dj['result']['items']
+                driver.quit()
 
                 found = False
                 other_found = False
@@ -162,12 +163,13 @@ class AcceptSearchView(View):
                         break
                     else:
                         other_found = True
-                driver.close()
+
 
                 if found:
                     data = [text, img_url]
                 elif (not found) and other_found:
-                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看类似商品 : \n'.format(at_user_nickname) + get_short_url(url_to_show.format(pid, to_search_title))
+                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看类似商品 : \n'.format(at_user_nickname) \
+                           + get_short_url(url_to_show.format(pid, to_search_title))
                     data = [text, dj_products[0]['coverImage']]
                 else:
                     text = '{0} 抱歉，没有找到商品'.format(at_user_nickname)
