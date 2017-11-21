@@ -167,11 +167,11 @@ class AcceptSearchView(View):
 
 
                 if found:
-                    data = [text, img_url]
+                    data = [img_url,text]
                 elif (not found) and other_found:
                     text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看 : \n'.format(at_user_nickname) \
                            + get_short_url(url_to_show.format(pid, to_search_title))
-                    data = [text, dj_products[0]['coverImage']]
+                    data = [ dj_products[0]['coverImage'],text]
                 else:
                     text = '{0} 抱歉，没有找到商品'.format(at_user_nickname)
                     data = [text]
