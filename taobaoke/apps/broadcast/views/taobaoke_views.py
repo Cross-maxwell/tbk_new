@@ -32,7 +32,7 @@ from selenium import webdriver
 # 07服务器
 phantomjs_path = '/home/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 import re
-
+import signal
 
 import logging
 logger = logging.getLogger('django_views')
@@ -158,6 +158,7 @@ class AcceptSearchView(View):
                 except Exception as e:
                     logger.error(e)
                 finally:
+                    driver.service.process.send_signal(signal.SIGTERM)
                     driver.quit()
 
                 found = False
