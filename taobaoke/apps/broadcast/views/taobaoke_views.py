@@ -5,6 +5,7 @@ import json
 import requests
 import datetime
 import random
+import time
 from django.http import HttpResponse
 from django.views.generic.base import View
 from django.core.cache import cache
@@ -85,7 +86,8 @@ class PushProduct(View):
             # 根据phone_num判定是否到达发单时间
             ret = is_push(user, platform_id)
             if ret == 0:
-                logger.info("%s 未到发单时间" % wxuser_list)
+                for wxuser in wxuser_list:
+                    logger.info("%s 未到发单时间" % wxuser)
             if ret == 1:
                 qs = Product.objects.filter(
                     ~Q(pushrecord__user_key__icontains=user,
@@ -146,6 +148,7 @@ class AcceptSearchView(View):
                 # 返回搜索链接，供用户浏览类似商品。
                 driver = webdriver.PhantomJS(phantomjs_path)
                 driver.get(link)
+                time.sleep(1)
                 logger.info("driver.current_url: {}".format(driver.current_url))
                 try:
                     to_search_item_id = re.findall('[&\?]id=(\d+)', driver.current_url)[0]
