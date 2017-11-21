@@ -139,17 +139,23 @@ class AcceptSearchView(View):
             if 'http' in keyword:
                 # 直接从淘宝分享消息进行搜索
                 # 从分享的消息中拿到商品链接（短链）和商品标题title
+
                 link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
                 to_search_title = re.findall('（(.+)）', keyword)[0]
                 # 打开短链，从跳转后的url中获取到item_id, 用title去dianjin平台搜索，并比对搜索结果的item_id，如果一致则搜索到指定商品。如果有搜索结果，但不一致，
                 # 返回搜索链接，供用户浏览类似商品。
                 driver = webdriver.PhantomJS(phantomjs_path)
                 driver.get(link)
-                to_search_item_id = re.findall('[&\?]id=(\d+)', driver.current_url)[0]
-                resp_dj = requests.get(url_for_data.format(pid, to_search_title))
-                resp_dict_dj = json.loads(resp_dj.content)
-                dj_products = resp_dict_dj['result']['items']
-                driver.quit()
+                logger.info("driver.current_url: {}".format(driver.current_url))
+                try:
+                    to_search_item_id = re.findall('[&\?]id=(\d+)', driver.current_url)[0]
+                    resp_dj = requests.get(url_for_data.format(pid, to_search_title))
+                    resp_dict_dj = json.loads(resp_dj.content)
+                    dj_products = resp_dict_dj['result']['items']
+                except Exception as e:
+                    logger.error(e)
+                finally:
+                    driver.quit()
 
                 found = False
                 other_found = False
@@ -168,7 +174,7 @@ class AcceptSearchView(View):
                 if found:
                     data = [text, img_url]
                 elif (not found) and other_found:
-                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看类似商品 : \n'.format(at_user_nickname) \
+                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看 : \n'.format(at_user_nickname) \
                            + get_short_url(url_to_show.format(pid, to_search_title))
                     data = [text, dj_products[0]['coverImage']]
                 else:
