@@ -35,17 +35,20 @@ def cal_agent_commision():
                 with transaction.atomic():
                     # 如果这笔订单的状态是True，说明不需要再入账
                     if not get_or_update_AgentOrderStatus(order.id):
-
-                        # 计算这笔佣金
-                        order_commision_rate  = round(float(order.commision_amount)/order.pay_amount,2)
-                        if order.pay_amount >500 and order_commision_rate <0.25:
-                            order_commision = order.pay_amount * order_commision_rate*0.1
+                        share_rate = float(order.share_rate.split(' ')[0]) / 100.0
+                        if share_rate <= 0.6:
+                            pass
                         else:
-                            order_commision = order.pay_amount * agent_commision.commision_rate
-                        # 入账到agent_commision中
-                        agent_commision.sum_earning_amount += order_commision
-                        agent_commision.balance += order_commision
-                        agent_commision.save()
+                            # 计算这笔佣金
+                            order_commision_rate  = round(float(order.commision_amount)/order.pay_amount,2)
+                            if order.pay_amount >500 and order_commision_rate <0.25:
+                                order_commision = order.pay_amount * order_commision_rate*0.1
+                            else:
+                                order_commision = order.pay_amount * agent_commision.commision_rate
+                            # 入账到agent_commision中
+                            agent_commision.sum_earning_amount += order_commision
+                            agent_commision.balance += order_commision
+                            agent_commision.save()
 
 def get_or_update_AgentOrderStatus(order_id):
     """
@@ -99,16 +102,22 @@ def cal_commision():
 
         with transaction.atomic():
             for order in order_list:
-                pay_amount = order.pay_amount
-                order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
-                # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。
-                # adam 2017.11.20  19:50
-                if pay_amount >500 and order_commision_rate<0.25:
-                    order_commision = pay_amount * order_commision_rate*0.5
+                share_rate=float(order.share_rate.split(' ')[0])/100.0
+                if share_rate <= 0.6:
+                    order_commision = order.commision_amount
                     order.show_commision_amount = order_commision
                     order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
                 else:
-                    order_commision = order.show_commision_amount
+                    pay_amount = order.pay_amount
+                    order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
+                    # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。
+                    # adam 2017.11.20  19:50
+                    if pay_amount >500 and order_commision_rate<0.25:
+                        order_commision = pay_amount * order_commision_rate*0.5
+                        order.show_commision_amount = order_commision
+                        order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
+                    else:
+                        order_commision = order.show_commision_amount
                 new_earning_amount += order_commision
                 order.enter_account = True
                 order.save()

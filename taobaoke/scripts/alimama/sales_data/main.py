@@ -23,23 +23,33 @@ def __main__():
     now_time = now_time.strftime('%Y-%m-%d')
     cookie_str = fetch_cookie_fromfile()
 
-    # 创建订单接口
+    # 全部订单接口，按照订单创建时间筛选一周内的订单
     url = 'http://pub.alimama.com/report/getTbkPaymentDetails.json?queryType=1' \
           '&payStatus=&DownloadID=DOWNLOAD_REPORT_INCOME_NEW&startTime={0}&endTime={1}'.format(yes_time, now_time)
     print(url)
-
     # 检测cookie是否有效
     if detect_cookie(cookie_str, url):
         print "cookie success"
         if fetch_excel(cookie_str, url):
             pub_alimama_data.push_data()
 
-        # 结算接口
+        # 第三方推广订单，"第三方服务来源"的值为"权益推广"，"分成比率"远低于正常订单。
+        url = 'http://pub.alimama.com/report/getTbkPaymentDetails.json?queryType=4' \
+              '&payStatus=3&DownloadID=DOWNLOAD_REPORT_INCOME_NEW&startTime={0}&endTime={1}'.format(yes_time, now_time)
+        print(url)
+        if fetch_excel(cookie_str, url):
+            pub_alimama_data.push_data()
+
+        # 已结算订单，按结算时间筛选一周内的订单。
+        # （作为对上一条的补充，以避免出现付款状态持续一周以上时，再也无法拉取到的情况）
         url = 'http://pub.alimama.com/report/getTbkPaymentDetails.json?queryType=3' \
               '&payStatus=3&DownloadID=DOWNLOAD_REPORT_INCOME_NEW&startTime={0}&endTime={1}'.format(yes_time, now_time)
         print(url)
         if fetch_excel(cookie_str, url):
             pub_alimama_data.push_data()
+
+
+
         # beary_chat("销售数据更新啦！～", channel=u"淘宝客问题反馈")
         return True
     else:
