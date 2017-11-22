@@ -23,7 +23,7 @@ class AlipayAccountView(View):
             serializer = AlipayAccountSerializer(account)
             return HttpResponse(json.dumps({'data' : serializer.data}),status=200)
         except AlipayAccount.DoesNotExist:
-            return None
+            return HttpResponse(json.dumps({'data': 'Alipay account does not exist.'}),status=200)
         except Exception as e:
             return HttpResponse(json.dumps({'data': self.request.method + e.message}),status=400)
 

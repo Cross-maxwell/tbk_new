@@ -70,9 +70,9 @@ def push_data():
             if table.row_values(i)[j] is not None and table.row_values(i)[j] != "":
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
-            item_id = result_dict['good_id']
-            if assert_low_rate(item_id):
-                result_dict['order_status']=u'订单失效'
+        item_id = result_dict['good_id']
+        if assert_low_rate(item_id):
+            result_dict['order_status']=u'订单失效'
         try:
             result = Order.objects.update_or_create(order_id = result_dict['order_id'],defaults=result_dict)
             status = result[1]
