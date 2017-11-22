@@ -150,7 +150,7 @@ class AcceptSearchView(View):
                     dj_products = resp_dict_dj['result']['items']
                 except Exception as e:
                     logger.error(e)
-                    return HttpResponse(json.dumps({"data" : "获取商品信息失败"}), status=403)
+                    return HttpResponse(json.dumps({"data" :["获取商品信息失败"]}), status=403)
 
                 found = False
                 other_found = False
