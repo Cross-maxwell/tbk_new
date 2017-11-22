@@ -48,6 +48,7 @@ class PushProduct(View):
 
         url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
 
+        # send_msg_url = 'http://127.0.0.1:10024/api/robot/send_msg/'
         send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
         # url = "http://s-prod-04.qunzhu666.com:8080/robot/xxxx?platform_key={}".format(platform_id)
 
@@ -86,6 +87,8 @@ class PushProduct(View):
                 for wxuser in wxuser_list:
                     logger.info("%s 未到发单时间" % wxuser)
             if ret == 1:
+                for wxuser in wxuser_list:
+                    logger.info("%s 开始本单发送" % wxuser)
                 qs = Product.objects.filter(
                     ~Q(pushrecord__user_key__icontains=user,
                        pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
@@ -290,5 +293,15 @@ class AppProductJsonView(View):
 #         from ipad_weixin.send_msg_type import send_msg_type
 #         send_msg_type(img_msg_dict, at_user_id='')
 #         send_msg_type(text_msg_dict, at_user_id='')
+
+
+
+
+
+
+
+
+
+
 
 
