@@ -1,5 +1,7 @@
 # coding=utf-8
 import datetime
+
+from django.utils.html import format_html
 from django.utils.timezone import utc
 
 from django.db import models
@@ -90,6 +92,20 @@ class Order(models.Model):
     enter_account = models.BooleanField(default=False, db_index=True)
 
     user_id = models.CharField(max_length=16,null=True, db_index=True)
+
+    def status_orders(self):
+        self.color_code = '000000'
+        if '结算'in self.order_status:
+            self.color_code = '00ff00'
+        elif '付款'in self.order_status:
+            self.color_code = '0000ff'
+        elif '失效' in self.order_status:
+            self.color_code = 'ff0000'
+        return format_html(
+            '<span style="color: #{};">{}</span>',
+            self.color_code,
+            self.order_status,
+        )
 
     # 计算显示出来的佣金比率
     @property
