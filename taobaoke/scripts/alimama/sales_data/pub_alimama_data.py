@@ -73,6 +73,7 @@ def push_data():
         item_id = result_dict['good_id']
         if assert_low_rate(item_id):
             result_dict['order_status']=u'订单失效'
+            result_dict['pay_amount']=0
         try:
             result = Order.objects.update_or_create(order_id = result_dict['order_id'],defaults=result_dict)
             status = result[1]
