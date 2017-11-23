@@ -11,6 +11,10 @@ import requests
 from django.db import models
 import fuli.top_settings
 import top.api
+from broadcast.utils.entry_utils import generate_img #todo
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+from broadcast.utils.entry_utils import get_item_info
 
 import sys
 reload(sys)
@@ -88,6 +92,29 @@ class Product(Entry):
     def quality(self):
         return math.log(self.sold_qty)
 
+    def get_text_msg_wxapp(self):
+        template="{title}\n" \
+                 "【原价】{org_price}元\n" \
+                 "【券后】{price}元秒杀[闪电]!!\n" \
+                 "【销售量】超过{sold_qty}件\n" \
+                 "===============" \
+                 "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
+                 "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
+        return template.format(**self.__dict__)
+
+    def get_img_msg_wxapp(self,pid=None):
+        # 使用pid 更新淘口令
+        if pid is not None:
+            if re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
+                self.cupon_url = self.cupon_url + '&pid=' + pid
+            else:
+                self.cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, self.cupon_url)
+            self.update_tokens()
+        self.tao_pwd = self.tao_pwd[1:-1]
+
+        # 使用id, 淘口令, 图片链接 获取小程序二维码及商品的拼接图片
+        return generate_img(self.id, self.tao_pwd, self.img_url)
+
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
     template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 天猫高额优惠，下单立减，你要的优惠都在这里～"
@@ -98,11 +125,6 @@ class Product(Entry):
             else:
                 self.cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, self.cupon_url)
             self.update_tokens()
-        d = self.__dict__
-        d.update({
-            'org_price': self.org_price,
-        })
-
         self.tao_pwd = self.tao_pwd[1:-1]
 
         long_url = 'http://tkl.di25.cn/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
@@ -171,10 +193,43 @@ class Product(Entry):
         super(Product, self).save(*args, **kwargs)
 
 
-class ProductDetail(Product):
-    pass
+class ProductDetail(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.CASCADE)
+    # 卖家地址， 从详情接口取得
+    provcity = models.CharField(max_length=64)
+    # 商品链接，从详情接口取得
+    item_url = models.CharField(max_length=128)
+    # 卖家ID ，从详情接口取得
+    seller_id = models.CharField(max_length=128)
+    # 卖家昵称，从详情接口取得
+    seller_nick = models.CharField(max_length=256)
+    # 小图，从详情接口取得
+    small_imgs = models.CharField(max_length=4096)
+    # 类别，外键关联到ProductCategory模型
+    cate = models.ForeignKey(ProductCategory)
+    # 商品描述图片，从商品页面用BS获取, todo
+    describe_imgs = models.CharField(max_length=4096, null=True)
 
 
 class ProductCategory(models.Model):
+    root_cat_name = models.CharField(max_length=128, null=True)
     cat_name = models.CharField(max_length=128, null=True)
     cat_leaf_name = models.CharField(max_length=128, null=True)
+
+
+@receiver(post_save, sender=Product)
+def create_detail_and_cate(sender, instance, created, **kwargs):
+    product = instance
+    detail_dict = {}
+    item_info = get_item_info(product.item_id)
+    cate , cate_created = ProductCategory.objects.get_or_create(cat_name = item_info['cat_name'], cat_leaf_name = item_info['cat_leaf_name'])
+    detail_dict['product'] = product
+    detail_dict['provcity'] = item_info['provcity']
+    detail_dict['item_url'] = item_info['item_url']
+    detail_dict['seller_id'] = item_info['seller_id']
+    detail_dict['seller_nick'] = item_info['nick']
+    detail_dict['small_imgs'] = map(lambda x: x.encode('utf-8'), item_info['small_images']['string'])
+    detail_dict['cate'] = cate
+    # detail_dict['describe_imgs'] = describe_imgs
+    ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
+

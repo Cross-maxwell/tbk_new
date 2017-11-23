@@ -24,6 +24,8 @@ from fuli.oss_utils import beary_chat
 import random
 from broadcast.models.entry_models import PushRecord
 
+
+
 # 本地测试
 # phantomjs_path = '/home/smartkeyerror/PycharmProjects/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
@@ -111,8 +113,11 @@ class PushProduct(View):
                         print "Get entry exception. Count=%d." % qs.count()
                         logger.error(exc)
 
-                text = p.get_text_msg(pid=pid)
-                img_url = p.get_img_msg()
+                # text = p.get_text_msg(pid=pid)
+                # img_url = p.get_img_msg()
+                text = p.get_text_msg_wxapp()
+                img_url = p.get_img_msg_wxapp(pid=pid)
+
                 data = [img_url, text]
 
                 request_data = {
@@ -256,6 +261,28 @@ class AppProductJsonView(View):
     def get(self, request):
         # 返回商品的类别，
         pass
+
+
+class ProductDetail(View):
+    '''
+    给小程序用的商品详情请求接口
+    '''
+    def get(self, request):
+        id = request.GET.get('id')
+        if id is None:
+            return HttpResponse(json.dumps({'data': 'losing param \'id\'.'}),status=400)
+        try:
+            p = Product.objects.get(id=id)
+        except Product.DoesNotExist:
+            return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist' }), status=400)
+        p_detail = p.productdetail
+        resp_dict={
+            'title': p_detail.title,
+            'img' : p_detail.img_url,
+            'org_price' : p_detail.org_price,
+            'price' : p_detail.price
+        }
+        return HttpResponse(json.dumps({'data':resp_dict}),status=200)
 
 
 # class SendSignNotice(View):
