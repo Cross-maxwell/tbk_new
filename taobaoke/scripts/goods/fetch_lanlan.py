@@ -62,9 +62,10 @@ def main():
                     key_list = [
                         'title', 'desc', 'img_url',
                         'cupon_value', 'price', 'cupon_url',
-                        'sold_qty', 'cupon_left',
+                        'sold_qty', 'cupon_left', 'commision_rate', 'commision_amount',
                     ]
                     item_id = re.search('itemId=(\d+)', data_dict['cupon_url']).groups()[0]
+
                     if Product.objects.filter(item_id=item_id).exists():
                         p = Product.objects.get(item_id=item_id)
                         for key in key_list:

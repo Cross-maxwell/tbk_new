@@ -32,7 +32,11 @@ def log(log_text):
     file_name = "transfer_log_{0}.txt".format(datetime.now().strftime('%Y-%m-%d'))
     print(log_text)
     with open(file_name, 'a') as f:
-        f.write(log_text + "\r\n")
+        if type(log_text)==str:
+            f.write(log_text)
+        elif type(log_text)==dict:
+            f.write(log_text.get('text'))
+        f.write('\r\n')
 
 
 def beary_chat(text, url=None, user=None, channel=None):
@@ -171,6 +175,6 @@ if __name__ == "__main__":
         monthly:月结用户 id >= 700
         all:所有用户
     """
-    mode = 'weekly'
-    transfer(user_id=None, mode=mode)
+    mode = 'all'
+    transfer(user_id=609, mode=mode)
     pass
