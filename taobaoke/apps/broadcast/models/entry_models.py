@@ -105,7 +105,10 @@ class Product(Entry):
 
         self.tao_pwd = self.tao_pwd[1:-1]
 
-        long_url = 'http://tkl.di25.cn/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
+        """
+        http://solesschong.gitee.io/yiqizhuan/index.html?tkl=2342
+        """
+        long_url = 'http://solesschong.gitee.io/yiqizhuan/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
         # 微博short_url平台
         # source为ipad微博AppKey
         short_url_respose = requests.get(

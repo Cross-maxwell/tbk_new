@@ -115,7 +115,7 @@ CSRF_COOKIE_SECURE = True
 # }
 
 
-
+#
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
