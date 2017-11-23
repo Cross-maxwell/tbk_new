@@ -108,7 +108,7 @@ def generatePoster(url, lines, redtext):
     # 红条
     draw.rectangle([image.width - 240, image_height - 30, image_width - 120, image_height], fill=(255, 0, 0))
     filename = '{}.jpg'.format(uuid.uuid1())
-    file_path = os.path.join(base_path, 'broadcast/statics/poster/',filename)
+    file_path = os.path.join(base_path, 'broadcast/statics/poster/', filename)
     image.save(file_path)
     oss = OSSMgr()
     oss.bucket.put_object_from_file(filename, file_path)
