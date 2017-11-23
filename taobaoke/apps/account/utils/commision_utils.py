@@ -8,7 +8,11 @@ from account.models.order_models import AgentOrderStatus
 from django.contrib.auth.models import User
 from broadcast.models.user_models import TkUser
 from common_utils import cut_decimal
+from datetime import datetime
 
+dtnow = datetime.now()
+year = dtnow.year
+month = dtnow.month
 
 '''
 以下三个方法为链式调用, 用以维护agent_commision数据
@@ -97,7 +101,8 @@ def cal_commision():
         ad_id = order_utils.get_ad_id(user.username)
         if ad_id is None:
             continue
-        order_list = Order.objects.filter(ad_id=ad_id, order_status=u'订单结算', enter_account=False)
+        # 结算上个月的订单- -
+        order_list = Order.objects.filter(ad_id=ad_id, order_status=u'订单结算',  earning_time__lt= datetime( year, month, 1), enter_account=False)
         new_earning_amount = 0
 
         with transaction.atomic():
