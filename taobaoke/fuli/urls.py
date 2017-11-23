@@ -10,7 +10,7 @@ from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime
 
-from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView
+from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
 
@@ -27,6 +27,7 @@ user_urls = [
 product_urls = [
     url(r'insert/', insert_product),
     url(r'qrcode/', get_login_qrcode),
+    url(r'detail/', ProductDetail),
 ]
 
 account_urls = [

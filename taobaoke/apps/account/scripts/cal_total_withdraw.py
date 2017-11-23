@@ -8,7 +8,7 @@ import os
 import sys
 import django
 
-sys.path.append("/Users/hong/sourcecode/work/BotService")
+sys.path.append("/home/adam/mydev/projects/new_sys/taobaoke")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fuli.settings")
 django.setup()
 
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     """
     # 不指定计算某用户时，设为None
     user_id = None
-    mode = 'weekly'
+    mode = 'all'
 
     s1 = get_all_commission(mode, user_id=user_id)
     s1 = s1 if s1 is not None else 0
