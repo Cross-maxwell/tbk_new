@@ -11,7 +11,7 @@ import requests
 from django.db import models
 import fuli.top_settings
 import top.api
-from broadcast.utils.entry_utils import generate_img #todo
+# from broadcast.utils.entry_utils import generate_img #todo
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from broadcast.utils.entry_utils import get_item_info
@@ -100,7 +100,7 @@ class Product(Entry):
                  "===============" \
                  "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
                  "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
-        return template.format(**self.__dict__)
+        return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
 
     def get_img_msg_wxapp(self,pid=None):
         # 使用pid 更新淘口令
@@ -209,7 +209,7 @@ class ProductDetail(models.Model):
     # 小图，从详情接口取得
     small_imgs = models.CharField(max_length=4096)
     # 类别，外键关联到ProductCategory模型
-    cate = models.ForeignKey(ProductCategory)
+    cate = models.ForeignKey('ProductCategory')
     # 商品描述图片，从商品页面用BS获取, todo
     describe_imgs = models.CharField(max_length=4096, null=True)
 
