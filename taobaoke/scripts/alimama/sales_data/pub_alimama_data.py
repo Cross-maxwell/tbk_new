@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+
+
 sys.path.append('/home/new_taobaoke/taobaoke/')
 
 import django
@@ -14,6 +16,14 @@ sys.setdefaultencoding('utf-8')
 from account.models.order_models import Order
 from account.utils.commision_utils import cal_commision, cal_agent_commision
 from broadcast.models.entry_models import Product
+
+send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+
+import requests
+from django.contrib.auth.models import User
+import json
+from utils import beary_chat
+
 
 field_mapping = {u'创建时间': 'create_time',
                  u'点击时间': 'click_time',
@@ -49,8 +59,8 @@ field_mapping = {u'创建时间': 'create_time',
 ## merge时处理一下
 
 file_path = 'scripts/alimama/pub_alimama_settle_excel.xls'
-# file_name = 'pub_alimama_settle_excel.xls'
-# file_path = os.path.join(os.path.abspath('..'), file_name)
+#file_name = 'pub_alimama_settle_excel.xls'
+#file_path = os.path.join(os.path.abspath('..'), file_name)
 
 
 def push_data():
@@ -65,6 +75,7 @@ def push_data():
     # 二维遍历, 拼凑出dict用于存库
     update_num = 0
     insert_num = 0
+    new_order = []
     for i in range(1, nrows):
         for j in range(len(headers)):
             if table.row_values(i)[j] is not None and table.row_values(i)[j] != "":
@@ -75,10 +86,11 @@ def push_data():
             result_dict['order_status']=u'订单失效'
             result_dict['pay_amount']=0
         try:
-            result = Order.objects.update_or_create(order_id = result_dict['order_id'],defaults=result_dict)
+            result = Order.objects.update_or_create(order_id=result_dict['order_id'],defaults=result_dict)
             status = result[1]
             if status:
                 insert_num +=1
+                new_order.append(result_dict['order_id'])
             elif not status:
                 update_num +=1
         except Exception, e:
@@ -90,6 +102,7 @@ def push_data():
 
     cal_commision()
     cal_agent_commision()
+    order_notice(new_order)
 
 def assert_low_rate(item_id):
     # 判断是否低佣.
@@ -108,7 +121,27 @@ def assert_low_rate(item_id):
         print e.message
         return False
 
+def order_notice(order):
+    user_set = set()
+    data = [u'有新订单啦，请查收。',]
+    for order_id in order:
+        try:
+            order = Order.objects.filter(order_id=order_id).first()
+            user_id = order.user_id
+            md_username = User.objects.filter(id=int(user_id)).first().username
+            user_set.add(md_username)
 
+        except Exception:
+            pass
+    for md_username in user_set:
+        request_data = {
+            "md_username": md_username,
+            "data": data
+        }
+        send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
+        notice_msg = '发送新订单通知到用户({})'.format(md_username)
+        print notice_msg
+        beary_chat(notice_msg)
 
 
 if __name__ == '__main__':
