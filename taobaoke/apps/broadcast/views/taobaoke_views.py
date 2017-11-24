@@ -277,10 +277,10 @@ class ProductDetail(View):
             return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist' }), status=400)
         p_detail = p.productdetail
         resp_dict={
-            'title': p_detail.title,
-            'img' : p_detail.img_url,
-            'org_price' : p_detail.org_price,
-            'price' : p_detail.price
+            'title': p.title,
+            'img' : p.img_url,
+            'org_price' : p.org_price,
+            'price' : p.price
         }
         return HttpResponse(json.dumps({'data':resp_dict}),status=200)
 
