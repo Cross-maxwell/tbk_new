@@ -27,7 +27,7 @@ user_urls = [
 product_urls = [
     url(r'insert/', insert_product),
     url(r'qrcode/', get_login_qrcode),
-    url(r'detail/', ProductDetail),
+    url(r'detail/', ProductDetail.as_view())
 ]
 
 account_urls = [
