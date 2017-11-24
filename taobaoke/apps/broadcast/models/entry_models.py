@@ -11,7 +11,7 @@ import requests
 from django.db import models
 import fuli.top_settings
 import top.api
-from broadcast.utils.entry_utils import generate_img #todo
+from broadcast.utils.image_connect import generate_image
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from broadcast.utils.entry_utils import get_item_info
@@ -92,14 +92,31 @@ class Product(Entry):
     def quality(self):
         return math.log(self.sold_qty)
 
+
+    app_template = """
+        {title}\n \
+        【原价】{org_price}元\n \
+        【券后】{price}元秒杀[闪电]!!\n \
+        【销售量】超过{sold_qty}件\n \
+        =============== \
+        \n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～ \
+        \n「MMT一起赚」 天猫高额优惠，你想要的都在这里～
+    """
+
     def get_text_msg_wxapp(self):
-        template="{title}\n" \
-                 "【原价】{org_price}元\n" \
-                 "【券后】{price}元秒杀[闪电]!!\n" \
-                 "【销售量】超过{sold_qty}件\n" \
-                 "===============" \
-                 "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
-                 "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
+        template = "{title}\n" \
+                    "【原价】{org_price}元\n" \
+                    "【券后】{price}元秒杀[闪电]!!\n" \
+                    "【销售量】超过{sold_qty}件\n" \
+                    "===============" \
+                    "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
+                    "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
+
+        d = self.__dict__
+        d.update({
+            'org_price': self.org_price,
+        })
+        msg = template.format(**self.__dict__)
         return template.format(**self.__dict__)
 
     def get_img_msg_wxapp(self,pid=None):
@@ -113,11 +130,12 @@ class Product(Entry):
         self.tao_pwd = self.tao_pwd[1:-1]
 
         # 使用id, 淘口令, 图片链接 获取小程序二维码及商品的拼接图片
-        return generate_img(self.id, self.tao_pwd, self.img_url)
+        return generate_image(self.id, self.tao_pwd, self.img_url)
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
     template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 天猫高额优惠，下单立减，你要的优惠都在这里～"
+
     def get_text_msg(self, pid=None):
         if pid is not None:
             if re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
@@ -196,6 +214,12 @@ class Product(Entry):
         super(Product, self).save(*args, **kwargs)
 
 
+class ProductCategory(models.Model):
+    root_cat_name = models.CharField(max_length=128, null=True)
+    cat_name = models.CharField(max_length=128, null=True)
+    cat_leaf_name = models.CharField(max_length=128, null=True)
+
+
 class ProductDetail(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE)
     # 卖家地址， 从详情接口取得
@@ -212,12 +236,6 @@ class ProductDetail(models.Model):
     cate = models.ForeignKey(ProductCategory)
     # 商品描述图片，从商品页面用BS获取, todo
     describe_imgs = models.CharField(max_length=4096, null=True)
-
-
-class ProductCategory(models.Model):
-    root_cat_name = models.CharField(max_length=128, null=True)
-    cat_name = models.CharField(max_length=128, null=True)
-    cat_leaf_name = models.CharField(max_length=128, null=True)
 
 
 @receiver(post_save, sender=Product)
