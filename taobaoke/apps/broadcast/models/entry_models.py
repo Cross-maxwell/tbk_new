@@ -92,32 +92,15 @@ class Product(Entry):
     def quality(self):
         return math.log(self.sold_qty)
 
-
-    app_template = """
-        {title}\n \
-        【原价】{org_price}元\n \
-        【券后】{price}元秒杀[闪电]!!\n \
-        【销售量】超过{sold_qty}件\n \
-        =============== \
-        \n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～ \
-        \n「MMT一起赚」 天猫高额优惠，你想要的都在这里～
-    """
-
     def get_text_msg_wxapp(self):
-        template = "{title}\n" \
-                    "【原价】{org_price}元\n" \
-                    "【券后】{price}元秒杀[闪电]!!\n" \
-                    "【销售量】超过{sold_qty}件\n" \
-                    "===============" \
-                    "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
-                    "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
-
-        d = self.__dict__
-        d.update({
-            'org_price': self.org_price,
-        })
-        msg = template.format(**self.__dict__)
-        return template.format(**self.__dict__)
+        template="{title}\n" \
+                 "【原价】{org_price}元\n" \
+                 "【券后】{price}元秒杀[闪电]!!\n" \
+                 "【销售量】超过{sold_qty}件\n" \
+                 "===============" \
+                 "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
+                 "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
+        return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
 
     def get_img_msg_wxapp(self,pid=None):
         # 使用pid 更新淘口令
@@ -214,12 +197,6 @@ class Product(Entry):
         super(Product, self).save(*args, **kwargs)
 
 
-class ProductCategory(models.Model):
-    root_cat_name = models.CharField(max_length=128, null=True)
-    cat_name = models.CharField(max_length=128, null=True)
-    cat_leaf_name = models.CharField(max_length=128, null=True)
-
-
 class ProductDetail(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE)
     # 卖家地址， 从详情接口取得
@@ -233,9 +210,15 @@ class ProductDetail(models.Model):
     # 小图，从详情接口取得
     small_imgs = models.CharField(max_length=4096)
     # 类别，外键关联到ProductCategory模型
-    cate = models.ForeignKey(ProductCategory)
+    cate = models.ForeignKey('ProductCategory')
     # 商品描述图片，从商品页面用BS获取, todo
     describe_imgs = models.CharField(max_length=4096, null=True)
+
+
+class ProductCategory(models.Model):
+    root_cat_name = models.CharField(max_length=128, null=True)
+    cat_name = models.CharField(max_length=128, null=True)
+    cat_leaf_name = models.CharField(max_length=128, null=True)
 
 
 @receiver(post_save, sender=Product)
@@ -243,7 +226,7 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
     product = instance
     detail_dict = {}
     item_info = get_item_info(product.item_id)
-    cate , cate_created = ProductCategory.objects.get_or_create(cat_name = item_info['cat_name'], cat_leaf_name = item_info['cat_leaf_name'])
+    cate, cate_created = ProductCategory.objects.get_or_create(cat_name=item_info['cat_name'], cat_leaf_name=item_info['cat_leaf_name'])
     detail_dict['product'] = product
     detail_dict['provcity'] = item_info['provcity']
     detail_dict['item_url'] = item_info['item_url']
