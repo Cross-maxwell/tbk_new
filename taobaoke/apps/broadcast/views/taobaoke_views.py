@@ -180,7 +180,7 @@ class AcceptSearchView(View):
                 if found:
                     data = [img_url, text]
                 elif (not found) and other_found:
-                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，识别二维码查看查看 : \n'.format(at_user_nickname)
+                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，长按识别二维码查看商品～'.format(at_user_nickname)
 
                     product_url = dj_products[0]['coverImage']
 
