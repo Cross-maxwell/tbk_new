@@ -23,7 +23,8 @@ from django.utils.encoding import iri_to_uri
 from fuli.oss_utils import beary_chat
 import random
 from broadcast.models.entry_models import PushRecord
-
+from broadcast.utils.image_connect import generate_image, generate_qrcode
+import qrcode
 
 
 # 本地测试
@@ -167,19 +168,27 @@ class AcceptSearchView(View):
                         found = True
                         cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
                             dj_p['activityId'], dj_p['itemId'], pid)
-                        text = '{0}，到指定商品的优惠券，请点击链接领取 : {1}'.format(at_user_nickname, get_short_url(cupon_url))
-                        img_url = dj_p['coverImage']
+                        product_url = dj_p['coverImage']
+                        short_url = get_short_url(cupon_url)
+                        qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
+                        img_url = generate_qrcode(product_url, qrcode_flow)
+                        text = '{0}，找到指定商品的优惠券，长按识别二维码领取'.format(at_user_nickname)
                         break
                     else:
                         other_found = True
 
-
                 if found:
                     data = [img_url, text]
                 elif (not found) and other_found:
-                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，点击链接查看 : \n'.format(at_user_nickname) \
-                           + get_short_url(url_to_show.format(pid, to_search_title))
-                    data = [dj_products[0]['coverImage'],text]
+                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，识别二维码查看查看 : \n'.format(at_user_nickname)
+
+                    product_url = dj_products[0]['coverImage']
+
+                    short_url = get_short_url(url_to_show.format(pid, to_search_title))
+                    qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
+                    img_url = generate_image(product_url, qrcode_flow)
+
+                    data = [img_url, text]
                 else:
                     text = '{0}，很抱歉，您需要的商品商品没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]'.format(at_user_nickname)
                     data = [text]
@@ -196,16 +205,18 @@ class AcceptSearchView(View):
                     text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
                     data = [text]
                 else:
-                    # 从微博api获取短链
-                    short_url = get_short_url(template_url)
-                    random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，点击链接查看为您找到的天猫高额优惠券。\n" \
-                           "{3}\n" \
-                           "「点击上面链接查看宝贝」\n" \
-                           "================\n" \
-                           "图片仅供参考，详细信息请点击链接～".format(at_user_nickname, keyword, random_seed, short_url)
 
-                    img_url = judge_dict['result']['items'][0]['coverImage']
+                    product_url = judge_dict['result']['items'][0]['coverImage']
+
+                    short_url = get_short_url(template_url)
+                    qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
+                    img_url = generate_image(product_url, qrcode_flow)
+
+                    random_seed = random.randint(1000, 2000)
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别二维码查看为您找到的高额优惠券。\n" \
+                           "================\n" \
+                           "图片仅供参考，详细信息请点击链接～".format(at_user_nickname, keyword, random_seed)
+
                     data = [img_url, text]
                 return HttpResponse(json.dumps({"data": data}))
         except Exception as e:
@@ -320,7 +331,6 @@ class ProductDetail(View):
 #         from ipad_weixin.send_msg_type import send_msg_type
 #         send_msg_type(img_msg_dict, at_user_id='')
 #         send_msg_type(text_msg_dict, at_user_id='')
-
 
 
 
