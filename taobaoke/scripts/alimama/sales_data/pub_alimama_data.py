@@ -4,7 +4,6 @@ import sys
 
 
 sys.path.append('/home/new_taobaoke/taobaoke/')
-
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
@@ -23,6 +22,9 @@ import requests
 from django.contrib.auth.models import User
 import json
 from utils import beary_chat
+
+import logging
+logger = logging.getLogger("utils")
 
 
 field_mapping = {u'创建时间': 'create_time',
@@ -83,35 +85,36 @@ def push_data():
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
         item_id = result_dict['good_id']
         if assert_low_rate(item_id):
-            result_dict['order_status']=u'订单失效'
-            result_dict['pay_amount']=0
+            result_dict['order_status'] = u'订单失效'
+            result_dict['pay_amount'] = 0
         try:
-            result = Order.objects.update_or_create(order_id=result_dict['order_id'],defaults=result_dict)
+            result = Order.objects.update_or_create(order_id=result_dict['order_id'], defaults=result_dict)
             status = result[1]
             if status:
-                insert_num +=1
+                insert_num += 1
                 new_order.append(result_dict['order_id'])
             elif not status:
-                update_num +=1
+                update_num += 1
         except Exception, e:
             print e
             continue
-    leave_num = nrows - 1  - update_num - insert_num
-    return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num,insert_num,leave_num)
+    leave_num = nrows - 1 - update_num - insert_num
+    return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num, insert_num, leave_num)
     print return_str
 
     cal_commision()
     cal_agent_commision()
     order_notice(new_order)
 
+
 def assert_low_rate(item_id):
     # 判断是否低佣.
     try:
         p = Product.objects.get(item_id=item_id)
         order = Order.objects.get(good_id=item_id)
-        p_rate = round(float(p.commision_amount)/p.price,2)
-        order_rate = round(float(order.commision_amount)/order.pay_amount,2)
-        if p_rate - order_rate >0.1:
+        p_rate = round(float(p.commision_amount)/p.price, 2)
+        order_rate = round(float(order.commision_amount)/order.pay_amount, 2)
+        if p_rate - order_rate > 0.1:
             return True
         else:
             return False
@@ -120,6 +123,7 @@ def assert_low_rate(item_id):
     except Exception, e:
         print e.message
         return False
+
 
 def order_notice(order):
     user_set = set()
@@ -130,20 +134,19 @@ def order_notice(order):
             user_id = order.user_id
             md_username = User.objects.filter(id=int(user_id)).first().username
             user_set.add(md_username)
-
-        except Exception:
-            pass
+        except Exception as e:
+            logger.error(e)
     for md_username in user_set:
         request_data = {
             "md_username": md_username,
             "data": data
         }
         send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
-        notice_msg = '发送新订单通知到用户({})'.format(md_username)
-        print notice_msg
+        logger.info("request wxbot status code: {}".format(send_msg_response.status_code))
+        notice_msg = '发送新订单通知到用户: {}'.format(md_username)
+        logger.info(notice_msg)
         beary_chat(notice_msg)
 
 
 if __name__ == '__main__':
     push_data()
-

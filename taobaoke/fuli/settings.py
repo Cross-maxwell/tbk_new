@@ -264,6 +264,11 @@ LOGGING = {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True
+        },
+        'utils': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
         }
     }
 }
