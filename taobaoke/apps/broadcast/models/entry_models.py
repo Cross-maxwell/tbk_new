@@ -99,7 +99,7 @@ class Product(Entry):
                  "【销售量】超过{sold_qty}件\n" \
                  "===============" \
                  "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
-                 "\n「MMT一起赚」 天猫高额优惠，你想要的都在这里～"
+                 "\n「MMT一起赚」你想要的都在这里～"
         return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
 
     def get_img_msg_wxapp(self,pid=None):
@@ -117,7 +117,7 @@ class Product(Entry):
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
-    template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 天猫高额优惠，下单立减，你要的优惠都在这里～"
+    template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 高额优惠，下单立减，你要的优惠都在这里～"
 
     def get_text_msg(self, pid=None):
         if pid is not None:

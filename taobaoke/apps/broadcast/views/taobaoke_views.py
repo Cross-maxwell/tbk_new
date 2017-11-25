@@ -199,7 +199,7 @@ class AcceptSearchView(View):
                     # 从微博api获取短链
                     short_url = get_short_url(template_url)
                     random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，点击链接查看为您找到的天猫高额优惠券。\n" \
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，点击链接查看高额优惠券。\n" \
                            "{3}\n" \
                            "「点击上面链接查看宝贝」\n" \
                            "================\n" \
