@@ -44,7 +44,7 @@ def generate_image(product_id, tkl, product_url):
     toImage = Image.new('RGBA', (600, 800))
 
     # 获取二维码
-
+    logger.info("product_id: {0}, tkl: {1}, product_url: {2}".format(product_id, tkl, product_url))
     qrcode_bytes = generate_qrcode(product_id, tkl)
     qrcode_img = Image.open(BytesIO(qrcode_bytes))
     qrcode_size = qrcode_img.resize((200, 200))
