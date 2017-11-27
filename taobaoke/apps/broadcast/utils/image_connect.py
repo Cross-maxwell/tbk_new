@@ -31,9 +31,9 @@ def generate_qrcode(product_id, tkl):
     cache_key = 'wx_access_token'
     access_token = cache.get(cache_key)
     if not access_token:
-        token_response = requests.get(token_url)
+        token_response = requests.get(token_url, headers={'Connection': 'close'})
         access_token = json.loads(token_response.content).get("access_token", "")
-        cache.set(cache_key, access_token, 60*60*2)
+        cache.set(cache_key, access_token, 60*60)
     logger.info("access_token: {}".format(access_token))
     qr_url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token={}'.format(access_token)
     req_data = {
@@ -42,20 +42,20 @@ def generate_qrcode(product_id, tkl):
     }
     # 这里得到的二维码的字节流
     logger.info("generate qrcode: product_id: {0}, tkl: {1}".format(product_id, tkl))
-    qrcode_response = requests.post(qr_url, data=json.dumps(req_data))
+    qrcode_response = requests.post(qr_url, data=json.dumps(req_data), headers={'Connection': 'close'})
 
     try:
-        res_dict = json.loads(qrcode_response)
+        res_dict = json.loads(qrcode_response.content)
         errcode = res_dict.get("errcode", "")
         if errcode:
             logger.info("重新获取access_token")
-            token_response = requests.get(token_url)
+            token_response = requests.get(token_url, headers={'Connection': 'close'})
             access_token = json.loads(token_response.content).get("access_token", "")
             if access_token:
-                cache.set(cache_key, access_token, 60*60*2)
+                cache.set(cache_key, access_token, 60*60)
             else:
                 logger.error("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
-            qrcode_response = requests.post(qr_url, data=json.dumps(req_data))
+            qrcode_response = requests.post(qr_url, data=json.dumps(req_data), headers={'Connection': 'close'})
             return qrcode_response.content
         else:
             return qrcode_response.content
