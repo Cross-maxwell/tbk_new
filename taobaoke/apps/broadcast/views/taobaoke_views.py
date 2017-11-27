@@ -289,9 +289,17 @@ class ProductDetail(View):
         p_detail = p.productdetail
         resp_dict={
             'title': p.title,
+            'desc': p.desc,
             'img' : p.img_url,
+            'cupon_value': p.cupon_value,
+            'price' : p.price,
             'org_price' : p.org_price,
-            'price' : p.price
+            'provcity': p_detail.provcity,
+            'seller_nick': p_detail.seller_nick,
+            'small_imgs': p_detail.small_imgs,
+            'root_cat': p_detail.cate.root_cat_name,
+            'cat': p_detail.cate.cat_name,
+            'cat_leaf': p_detail.cate.cat_leaf_name
         }
         return HttpResponse(json.dumps({'data':resp_dict}),status=200)
 
