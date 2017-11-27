@@ -13,7 +13,6 @@ import logging
 logger = logging.getLogger("weixin_bot")
 
 
-
 def generate_qrcode(product_id, tkl):
     # 根据url生成二维码, 返回二维码的url
     app_id = "wx82b7a0d64e85afd9"
@@ -31,12 +30,13 @@ def generate_qrcode(product_id, tkl):
         "scene": "{0}${1}".format(product_id, tkl)
     }
     # 这里得到的二维码的字节流
+    logger.info("generate qrcode: product_id: {0}, tkl: {1}".format(product_id, tkl))
     qrcode_response = requests.post(qr_url, data=json.dumps(req_data))
 
     return qrcode_response.content
 
 
-def generate_image(product_id, tkl, product_url):
+def generate_image(product_url, qrcode_flow):
 
     # 首先调用二维码生成函数
 
@@ -45,7 +45,7 @@ def generate_image(product_id, tkl, product_url):
 
     # 获取二维码
 
-    qrcode_bytes = generate_qrcode(product_id, tkl)
+    qrcode_bytes = qrcode_flow
     qrcode_img = Image.open(BytesIO(qrcode_bytes))
     qrcode_size = qrcode_img.resize((200, 200))
     qrcode_location = (0, 600)
@@ -76,4 +76,6 @@ def generate_image(product_id, tkl, product_url):
 
 
 if __name__ == '__main__':
-    generate_image(1006013, "heihei", "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80")
+    product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
+    qrcode_flow = generate_qrcode(1006013, "heihei")
+    generate_image(product_url, qrcode_flow)

@@ -11,7 +11,7 @@ import requests
 from django.db import models
 import fuli.top_settings
 import top.api
-from broadcast.utils.image_connect import generate_image
+from broadcast.utils.image_connect import generate_image, generate_qrcode
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from broadcast.utils.entry_utils import get_item_info
@@ -99,7 +99,7 @@ class Product(Entry):
                  "【销售量】超过{sold_qty}件\n" \
                  "===============" \
                  "\n在群里直接发送“找XXX（你想要的宝贝）”，我就会告诉你噢～" \
-                 "\n「MMT一起赚」你想要的都在这里～"
+                 "\n「MMT一起赚」 高额优惠，你想要的都在这里～"
         return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
 
     def get_img_msg_wxapp(self,pid=None):
@@ -113,7 +113,9 @@ class Product(Entry):
         self.tao_pwd = self.tao_pwd[1:-1]
 
         # 使用id, 淘口令, 图片链接 获取小程序二维码及商品的拼接图片
-        return generate_image(self.id, self.tao_pwd, self.img_url)
+        # 便于复用，首先调用生成wxapp二维码
+        qrcode_flow = generate_qrcode(self.id, self.tao_pwd)
+        return generate_image(self.img_url, qrcode_flow)
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
