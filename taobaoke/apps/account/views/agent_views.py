@@ -67,16 +67,22 @@ class BindingAlipayAccountView(View):
 获取淘宝客账户
 """
 class GetCommision(View):
-    serializer_class = CommisionSerializer
-
     def get(self, request):
         try:
             user_id = request.user.id
             commision = Commision.objects.get(user_id=str(user_id))
-            serializer = CommisionSerializer(commision)
+            from account.utils.commision_utils import get_intime_balance
+            ret_dict = {
+                'balance': commision.balance,
+                'sum_earning_amount': commision.sum_earning_amount,
+                'sum_payed_amount': commision.sum_payed_amount,
+                'is_valid': commision.is_valid,
+                'commision_rate': commision.commision_rate,
+                'intime_balance': get_intime_balance(user_id)
+            }
         except Exception as e:
             return HttpResponse(json.dumps({'data': 'query error' + e.message}),status=400)
-        return HttpResponse(json.dumps({'data': serializer.data}),status=200)
+        return HttpResponse(json.dumps({'data': ret_dict}),status=200)
 
 """
 GET或POST修改用户头像
