@@ -34,7 +34,7 @@ def generate_qrcode(product_id, tkl):
         token_response = requests.get(token_url)
         access_token = json.loads(token_response.content).get("access_token", "")
         cache.set(cache_key, access_token)
-
+    logger.info("access_token: {}".format(access_token))
     qr_url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token={}'.format(access_token)
     req_data = {
         "page": "pages/goods/goods",
@@ -46,12 +46,18 @@ def generate_qrcode(product_id, tkl):
 
     try:
         res_dict = json.loads(qrcode_response)
-        if res_dict.get("errcode", ""):
+        errcode = res_dict.get("errcode", "")
+        if errcode:
+            logger.info("重新获取access_token")
             token_response = requests.get(token_url)
             access_token = json.loads(token_response.content).get("access_token", "")
-            cache.set(cache_key, access_token)
-
+            if access_token:
+                cache.set(cache_key, access_token)
+            else:
+                logger.error("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
             qrcode_response = requests.post(qr_url, data=json.dumps(req_data))
+            return qrcode_response.content
+        else:
             return qrcode_response.content
     except Exception as e:
         return qrcode_response.content
