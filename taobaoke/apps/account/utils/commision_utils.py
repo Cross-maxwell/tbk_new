@@ -181,3 +181,25 @@ def withdraw_agent_commision(user_id):
             from account.scripts.tbk_alipay_send_run import log
             log("with_draw_subagent_commision error:" + e.message + " sub_agent_id:" + str(sub_agent.user_id))
             continue
+
+
+# 计算实时佣金（显示为预计收入）
+def get_intime_balance(user_id):
+    from account.models.order_models import Order
+    order_list = Order.objects.filter(user_id=user_id, order_status=u'订单结算', enter_account=False)
+    new_earning_amount = 0
+    for order in order_list:
+        share_rate = float(order.share_rate.split(' ')[0]) / 100.0
+        if share_rate <= 0.6:
+            order_commision = order.commision_amount
+        else:
+            pay_amount = order.pay_amount
+            order_commision_rate = round(float(order.commision_amount) / order.pay_amount, 2)
+            # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。
+            # adam 2017.11.20  19:50
+            if pay_amount > 500 and order_commision_rate < 0.25:
+                order_commision = pay_amount * order_commision_rate * 0.5
+            else:
+                order_commision = order.show_commision_amount
+        new_earning_amount += order_commision
+    return new_earning_amount
