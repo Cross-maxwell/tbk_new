@@ -148,12 +148,13 @@ class AcceptSearchView(View):
                 # 直接从淘宝分享消息进行搜索
                 # 从分享的消息中拿到商品链接（短链）和商品标题title
                 link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
-                to_search_title = re.findall('（(.+)）', keyword)[0]
                 # 打开短链，从跳转后的url中获取到item_id, 用title去dianjin平台搜索，并比对搜索结果的item_id，如果一致则搜索到指定商品。如果有搜索结果，但不一致，
                 # 返回搜索链接，供用户浏览类似商品。
                 resp_html = requests.get(link).content
                 try:
-                    to_search_item_id = re.findall('[&\?]id=(\d+)', resp_html)[0]
+                    from broadcast.utils.entry_utils import get_item_info
+                    to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d','='))[0]
+                    to_search_title = get_item_info(to_search_item_id)['title']
                     resp_dj = requests.get(url_for_data.format(pid, to_search_title))
                     resp_dict_dj = json.loads(resp_dj.content)
                     dj_products = resp_dict_dj['result']['items']
@@ -297,8 +298,11 @@ class ProductDetail(View):
             'provcity': p_detail.provcity,
             'seller_nick': p_detail.seller_nick,
             'small_imgs': p_detail.small_imgs,
+            # 最根类
             'root_cat': p_detail.cate.root_cat_name,
+            # 类别
             'cat': p_detail.cate.cat_name,
+            # 子类别
             'cat_leaf': p_detail.cate.cat_leaf_name
         }
         return HttpResponse(json.dumps({'data':resp_dict}),status=200)
