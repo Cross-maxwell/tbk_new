@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from PIL import Image
+
 import os
+# import django
+#
+# os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
+# django.setup()
+
 import requests
 import urllib2
 from io import BytesIO
 from broadcast.utils import OSSMgr
+from django.core.cache import cache
+
 import uuid
 import json
 
@@ -20,10 +28,13 @@ def generate_qrcode(product_id, tkl):
     token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}'\
         .format(app_id, app_secret)
 
-    token_response = requests.get(token_url)
-    access_token = json.loads(token_response.content).get("access_token", "")
+    cache_key = 'wx_access_token'
+    access_token = cache.get(cache_key)
     if not access_token:
-        logger.error("获取access_token失败")
+        token_response = requests.get(token_url)
+        access_token = json.loads(token_response.content).get("access_token", "")
+        cache.set(cache_key, access_token)
+
     qr_url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token={}'.format(access_token)
     req_data = {
         "page": "pages/goods/goods",
@@ -33,7 +44,17 @@ def generate_qrcode(product_id, tkl):
     logger.info("generate qrcode: product_id: {0}, tkl: {1}".format(product_id, tkl))
     qrcode_response = requests.post(qr_url, data=json.dumps(req_data))
 
-    return qrcode_response.content
+    try:
+        res_dict = json.loads(qrcode_response)
+        if res_dict.get("errcode", ""):
+            token_response = requests.get(token_url)
+            access_token = json.loads(token_response.content).get("access_token", "")
+            cache.set(cache_key, access_token)
+
+            qrcode_response = requests.post(qr_url, data=json.dumps(req_data))
+            return qrcode_response.content
+    except Exception as e:
+        return qrcode_response.content
 
 
 def generate_image(product_url, qrcode_flow):
