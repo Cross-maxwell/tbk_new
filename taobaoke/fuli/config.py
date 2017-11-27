@@ -2,7 +2,7 @@
 # s-prod-07.qunzhu666.com :  iZwz9htulfr2g6ew7vejlwZ
 # s-prod-09.qunzhu666.com : iZwz98yzmngkm4s9tcedwlZ
 # adam : adam-B250M-D3H
-# smart :
+# smart : zero
 
 def getDB(mode='prod'):
     assert mode in ['test','prod'], "DB choosing mode can only be 'test' or 'prod'"
@@ -43,8 +43,7 @@ def getDB(mode='prod'):
     hostname_mapping = {
         "default": db_prod,
         "adam-B250M-D3H": db_adam,
-        "smart": db_smart,
-        "iZwz98yzmngkm4s9tcedwlZ": db_adam,#09测试
+        "zero": db_smart,
         "": {}
     }
 
