@@ -18,7 +18,7 @@ def get_ad_zone(key, value):
         if key == 'username':
             adzone = Adzone.objects.get(tkuser__user__username=value)
         elif key == 'adzone_id':
-            adzone = Adzone.objects.get(pid__contains=adzone_id)
+            adzone = Adzone.objects.get(pid__contains=value)
         return AdzoneSerializer(adzone).data
 
     except Exception, e:
