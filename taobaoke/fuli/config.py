@@ -5,7 +5,7 @@
 # smart : zero
 
 def getDB(mode='prod'):
-    assert mode in ['test','prod'], "DB choosing mode can only be 'test' or 'prod'"
+    assert mode in ['test', 'prod', 'smart'], "DB choosing mode can only be 'test' or 'prod'"
 
     db_prod = {
         'default': {
