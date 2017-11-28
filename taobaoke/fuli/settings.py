@@ -259,6 +259,11 @@ LOGGING = {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True
+        },
+        'sales_data': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
         }
     }
 }

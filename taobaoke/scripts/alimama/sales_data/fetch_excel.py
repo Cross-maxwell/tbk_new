@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import requests
-from utils import beary_chat
+from fuli.oss_utils import beary_chat
 
 
 def fetch_excel(cookie_str, url):
@@ -17,7 +17,5 @@ def fetch_excel(cookie_str, url):
             f.write(chunk)
     if 'html' in resp.text:
         # 说明cookie失效
-        beary_chat('cookie无效, {}'.format(datetime.datetime.now()))
-        print('cookie无效')
         return False
     return True

@@ -30,7 +30,6 @@ def detect_cookie(cookie_str, url):
 
     if 'html' in resp.text:
         # 说明cookie失效
-        beary_chat('拉取订单的cookie无效了！！')
         return False
     return True
 
