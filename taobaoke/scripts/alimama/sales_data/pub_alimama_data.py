@@ -4,7 +4,6 @@ import sys
 
 
 sys.path.append('/home/new_taobaoke/taobaoke/')
-# sys.path.append("/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke")
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
