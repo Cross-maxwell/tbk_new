@@ -23,13 +23,13 @@ def cal_agent_commision():
     user_list = User.objects.filter(is_staff=False, last_login__isnull=False)
     for user in user_list:
         sub_agent_list = user_utils.get_next_level_user(user.username)
-        print("{}共有{}名下级淘宝客代理".format(user.username, len(sub_agent_list)))
+        # print("{}共有{}名下级淘宝客代理".format(user.username, len(sub_agent_list)))
 
         for sub_agent in sub_agent_list:
 
             # 通过下线的user，去拿到所有结算订单
             order_list = order_utils.get_order_list_by_user(sub_agent, u'订单结算', True)
-            print("代理{}已经成了{}单".format(sub_agent.username, len(order_list)))
+            # print("代理{}已经成了{}单".format(sub_agent.username, len(order_list)))
 
             # 拿到代理的账户
             agent_commision = get_agent_commision_account(sub_agent)

@@ -21,7 +21,7 @@ send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
 import requests
 from django.contrib.auth.models import User
 import json
-from utils import beary_chat
+from fuli.oss_utils import beary_chat
 
 import logging
 logger = logging.getLogger("utils")
@@ -84,9 +84,10 @@ def push_data():
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
         item_id = result_dict['good_id']
-        if assert_low_rate(item_id):
+        if assert_low_rate(item_id) or result_dict['order_status']==u'订单结算':
             result_dict['order_status'] = u'订单失效'
             result_dict['pay_amount'] = 0
+            result_dict['show_commision_amount']=0.0
         try:
             result = Order.objects.update_or_create(order_id=result_dict['order_id'], defaults=result_dict)
             status = result[1]
@@ -100,7 +101,7 @@ def push_data():
             continue
     leave_num = nrows - 1 - update_num - insert_num
     return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num, insert_num, leave_num)
-    print return_str
+    logger.info(return_str)
 
     cal_commision()
     cal_agent_commision()

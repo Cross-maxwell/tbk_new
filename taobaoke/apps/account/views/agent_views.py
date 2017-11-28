@@ -78,6 +78,7 @@ class GetCommision(View):
                 'sum_payed_amount': commision.sum_payed_amount,
                 'is_valid': commision.is_valid,
                 'commision_rate': commision.commision_rate,
+                # 预计收入，用于替换30天浏览量
                 'intime_balance': get_intime_balance(user_id)
             }
         except Exception as e:
