@@ -21,7 +21,7 @@ send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
 import requests
 from django.contrib.auth.models import User
 import json
-from utils import beary_chat
+from fuli.oss_utils import beary_chat
 
 import logging
 logger = logging.getLogger("utils")
@@ -102,6 +102,7 @@ def push_data():
     leave_num = nrows - 1 - update_num - insert_num
     return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num, insert_num, leave_num)
     print return_str
+    beary_chat(return_str)
 
     cal_commision()
     cal_agent_commision()
