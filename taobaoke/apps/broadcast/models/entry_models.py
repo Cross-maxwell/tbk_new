@@ -20,6 +20,10 @@ import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+import logging
+logger = logging.getLogger('django_models')
+
+
 class Entry(models.Model):
     create_time = models.DateTimeField(default=None)
     last_update = models.DateTimeField(default=None, db_index=True)
@@ -116,7 +120,13 @@ class Product(Entry):
 
         # 使用id, 淘口令, 图片链接 获取小程序二维码及商品的拼接图片
         # 便于复用，首先调用生成wxapp二维码
-        qrcode_flow = generate_qrcode(self.id, self.tao_pwd)
+        req_data = {
+            "page": "pages/goods/goods",
+            "scene": "{0}${1}".format(self.id, self.tao_pwd)
+        }
+
+        logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))
+        qrcode_flow = generate_qrcode(req_data)
         return generate_image(self.img_url, qrcode_flow)
 
 
@@ -241,3 +251,7 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
     # detail_dict['describe_imgs'] = describe_imgs
     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
 
+
+class SearchKeywordMapping(models.Model):
+    username = models.CharField(max_length=200)
+    keyword = models.CharField(max_length=200)

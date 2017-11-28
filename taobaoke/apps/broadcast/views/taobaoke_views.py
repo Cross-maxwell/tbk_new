@@ -22,9 +22,10 @@ from broadcast.models.user_models import Adzone
 from django.utils.encoding import iri_to_uri
 from fuli.oss_utils import beary_chat
 import random
-from broadcast.models.entry_models import PushRecord
+from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
 import qrcode
+import top.api
 
 
 # 本地测试
@@ -213,10 +214,21 @@ class AcceptSearchView(View):
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
                     img_url = generate_image(product_url, qrcode_flow)
 
+                    # TODO: 待前端完成
+                    # logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
+                    # 将用户的username以及keyword存起来，传递给小程序一个id值即可
+                    keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
+                    # req_data = {
+                    #     "page": "pages/search/search",
+                    #     "scene": "{0}".format(keyword_mapping_id)
+                    # }
+                    # qrcode_flow = generate_qrcode(req_data)
+                    # img_url = generate_image(product_url, qrcode_flow)
+
                     random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别二维码查看为您找到的高额优惠券。\n" \
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
                            "================\n" \
-                           "图片仅供参考，详细信息请点击链接～".format(at_user_nickname, keyword, random_seed)
+                           "图片仅供参考，详细信息请查看小程序商城～".format(at_user_nickname, keyword, random_seed)
 
                     data = [img_url, text]
                 return HttpResponse(json.dumps({"data": data}))
@@ -231,6 +243,91 @@ def get_short_url(long_url):
         'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + template_url)
     short_url = short_url_respose.json()['urls'][0]['url_short']
     return short_url
+
+
+class AppSearchListView(View):
+    """
+    接口: /product/search_list?id=
+    """
+    @csrf_exempt
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        # TODO: 接受小程序传来的id值，去数据库中拿出相应数据
+        id = req_dict["id"]
+        page = req_dict.get("page", "1")
+        sort = req_dict.get("sort", "1")
+
+        keyword_mapping = SearchKeywordMapping.objects.get(id=id)
+        md_username = keyword_mapping.username
+        keyword = keyword_mapping.keyword
+
+        try:
+            tk_user = TkUser.get_user(md_username)
+            pid = tk_user.adzone.pid
+
+            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo{page}LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2V" \
+                         "hcmNoUGFnZSI6MX0=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+                page=page, sort=sort, pid=pid, keyword=keyword
+            )
+            response = requests.get(search_url)
+            return HttpResponse(response.content)
+        except Exception as e:
+            logger.error(e)
+
+
+class AppSearchDetailView(View):
+    """
+    接受itemId, md_username, activityId, 返回商品详情以及淘口令
+    接口： /product/search_detail
+    """
+    @csrf_exempt
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        itemId = req_dict["itemId"]
+        activityId = req_dict["activityId"]
+        # TODO: 接受小程序传来的id值，去数据库中拿出相应数据
+        id = req_dict["id"]
+        keyword_mapping = SearchKeywordMapping.objects.get(id=id)
+        md_username = keyword_mapping.username
+
+        try:
+            tk_user = TkUser.get_user(md_username)
+            pid = tk_user.adzone.pid
+
+            detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid={pid}" \
+                         "&_path=9001.SE.0.i.{path}&src=".format(
+                itemId=itemId, activityId=activityId, pid=pid, path=itemId
+            )
+            response = requests.get(detail_url)
+            detail_dict = json.loads(response.content)
+            item = detail_dict["result"]["item"]
+
+            # 根据itemId等生成tkl
+            tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
+
+            # 共需要6个字段
+            data = {
+                "itemId": itemId,
+                "activityId": activityId,
+                "pid": pid,
+                "image": item["image"],
+                "title": item["title"],
+                "sellerId": detail_dict["result"]["item"]["shop"]["sellerId"]
+
+            }
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+            tkl_response = requests.post(tkl_url, data=data, headers=headers)
+            res_dict = json.loads(tkl_response.content)
+            tkl = res_dict["status"]["msg"]
+            detail_dict["tkl"] = tkl
+            response_data = json.dumps(detail_dict)
+            print response_data
+            return HttpResponse(response_data)
+        except Exception as e:
+            logger.info("itemId: {}, 商品已失效".format(itemId))
+            return HttpResponse(json.dumps({"ret": 0, "reason": "商品失效了哦～"}))
 
 
 def is_push(md_username, wx_id):

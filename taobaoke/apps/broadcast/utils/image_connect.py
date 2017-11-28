@@ -13,35 +13,65 @@ import urllib2
 from io import BytesIO
 from broadcast.utils import OSSMgr
 from django.core.cache import cache
+from fuli.oss_utils import beary_chat
 
 import uuid
 import json
+import time
 
 import logging
 logger = logging.getLogger("weixin_bot")
 
+app_id = "wx82b7a0d64e85afd9"
+app_secret = "d38bed17f6b53122007c94fe8be1b5f5"
+token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}'\
+    .format(app_id, app_secret)
 
-def generate_qrcode(product_id, tkl):
-    # 根据url生成二维码, 返回二维码的url
-    app_id = "wx82b7a0d64e85afd9"
-    app_secret = "d38bed17f6b53122007c94fe8be1b5f5"
-    token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}'\
-        .format(app_id, app_secret)
+cache_key = 'wx_access_token'
 
-    cache_key = 'wx_access_token'
+
+def get_access_token():
     access_token = cache.get(cache_key)
-    if not access_token:
+    while not access_token:
+        # requests库 Max retries exceeded解决方案
         token_response = requests.get(token_url, headers={'Connection': 'close'})
         access_token = json.loads(token_response.content).get("access_token", "")
-        cache.set(cache_key, access_token, 60*60)
+        if access_token:
+            cache.set(cache_key, access_token, 60*60)
+            return access_token
+        else:
+            logger.error("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
+            beary_chat("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
+            # 5秒后重试
+            time.sleep(5)
+    return access_token
+
+
+def retry_get_access_token():
+    for _ in range(5):
+        token_response = requests.get(token_url, headers={'Connection': 'close'})
+        access_token = json.loads(token_response.content).get("access_token", "")
+        if access_token:
+            cache.set(cache_key, access_token, 60 * 60)
+            return access_token
+        else:
+            logger.error("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
+            beary_chat("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
+
+
+def generate_qrcode(req_data):
+    """
+    req_data = {
+        "page": "pages/xx/xx",
+        "scene": "{0}${1}".format(xx, xx)
+    }
+    """
+    # 根据url生成二维码, 返回二维码的url
+    access_token = get_access_token()
     logger.info("access_token: {}".format(access_token))
     qr_url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token={}'.format(access_token)
-    req_data = {
-        "page": "pages/goods/goods",
-        "scene": "{0}${1}".format(product_id, tkl)
-    }
+
     # 这里得到的二维码的字节流
-    logger.info("generate qrcode: product_id: {0}, tkl: {1}".format(product_id, tkl))
     qrcode_response = requests.post(qr_url, data=json.dumps(req_data), headers={'Connection': 'close'})
 
     try:
@@ -49,12 +79,8 @@ def generate_qrcode(product_id, tkl):
         errcode = res_dict.get("errcode", "")
         if errcode:
             logger.info("重新获取access_token")
-            token_response = requests.get(token_url, headers={'Connection': 'close'})
-            access_token = json.loads(token_response.content).get("access_token", "")
-            if access_token:
-                cache.set(cache_key, access_token, 60*60)
-            else:
-                logger.error("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
+            access_token = retry_get_access_token()
+            qr_url = 'https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token={}'.format(access_token)
             qrcode_response = requests.post(qr_url, data=json.dumps(req_data), headers={'Connection': 'close'})
             return qrcode_response.content
         else:
@@ -104,5 +130,5 @@ def generate_image(product_url, qrcode_flow):
 
 if __name__ == '__main__':
     product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
-    qrcode_flow = generate_qrcode(1006013, "heihei")
-    generate_image(product_url, qrcode_flow)
+    # qrcode_flow = generate_qrcode(1006013, "heihei")
+    # generate_image(product_url, qrcode_flow)

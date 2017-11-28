@@ -4,6 +4,7 @@ import sys
 
 
 sys.path.append('/home/new_taobaoke/taobaoke/')
+# sys.path.append("/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke")
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
@@ -141,12 +142,17 @@ def order_notice(order):
             "md_username": md_username,
             "data": data
         }
+
+        notice_msg = '发送新订单通知到用户: {}'.format(md_username)
+        beary_chat(notice_msg)
+        logger.info(notice_msg)
+
         send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
         logger.info("request wxbot status code: {}".format(send_msg_response.status_code))
-        notice_msg = '发送新订单通知到用户: {}'.format(md_username)
-        logger.info(notice_msg)
-        beary_chat(notice_msg)
+
 
 
 if __name__ == '__main__':
     push_data()
+
+
