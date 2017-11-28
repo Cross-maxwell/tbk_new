@@ -252,6 +252,6 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
 
 
-# class SearchKeywordMapping(models.Model):
-#     username = models.CharField(max_length=200)
-#     keyword = models.CharField(max_length=200)
+class SearchKeywordMapping(models.Model):
+    username = models.CharField(max_length=200)
+    keyword = models.CharField(max_length=200)

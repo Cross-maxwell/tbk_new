@@ -217,7 +217,7 @@ class AcceptSearchView(View):
                     # TODO: 待前端完成
                     # logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
                     # 将用户的username以及keyword存起来，传递给小程序一个id值即可
-                    keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
+                    # keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
                     # req_data = {
                     #     "page": "pages/search/search",
                     #     "scene": "{0}".format(keyword_mapping_id)
