@@ -84,9 +84,10 @@ def push_data():
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
         item_id = result_dict['good_id']
-        if assert_low_rate(item_id):
+        if assert_low_rate(item_id) or result_dict['order_status']==u'订单结算':
             result_dict['order_status'] = u'订单失效'
             result_dict['pay_amount'] = 0
+            result_dict['show_commision_amount']=0.0
         try:
             result = Order.objects.update_or_create(order_id=result_dict['order_id'], defaults=result_dict)
             status = result[1]
