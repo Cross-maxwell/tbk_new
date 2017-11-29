@@ -272,11 +272,11 @@ class AppSearchListView(View):
         id = req_dict["id"]
         page = req_dict.get("page", "1")
         sort = req_dict.get("sort", "1")
-
+        keyword = req_dict.get("keyword", "")
         keyword_mapping = SearchKeywordMapping.objects.get(id=id)
         md_username = keyword_mapping.username
-        keyword = keyword_mapping.keyword
-
+        if not keyword:
+            keyword = keyword_mapping.keyword
         try:
             tk_user = TkUser.get_user(md_username)
             pid = tk_user.adzone.pid
