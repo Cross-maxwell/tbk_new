@@ -155,7 +155,7 @@ class AcceptSearchView(View):
                 try:
                     from broadcast.utils.entry_utils import get_item_info
                     try:
-                        to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d','='))[0]
+                        to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d', '='))[0]
                     except IndexError:
                         to_search_item_id = re.findall('\/i(\d+)', resp_html)[0]
                     to_search_title = get_item_info(to_search_item_id)['title']
@@ -178,14 +178,15 @@ class AcceptSearchView(View):
                         )
                         target_resp_dict = json.loads(requests.get(target_url).content)['result']['item']
                         p_dict = {
-                            "title" : target_resp_dict['title'],
-                            "desc" : target_resp_dict['recommend'],
-                            "img_url" : target_resp_dict['image'],
-                            "cupon_value" : float(target_resp_dict['amount'].strip(u'\u5143')),
-                            "price" : float(target_resp_dict['price'].strip(u'\xa5')),
-                            'sold_qty' : target_resp_dict['monthSales'],
-                            'cupon_left' : 20,#因为没有这个字段，写死
-                            'cupon_url' : cupon_url
+                            "title": target_resp_dict['title'],
+                            "desc": target_resp_dict['recommend'],
+                            "img_url": target_resp_dict['image'],
+                            "cupon_value": float(target_resp_dict['amount'].strip(u'\u5143')),
+                            "price": float(target_resp_dict['price'].strip(u'\xa5')),
+                            'sold_qty': target_resp_dict['monthSales'],
+                            # 因为没有这个字段，写死
+                            'cupon_left': 20,
+                            'cupon_url': cupon_url
                             }
                         from broadcast.models.entry_models import Product
                         target, created = Product.objects.update_or_create(item_id=dj_p['itemId'], defaults=p_dict)
@@ -220,7 +221,8 @@ class AcceptSearchView(View):
                 judge_dict = json.loads(judge_response.content)
 
                 if not judge_dict['result']['items']:
-                    text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
+                    text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".\
+                        format(at_user_nickname, keyword)
                     data = [text]
                 else:
 

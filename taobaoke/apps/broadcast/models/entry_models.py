@@ -6,15 +6,17 @@ import math
 import random
 import datetime
 import json
-from django.utils import timezone
 import requests
+
+from django.utils import timezone
 from django.db import models
-import fuli.top_settings
-import top.api
 from broadcast.utils.image_connect import generate_image, generate_qrcode
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from broadcast.utils.entry_utils import get_item_info
+
+import fuli.top_settings
+import top.api
 
 import sys
 reload(sys)
@@ -132,7 +134,6 @@ class Product(Entry):
             product_detail = ProductDetail.objects.filter(product_id=self.id).first()
             if product_detail:
                 img_str = product_detail.small_imgs
-                import re
                 com = re.compile(r'http.+?jpg', re.DOTALL)
                 img_list = com.findall(img_str)
                 product_url_list.append(img_list[0])
