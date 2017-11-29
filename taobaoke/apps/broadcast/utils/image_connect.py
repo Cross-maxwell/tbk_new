@@ -142,8 +142,10 @@ def generate_image(product_url_list, qrcode_flow):
     print(toImage.size)
     oss = OSSMgr()
     oss.bucket.put_object(filename, new_image)
-    print 'http://md-oss.di25.cn/{}'.format(filename)
-    return 'http://md-oss.di25.cn/{}'.format(filename)
+
+    # 压缩率为65
+    print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
+    return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
 
 
 if __name__ == '__main__':
