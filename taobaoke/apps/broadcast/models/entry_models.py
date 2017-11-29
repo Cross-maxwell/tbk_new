@@ -246,7 +246,7 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
     detail_dict['item_url'] = item_info['item_url']
     detail_dict['seller_id'] = item_info['seller_id']
     detail_dict['seller_nick'] = item_info['nick']
-    detail_dict['small_imgs'] = map(lambda x: x.encode('utf-8'), item_info['small_images']['string'])
+    detail_dict['small_imgs'] = json.dumps(map(lambda x: x.encode('utf-8'), item_info['small_images']['string']))
     detail_dict['cate'] = cate
     # detail_dict['describe_imgs'] = describe_imgs
     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
