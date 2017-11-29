@@ -176,7 +176,7 @@ class AcceptSearchView(View):
                         product_url = dj_p['coverImage']
                         short_url = get_short_url(cupon_url)
                         qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                        img_url = generate_qrcode(product_url, qrcode_flow)
+                        img_url = generate_image(product_url, qrcode_flow)
                         text = '{0}，找到指定商品的优惠券，长按识别二维码领取'.format(at_user_nickname)
                         break
                     else:
