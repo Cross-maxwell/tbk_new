@@ -173,10 +173,23 @@ class AcceptSearchView(View):
                         found = True
                         cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
                             dj_p['activityId'], dj_p['itemId'], pid)
-                        product_url = dj_p['coverImage']
-                        short_url = get_short_url(cupon_url)
-                        qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                        img_url = generate_image(product_url, qrcode_flow)
+                        target_url = 'http://dianjin.dg15.cn/a_api/index/detailData?itemId={0}&activityId={1}&refId=&pid={2}&_path=9001.SE.0.i.539365221844&src='.format(
+                            dj_p['itemId'], dj_p['activityId'], pid
+                        )
+                        target_resp_dict = json.loads(requests.get(target_url).content)['result']['item']
+                        p_dict = {
+                            "title" : target_resp_dict['title'],
+                            "desc" : target_resp_dict['recommend'],
+                            "img_url" : target_resp_dict['image'],
+                            "cupon_value" : float(target_resp_dict['amount'].strip(u'\u5143')),
+                            "price" : float(target_resp_dict['price'].strip(u'\xa5')),
+                            'sold_qty' : target_resp_dict['monthSales'],
+                            'cupon_left' : 20,#因为没有这个字段，写死
+                            'cupon_url' : cupon_url
+                            }
+                        from broadcast.models.entry_models import Product
+                        target, created = Product.objects.update_or_create(item_id=dj_p['itemId'], defaults=p_dict)
+                        img_url = target.get_img_msg_wxapp(pid)
                         text = '{0}，找到指定商品的优惠券，长按识别二维码领取'.format(at_user_nickname)
                         break
                     else:
