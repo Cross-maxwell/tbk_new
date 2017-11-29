@@ -153,7 +153,10 @@ class AcceptSearchView(View):
                 resp_html = requests.get(link).content
                 try:
                     from broadcast.utils.entry_utils import get_item_info
-                    to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d','='))[0]
+                    try:
+                        to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d','='))[0]
+                    except IndexError:
+                        to_search_item_id = re.findall('\/i(\d+)', resp_html)[0]
                     to_search_title = get_item_info(to_search_item_id)['title']
                     resp_dj = requests.get(url_for_data.format(pid, to_search_title))
                     resp_dict_dj = json.loads(resp_dj.content)
