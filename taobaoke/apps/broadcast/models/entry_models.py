@@ -127,7 +127,7 @@ class Product(Entry):
 
         logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))
         qrcode_flow = generate_qrcode(req_data)
-        return generate_image(self.img_url, qrcode_flow)
+        return generate_image([self.img_url], qrcode_flow)
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
