@@ -274,6 +274,16 @@ class AppSearchListView(View):
         id = req_dict["id"]
         page = req_dict.get("page", "1")
         sort = req_dict.get("sort", "1")
+
+        # 维护一个dict
+        sort_dict = {
+            "1": "MS",
+            "2": "Mi",
+            "3": "My",
+            "8": "OC",
+        }
+        sort_params = sort_dict[sort]
+
         keyword = req_dict.get("keyword", "")
         keyword_mapping = SearchKeywordMapping.objects.get(id=id)
         md_username = keyword_mapping.username
@@ -283,9 +293,10 @@ class AppSearchListView(View):
             tk_user = TkUser.get_user(md_username)
             pid = tk_user.adzone.pid
 
-            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo{page}LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2V" \
+            # TODO： 这里wp的值可能会发生改变
+            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo{page}LCJzb3J0Ijoi{sort_params}IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2V" \
                          "hcmNoUGFnZSI6MX0=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
-                page=page, sort=sort, pid=pid, keyword=keyword
+                page=page, sort=sort, pid=pid, keyword=keyword, sort_params=sort_params
             )
             response = requests.get(search_url)
             return HttpResponse(response.content)
@@ -459,9 +470,28 @@ class ProductDetail(View):
 #         send_msg_type(img_msg_dict, at_user_id='')
 #         send_msg_type(text_msg_dict, at_user_id='')
 
+sort_param = {
+            "1": "MS",
+            "2": "Mi",
+            "3": "My",
+            "8": "OC",
+        }
+
+"""
+sort = 8
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi OC IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+sort = 1
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi MS IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+sort = 2
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi Mi IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=2&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+sort = 3
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi My IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=3&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
 
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+"""
 
 
 
