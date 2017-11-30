@@ -289,14 +289,28 @@ class AppSearchListView(View):
         md_username = keyword_mapping.username
         if not keyword:
             keyword = keyword_mapping.keyword
+
         try:
             tk_user = TkUser.get_user(md_username)
             pid = tk_user.adzone.pid
 
+            midlle_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort=1&pid={pid}&search={keyword}&_path=9001.SE.0". \
+                format(pid=pid, keyword=keyword)
+            midlle_response = requests.get(midlle_url)
+
+            # 对参数进行替换
+            wp = json.loads(midlle_response.content)["result"]["wp"]
+            wp_list = list(wp)
+            wp_list[11] = page
+
+            wp1 = ''.join(wp_list)
+            wp_list1 = list(wp1)
+            wp_list1[24:26] = list(sort_params)
+            final_wp = ''.join(wp_list1)
+
             # TODO： 这里wp的值可能会发生改变
-            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo{page}LCJzb3J0Ijoi{sort_params}IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2V" \
-                         "hcmNoUGFnZSI6MX0=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
-                page=page, sort=sort, pid=pid, keyword=keyword, sort_params=sort_params
+            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp={wp}&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+                wp=final_wp, sort=sort, pid=pid, keyword=keyword
             )
             response = requests.get(search_url)
             return HttpResponse(response.content)
@@ -491,6 +505,25 @@ sort = 3
 http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
 http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+
+鞋子：
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+
+被子
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU4OGFiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+
+程序：
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMyIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 5Nzh iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=3&pid=smart&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+
+原：
+    被子：
+        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 4OGF iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+    鞋子：
+        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 5Nzh iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=2&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+    玩具：
+        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 3M2E5 XHU1MTc3IiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E7%8E%A9%E5%85%B7&_path=9001.SE.0
+
+        http://dianjin.dg15.cn/a_api/index/search?wp=e2JwYWdlIjo2LCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU4OGFiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0=&sort=8&pid=smart&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
 """
 
 
