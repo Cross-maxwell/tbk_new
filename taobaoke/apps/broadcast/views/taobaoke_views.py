@@ -297,12 +297,25 @@ class AppSearchListView(View):
             midlle_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort=1&pid={pid}&search={keyword}&_path=9001.SE.0". \
                 format(pid=pid, keyword=keyword)
             midlle_response = requests.get(midlle_url)
-
-            # 对参数进行替换
             wp = json.loads(midlle_response.content)["result"]["wp"]
             wp_list = list(wp)
-            wp_list[11] = page
 
+            if page == "1":
+                search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+                    sort=sort, pid=pid, keyword=keyword
+                )
+                response = requests.get(search_url)
+                return HttpResponse(response.content)
+
+            # 替换页码
+            if page == "2":
+                wp_list[11] = "y"
+            if page == "3":
+                wp_list[11] = "z"
+            if int(page) >= 4:
+                wp_list[11] = str(int(page) - 4)
+
+            # 替换排序方式
             wp1 = ''.join(wp_list)
             wp_list1 = list(wp1)
             wp_list1[24:26] = list(sort_params)
