@@ -89,33 +89,51 @@ def generate_qrcode(req_data):
         return qrcode_response.content
 
 
-def generate_image(product_url, qrcode_flow):
+def generate_image(product_url_list, qrcode_flow):
 
     # 首先调用二维码生成函数
+    extra = 0
+    if len(product_url_list) == 3:
+        extra = 300
 
     # 新建画布
-    toImage = Image.new('RGBA', (600, 800))
+    toImage = Image.new('RGBA', (600, 800+extra))
 
     # 获取二维码
 
     qrcode_bytes = qrcode_flow
     qrcode_img = Image.open(BytesIO(qrcode_bytes))
     qrcode_size = qrcode_img.resize((200, 200))
-    qrcode_location = (0, 600)
+    qrcode_location = (0, 600 + extra)
     toImage.paste(qrcode_size, qrcode_location)
 
     # 获取商品主图
-    product_data = urllib2.urlopen(product_url).read()
+    product_data = urllib2.urlopen(product_url_list[0]).read()
     product_img = Image.open(BytesIO(product_data))
     product_size = product_img.resize((600, 600))
     product_location = (0, 0)
     toImage.paste(product_size, product_location)
 
+    if len(product_url_list) == 3:
+        # 获取300*300图1
+        product_1_data = urllib2.urlopen(product_url_list[1]).read()
+        product_1_img = Image.open(BytesIO(product_1_data))
+        product_1_size = product_1_img.resize((300, 300))
+        product_1_location = (0, 600)
+        toImage.paste(product_1_size, product_1_location)
+
+        # 获取300*300图2
+        product_2_data = urllib2.urlopen(product_url_list[2]).read()
+        product_2_img = Image.open(BytesIO(product_2_data))
+        product_2_size = product_2_img.resize((300, 300))
+        product_2_location = (300, 600)
+        toImage.paste(product_2_size, product_2_location)
+
     # 获取长按扫描图# 将图片进行拼接
     BASE_DIR = os.getcwd()
     saomiao_img = Image.open(os.path.join(BASE_DIR, 'apps/broadcast/utils/lingqu.jpg'))
     saomiao_size = saomiao_img.resize((400, 200))
-    saomiao_location = (200, 600)
+    saomiao_location = (200, 600+extra)
     toImage.paste(saomiao_size, saomiao_location)
     new_image = toImage.convert("RGBA").tobytes("jpeg", "RGBA")
 
@@ -124,11 +142,14 @@ def generate_image(product_url, qrcode_flow):
     print(toImage.size)
     oss = OSSMgr()
     oss.bucket.put_object(filename, new_image)
-    print 'http://md-oss.di25.cn/{}'.format(filename)
-    return 'http://md-oss.di25.cn/{}'.format(filename)
+
+    # 压缩率为65
+    print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
+    return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
 
 
 if __name__ == '__main__':
     product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
+    # product_url_list = [product_url, product_url, product_url]
     # qrcode_flow = generate_qrcode(1006013, "heihei")
-    # generate_image(product_url, qrcode_flow)
+    # generate_image(product_url_list, qrcode_flow)

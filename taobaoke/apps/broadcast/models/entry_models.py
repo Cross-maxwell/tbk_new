@@ -6,15 +6,17 @@ import math
 import random
 import datetime
 import json
-from django.utils import timezone
 import requests
+
+from django.utils import timezone
 from django.db import models
-import fuli.top_settings
-import top.api
 from broadcast.utils.image_connect import generate_image, generate_qrcode
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from broadcast.utils.entry_utils import get_item_info
+
+import fuli.top_settings
+import top.api
 
 import sys
 reload(sys)
@@ -127,7 +129,18 @@ class Product(Entry):
 
         logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))
         qrcode_flow = generate_qrcode(req_data)
-        return generate_image(self.img_url, qrcode_flow)
+        product_url_list = [self.img_url]
+        try:
+            product_detail = ProductDetail.objects.filter(product_id=self.id).first()
+            if product_detail:
+                img_str = product_detail.small_imgs
+                com = re.compile(r'http.+?jpg', re.DOTALL)
+                img_list = com.findall(img_str)
+                product_url_list.append(img_list[0])
+                product_url_list.append(img_list[1])
+        except Exception as e:
+            logger.error(e)
+        return generate_image(product_url_list, qrcode_flow)
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"

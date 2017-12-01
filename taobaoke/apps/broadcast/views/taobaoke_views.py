@@ -155,7 +155,7 @@ class AcceptSearchView(View):
                 try:
                     from broadcast.utils.entry_utils import get_item_info
                     try:
-                        to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d','='))[0]
+                        to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d', '='))[0]
                     except IndexError:
                         to_search_item_id = re.findall('\/i(\d+)', resp_html)[0]
                     to_search_title = get_item_info(to_search_item_id)['title']
@@ -178,14 +178,15 @@ class AcceptSearchView(View):
                         )
                         target_resp_dict = json.loads(requests.get(target_url).content)['result']['item']
                         p_dict = {
-                            "title" : target_resp_dict['title'],
-                            "desc" : target_resp_dict['recommend'],
-                            "img_url" : target_resp_dict['image'],
-                            "cupon_value" : float(target_resp_dict['amount'].strip(u'\u5143')),
-                            "price" : float(target_resp_dict['price'].strip(u'\xa5')),
-                            'sold_qty' : target_resp_dict['monthSales'],
-                            'cupon_left' : 20,#因为没有这个字段，写死
-                            'cupon_url' : cupon_url
+                            "title": target_resp_dict['title'],
+                            "desc": target_resp_dict['recommend'],
+                            "img_url": target_resp_dict['image'],
+                            "cupon_value": float(target_resp_dict['amount'].strip(u'\u5143')),
+                            "price": float(target_resp_dict['price'].strip(u'\xa5')),
+                            'sold_qty': target_resp_dict['monthSales'],
+                            # 因为没有这个字段，写死
+                            'cupon_left': 20,
+                            'cupon_url': cupon_url
                             }
                         from broadcast.models.entry_models import Product
                         target, created = Product.objects.update_or_create(item_id=dj_p['itemId'], defaults=p_dict)
@@ -204,7 +205,7 @@ class AcceptSearchView(View):
 
                     short_url = get_short_url(url_to_show.format(pid, to_search_title))
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image(product_url, qrcode_flow)
+                    img_url = generate_image([product_url], qrcode_flow)
 
                     data = [img_url, text]
                 else:
@@ -220,7 +221,8 @@ class AcceptSearchView(View):
                 judge_dict = json.loads(judge_response.content)
 
                 if not judge_dict['result']['items']:
-                    text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".format(at_user_nickname, keyword)
+                    text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".\
+                        format(at_user_nickname, keyword)
                     data = [text]
                 else:
 
@@ -228,7 +230,7 @@ class AcceptSearchView(View):
 
                     short_url = get_short_url(template_url)
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image(product_url, qrcode_flow)
+                    img_url = generate_image([product_url], qrcode_flow)
 
                     # TODO: 待前端完成
                     # logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
@@ -239,12 +241,12 @@ class AcceptSearchView(View):
                     #     "scene": "{0}".format(keyword_mapping_id)
                     # }
                     # qrcode_flow = generate_qrcode(req_data)
-                    # img_url = generate_image(product_url, qrcode_flow)
+                    # img_url = generate_image([product_url], qrcode_flow)
 
                     random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别二维码查看为您找到的高额优惠券。\n" \
                            "================\n" \
-                           "图片仅供参考，详细信息请查看小程序商城～".format(at_user_nickname, keyword, random_seed)
+                           "图片仅供参考，详细信息请扫描二维码查看～".format(at_user_nickname, keyword, random_seed)
 
                     data = [img_url, text]
                 return HttpResponse(json.dumps({"data": data}))
@@ -273,17 +275,42 @@ class AppSearchListView(View):
         page = req_dict.get("page", "1")
         sort = req_dict.get("sort", "1")
 
+        # 维护一个dict
+        sort_dict = {
+            "1": "MS",
+            "2": "Mi",
+            "3": "My",
+            "8": "OC",
+        }
+        sort_params = sort_dict[sort]
+
+        keyword = req_dict.get("keyword", "")
         keyword_mapping = SearchKeywordMapping.objects.get(id=id)
         md_username = keyword_mapping.username
-        keyword = keyword_mapping.keyword
+        if not keyword:
+            keyword = keyword_mapping.keyword
 
         try:
             tk_user = TkUser.get_user(md_username)
             pid = tk_user.adzone.pid
 
-            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo{page}LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2V" \
-                         "hcmNoUGFnZSI6MX0=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
-                page=page, sort=sort, pid=pid, keyword=keyword
+            midlle_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort=1&pid={pid}&search={keyword}&_path=9001.SE.0". \
+                format(pid=pid, keyword=keyword)
+            midlle_response = requests.get(midlle_url)
+
+            # 对参数进行替换
+            wp = json.loads(midlle_response.content)["result"]["wp"]
+            wp_list = list(wp)
+            wp_list[11] = page
+
+            wp1 = ''.join(wp_list)
+            wp_list1 = list(wp1)
+            wp_list1[24:26] = list(sort_params)
+            final_wp = ''.join(wp_list1)
+
+            # TODO： 这里wp的值可能会发生改变
+            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp={wp}&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+                wp=final_wp, sort=sort, pid=pid, keyword=keyword
             )
             response = requests.get(search_url)
             return HttpResponse(response.content)
@@ -457,9 +484,47 @@ class ProductDetail(View):
 #         send_msg_type(img_msg_dict, at_user_id='')
 #         send_msg_type(text_msg_dict, at_user_id='')
 
+sort_param = {
+            "1": "MS",
+            "2": "Mi",
+            "3": "My",
+            "8": "OC",
+        }
+
+"""
+sort = 8
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi OC IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+sort = 1
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi MS IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+sort = 2
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi Mi IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=2&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+sort = 3
+    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi My IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=3&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
 
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+
+鞋子：
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+
+被子
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU4OGFiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+
+程序：
+http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMyIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 5Nzh iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=3&pid=smart&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+
+原：
+    被子：
+        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 4OGF iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+    鞋子：
+        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 5Nzh iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=2&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
+    玩具：
+        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 3M2E5 XHU1MTc3IiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E7%8E%A9%E5%85%B7&_path=9001.SE.0
+
+        http://dianjin.dg15.cn/a_api/index/search?wp=e2JwYWdlIjo2LCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU4OGFiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0=&sort=8&pid=smart&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
+"""
 
 
 
