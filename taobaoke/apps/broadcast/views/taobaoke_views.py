@@ -228,23 +228,23 @@ class AcceptSearchView(View):
 
                     product_url = judge_dict['result']['items'][0]['coverImage']
 
-                    short_url = get_short_url(template_url)
-                    qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image([product_url], qrcode_flow)
-
-                    # TODO: 待前端完成
-                    # logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
-                    # 将用户的username以及keyword存起来，传递给小程序一个id值即可
-                    # keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
-                    # req_data = {
-                    #     "page": "pages/search/search",
-                    #     "scene": "{0}".format(keyword_mapping_id)
-                    # }
-                    # qrcode_flow = generate_qrcode(req_data)
+                    # short_url = get_short_url(template_url)
+                    # qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
                     # img_url = generate_image([product_url], qrcode_flow)
 
+                    # TODO: 待前端完成
+                    logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
+                    # 将用户的username以及keyword存起来，传递给小程序一个id值即可
+                    keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
+                    req_data = {
+                        "page": "pages/search/search",
+                        "scene": "{0}".format(keyword_mapping_id)
+                    }
+                    qrcode_flow = generate_qrcode(req_data)
+                    img_url = generate_image([product_url], qrcode_flow)
+
                     random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别二维码查看为您找到的高额优惠券。\n" \
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
                            "================\n" \
                            "图片仅供参考，详细信息请扫描二维码查看～".format(at_user_nickname, keyword, random_seed)
 
@@ -265,7 +265,7 @@ def get_short_url(long_url):
 
 class AppSearchListView(View):
     """
-    接口: /product/search_list?id=
+    接口: /product/search_list
     """
     @csrf_exempt
     def post(self, request):
