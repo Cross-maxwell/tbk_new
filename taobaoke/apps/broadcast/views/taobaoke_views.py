@@ -244,9 +244,9 @@ class AcceptSearchView(View):
                     # img_url = generate_image([product_url], qrcode_flow)
 
                     random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别二维码查看为您找到的高额优惠券。\n" \
                            "================\n" \
-                           "图片仅供参考，详细信息请查看小程序商城～".format(at_user_nickname, keyword, random_seed)
+                           "图片仅供参考，详细信息请扫描二维码查看～".format(at_user_nickname, keyword, random_seed)
 
                     data = [img_url, text]
                 return HttpResponse(json.dumps({"data": data}))
