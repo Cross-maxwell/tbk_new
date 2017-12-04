@@ -68,16 +68,17 @@ ROOT_URLCONF = 'fuli.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        'DIRS': [os.path.join(BASE_DIR, 'apps/broadcast/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
+            'environment': 'broadcast.jinja2env.environment',
+            # 'context_processors': [
+            #     'django.template.context_processors.debug',
+            #     'django.template.context_processors.request',
+            #     'django.contrib.auth.context_processors.auth',
+            #     'django.contrib.messages.context_processors.messages',
+            # ],
         },
     },
 ]
@@ -117,7 +118,7 @@ from fuli.config import getDB
 
 # 可使用mode指定要使用的数据库。指定mode为'prod'，使用生产数据库; 指定为'test'或留空，将根据主机名进行选择。
 # 配置请查看fuli/config.py
-DATABASES = getDB(mode='smart')
+DATABASES = getDB(mode='test')
 
 
 # Password validation
