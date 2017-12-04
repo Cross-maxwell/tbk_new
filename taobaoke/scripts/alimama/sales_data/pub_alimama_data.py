@@ -22,6 +22,7 @@ import requests
 from django.contrib.auth.models import User
 import json
 from fuli.oss_utils import beary_chat
+from taobaoke.scripts.wx_gzh.gzh_service import pushNotice
 
 import logging
 logger = logging.getLogger("utils")
@@ -107,6 +108,7 @@ def push_data():
     cal_commision()
     cal_agent_commision()
     order_notice(new_order)
+    pushNotice(new_order)
 
 
 def assert_low_rate(item_id):
