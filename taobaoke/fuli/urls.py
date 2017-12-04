@@ -20,7 +20,8 @@ user_urls = [
     url(r'^get-adzone-info/', get_adzone_info),
     url(r'^get-tkuser-info/', get_tkuser_info),
     url(r'^get-invite-code/', get_invite_code),
-    url(r'^poster/', poster_url)
+    url(r'^poster/', poster_url),
+    url(r'^get-openid/', get_openid),
 ]
 ## 新增了获取邀请码的接口,用于poster生成海报
 
