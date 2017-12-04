@@ -533,10 +533,10 @@ class SendArtificialMsg(View):
     @csrf_exempt
     def post(self, request):
         req_dict = json.loads(request.body)
-        product_id = req_dict["id"]
+        product_id = req_dict["item_id"]
         artifical_data = req_dict["data"]
         # 首先根据product_id拿到商品，循环遍历已登录user，获取pid并替换
-        product = Product.objects.get(id=product_id)
+        product = Product.objects.get(item_id=product_id)
         available = product.available
         if not available:
             return HttpResponse(json.dumps({"ret": 0, "reason": "商品已失效"}))
