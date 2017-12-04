@@ -489,6 +489,90 @@ class ProductDetail(View):
         return HttpResponse(json.dumps({'data': resp_dict}), status=200)
 
 
+class SendArtificialMsg(View):
+    """
+    接口：  /tk/send_artifiacl_msg/
+    """
+    @csrf_exempt
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        product_id = req_dict["item_id"]
+        artifical_data = req_dict["data"]
+        # 首先根据product_id拿到商品，循环遍历已登录user，获取pid并替换
+        product = Product.objects.get(item_id=product_id)
+        available = product.available
+        if not available:
+            return HttpResponse(json.dumps({"ret": 0, "reason": "商品已失效"}))
+
+        platform_id = 'make_money_together'
+
+        url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
+
+        localhost_send_msg_url = 'http://localhost:10024/api/robot/send_msg/'
+        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+
+        response = requests.get(url)
+        response_dict = json.loads(response.content)
+        if response_dict["ret"] != 1:
+            logger.error("筛选{}平台User为空".format(platform_id))
+        login_user_list = response_dict["login_user_list"]
+
+        """
+        {
+            "login_user_list":[
+                    {"user": "smart", "wxuser_list": ["樂阳", "渺渺的"]}，
+                    {"user": "keyerror", ......}
+            ]
+        }
+        """
+        text = product.get_text_msg_wxapp()
+
+        for user_object in login_user_list:
+            # TODO: 压力过大，主要压力来自于requests库长连接数量的限制，此处需要注意
+            data = []
+            user = user_object["user"]
+
+            # 找到该user所对应的pid
+            try:
+                tk_user = TkUser.get_user(user)
+            except Exception as e:
+                logger.error(e)
+            try:
+                pid = tk_user.adzone.pid
+            except Exception as e:
+                logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
+
+            try:
+                img_url = product.get_img_msg_wxapp(pid=pid)
+
+                data.append(img_url)
+                data.append(text)
+                for item in artifical_data:
+                    data.append(item)
+
+                # 这里不能用TCP长连接
+                headers = {
+                    "Connection": "close"
+                }
+
+                request_data = {
+                    "md_username": user,
+                    "data": data
+                }
+                send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data), headers=headers)
+
+                logger.info("SendArtificialMsg response: {}".format(send_msg_response.content))
+
+                artifical_data = req_dict["data"]
+                time.sleep(1.5)
+            except Exception as e:
+                logger.error(e)
+
+        return HttpResponse(json.dumps({"ret": 1}))
+
+
+
+
 # class SendSignNotice(View):
 #     """
 #     接口： http://s-prod-04.qunzhu666.com/tk/send_signin_notice
@@ -524,82 +608,6 @@ class ProductDetail(View):
 #         from ipad_weixin.send_msg_type import send_msg_type
 #         send_msg_type(img_msg_dict, at_user_id='')
 #         send_msg_type(text_msg_dict, at_user_id='')
-
-
-class SendArtificialMsg(View):
-    """
-    接口：  /tk/send_artifiacl_msg/
-    """
-    @csrf_exempt
-    def post(self, request):
-        req_dict = json.loads(request.body)
-        product_id = req_dict["item_id"]
-        artifical_data = req_dict["data"]
-        # 首先根据product_id拿到商品，循环遍历已登录user，获取pid并替换
-        product = Product.objects.get(item_id=product_id)
-        available = product.available
-        if not available:
-            return HttpResponse(json.dumps({"ret": 0, "reason": "商品已失效"}))
-
-        platform_id = 'make_money_together'
-
-        url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
-
-        localhost_send_group_msg_url = 'http://localhost:10024/api/robot/send_group_msg/'
-        send_group_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_group_msg/'
-
-        response = requests.get(url)
-        response_dict = json.loads(response.content)
-        if response_dict["ret"] != 1:
-            logger.error("筛选{}平台User为空".format(platform_id))
-        login_user_list = response_dict["login_user_list"]
-
-        """
-        {
-            "login_user_list":[
-                    {"user": "smart", "wxuser_list": ["樂阳", "渺渺的"]}，
-                    {"user": "keyerror", ......}
-            ]
-        }
-        """
-        text = product.get_text_msg_wxapp()
-
-        data = []
-        for user_object in login_user_list:
-            user = user_object["user"]
-
-            # 找到该user所对应的pid
-            try:
-                tk_user = TkUser.get_user(user)
-            except Exception as e:
-                logger.error(e)
-            try:
-                pid = tk_user.adzone.pid
-            except Exception as e:
-                logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
-
-            try:
-                img_url = product.get_img_msg_wxapp(pid=pid)
-
-                artifical_data.insert(0, img_url)
-                artifical_data.insert(0, text)
-
-                req_data = {
-                    "platform_id": platform_id,
-                    "data": artifical_data
-                }
-
-                response = requests.post(localhost_send_group_msg_url, data=json.dumps(req_data))
-                logger.info("SendArtificialMsg")
-            except Exception as e:
-                logger.error(e)
-
-        return HttpResponse(json.dumps({"ret": 1}))
-
-
-
-
-
 
 
 

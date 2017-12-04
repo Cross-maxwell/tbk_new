@@ -264,6 +264,12 @@ LOGGING = {
             'handlers': ['error', 'console'],
             'level': 'INFO',
             'propagate': True
-        }
+        },
+        'fetch_lanlan': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
+        },
+
     }
 }
