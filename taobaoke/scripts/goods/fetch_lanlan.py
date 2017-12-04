@@ -75,7 +75,7 @@ def main():
                         else:
                             p.available = True
                         p.save()
-                        print 'Product updated.'
+                        logger.info('Product updated')
                     else:
                         p = Product.objects.create(**{key: data_dict[key] for key in key_list})
 
@@ -86,7 +86,8 @@ def main():
                     logger.error(e)
                     print Exception.message
         else:
-            beary_chat('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
+            # beary_chat('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
+            logger.error('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
 
 if __name__ == "__main__":
     while True:

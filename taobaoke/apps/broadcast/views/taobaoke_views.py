@@ -228,23 +228,23 @@ class AcceptSearchView(View):
 
                     product_url = judge_dict['result']['items'][0]['coverImage']
 
-                    short_url = get_short_url(template_url)
-                    qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image([product_url], qrcode_flow)
-
-                    # TODO: 待前端完成
-                    # logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
-                    # 将用户的username以及keyword存起来，传递给小程序一个id值即可
-                    # keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
-                    # req_data = {
-                    #     "page": "pages/search/search",
-                    #     "scene": "{0}".format(keyword_mapping_id)
-                    # }
-                    # qrcode_flow = generate_qrcode(req_data)
+                    # short_url = get_short_url(template_url)
+                    # qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
                     # img_url = generate_image([product_url], qrcode_flow)
 
+                    # TODO: 待前端完成
+                    logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
+                    # 将用户的username以及keyword存起来，传递给小程序一个id值即可
+                    keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
+                    req_data = {
+                        "page": "pages/search/search",
+                        "scene": "{0}".format(keyword_mapping_id)
+                    }
+                    qrcode_flow = generate_qrcode(req_data)
+                    img_url = generate_image([product_url], qrcode_flow)
+
                     random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别二维码查看为您找到的高额优惠券。\n" \
+                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
                            "================\n" \
                            "图片仅供参考，详细信息请扫描二维码查看～".format(at_user_nickname, keyword, random_seed)
 
@@ -265,53 +265,94 @@ def get_short_url(long_url):
 
 class AppSearchListView(View):
     """
-    接口: /product/search_list?id=
+    接口: /product/search_list
     """
     @csrf_exempt
     def post(self, request):
+        # req_dict = json.loads(request.body)
+        # id = req_dict["id"]
+        # page = req_dict.get("page", "1")
+        # sort = req_dict.get("sort", "1")
+        #
+        # # 维护一个dict
+        # sort_dict = {
+        #     "1": "MS",
+        #     "2": "Mi",
+        #     "3": "My",
+        #     "8": "OC",
+        # }
+        # sort_params = sort_dict[sort]
+        #
+        # keyword = req_dict.get("keyword", "")
+        # keyword_mapping = SearchKeywordMapping.objects.get(id=id)
+        # md_username = keyword_mapping.username
+        # if not keyword:
+        #     keyword = keyword_mapping.keyword
+        #
+        # try:
+        #     tk_user = TkUser.get_user(md_username)
+        #     pid = tk_user.adzone.pid
+        #
+        #     midlle_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort=1&pid={pid}&search={keyword}&_path=9001.SE.0". \
+        #         format(pid=pid, keyword=keyword)
+        #     midlle_response = requests.get(midlle_url)
+        #     wp = json.loads(midlle_response.content)["result"]["wp"]
+        #     wp_list = list(wp)
+        #
+        #     if page == "1":
+        #         search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+        #             sort=sort, pid=pid, keyword=keyword
+        #         )
+        #         response = requests.get(search_url)
+        #         return HttpResponse(response.content)
+        #
+        #     # 替换页码
+        #     if page == "2":
+        #         wp_list[11] = "y"
+        #     if page == "3":
+        #         wp_list[11] = "z"
+        #     if int(page) >= 4:
+        #         wp_list[11] = str(int(page) - 4)
+        #
+        #     # 替换排序方式
+        #     wp1 = ''.join(wp_list)
+        #     wp_list1 = list(wp1)
+        #     wp_list1[24:26] = list(sort_params)
+        #     final_wp = ''.join(wp_list1)
+        #
+        #     # TODO： 这里wp的值可能会发生改变
+        #     search_url = "http://dianjin.dg15.cn/a_api/index/search?wp={wp}&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+        #         wp=final_wp, sort=sort, pid=pid, keyword=keyword
+        #     )
+        #     response = requests.get(search_url)
+        #     return HttpResponse(response.content)
+        # except Exception as e:
+        #     logger.error(e)
+
+        # TODO: 待前端完成
         req_dict = json.loads(request.body)
         # TODO: 接受小程序传来的id值，去数据库中拿出相应数据
         id = req_dict["id"]
-        page = req_dict.get("page", "1")
         sort = req_dict.get("sort", "1")
-
-        # 维护一个dict
-        sort_dict = {
-            "1": "MS",
-            "2": "Mi",
-            "3": "My",
-            "8": "OC",
-        }
-        sort_params = sort_dict[sort]
+        wp = req_dict.get("wp", "")
 
         keyword = req_dict.get("keyword", "")
         keyword_mapping = SearchKeywordMapping.objects.get(id=id)
         md_username = keyword_mapping.username
         if not keyword:
             keyword = keyword_mapping.keyword
-
         try:
             tk_user = TkUser.get_user(md_username)
             pid = tk_user.adzone.pid
 
-            midlle_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort=1&pid={pid}&search={keyword}&_path=9001.SE.0". \
-                format(pid=pid, keyword=keyword)
-            midlle_response = requests.get(midlle_url)
-
-            # 对参数进行替换
-            wp = json.loads(midlle_response.content)["result"]["wp"]
-            wp_list = list(wp)
-            wp_list[11] = page
-
-            wp1 = ''.join(wp_list)
-            wp_list1 = list(wp1)
-            wp_list1[24:26] = list(sort_params)
-            final_wp = ''.join(wp_list1)
-
-            # TODO： 这里wp的值可能会发生改变
-            search_url = "http://dianjin.dg15.cn/a_api/index/search?wp={wp}&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
-                wp=final_wp, sort=sort, pid=pid, keyword=keyword
-            )
+            if not wp:
+                search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+                    sort=sort, pid=pid, keyword=keyword
+                )
+            else:
+                search_url = "http://dianjin.dg15.cn/a_api/index/search?wp={wp}&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
+                    wp=wp, sort=sort, pid=pid, keyword=keyword
+                )
             response = requests.get(search_url)
             return HttpResponse(response.content)
         except Exception as e:
@@ -448,6 +489,90 @@ class ProductDetail(View):
         return HttpResponse(json.dumps({'data': resp_dict}), status=200)
 
 
+class SendArtificialMsg(View):
+    """
+    接口：  /tk/send_artifiacl_msg/
+    """
+    @csrf_exempt
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        product_id = req_dict["item_id"]
+        artifical_data = req_dict["data"]
+        # 首先根据product_id拿到商品，循环遍历已登录user，获取pid并替换
+        product = Product.objects.get(item_id=product_id)
+        available = product.available
+        if not available:
+            return HttpResponse(json.dumps({"ret": 0, "reason": "商品已失效"}))
+
+        platform_id = 'make_money_together'
+
+        url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
+
+        localhost_send_msg_url = 'http://localhost:10024/api/robot/send_msg/'
+        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+
+        response = requests.get(url)
+        response_dict = json.loads(response.content)
+        if response_dict["ret"] != 1:
+            logger.error("筛选{}平台User为空".format(platform_id))
+        login_user_list = response_dict["login_user_list"]
+
+        """
+        {
+            "login_user_list":[
+                    {"user": "smart", "wxuser_list": ["樂阳", "渺渺的"]}，
+                    {"user": "keyerror", ......}
+            ]
+        }
+        """
+        text = product.get_text_msg_wxapp()
+
+        for user_object in login_user_list:
+            # TODO: 压力过大，主要压力来自于requests库长连接数量的限制，此处需要注意
+            data = []
+            user = user_object["user"]
+
+            # 找到该user所对应的pid
+            try:
+                tk_user = TkUser.get_user(user)
+            except Exception as e:
+                logger.error(e)
+            try:
+                pid = tk_user.adzone.pid
+            except Exception as e:
+                logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
+
+            try:
+                img_url = product.get_img_msg_wxapp(pid=pid)
+
+                data.append(img_url)
+                data.append(text)
+                for item in artifical_data:
+                    data.append(item)
+
+                # 这里不能用TCP长连接
+                headers = {
+                    "Connection": "close"
+                }
+
+                request_data = {
+                    "md_username": user,
+                    "data": data
+                }
+                send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data), headers=headers)
+
+                logger.info("SendArtificialMsg response: {}".format(send_msg_response.content))
+
+                artifical_data = req_dict["data"]
+                time.sleep(1.5)
+            except Exception as e:
+                logger.error(e)
+
+        return HttpResponse(json.dumps({"ret": 1}))
+
+
+
+
 # class SendSignNotice(View):
 #     """
 #     接口： http://s-prod-04.qunzhu666.com/tk/send_signin_notice
@@ -484,47 +609,15 @@ class ProductDetail(View):
 #         send_msg_type(img_msg_dict, at_user_id='')
 #         send_msg_type(text_msg_dict, at_user_id='')
 
-sort_param = {
-            "1": "MS",
-            "2": "Mi",
-            "3": "My",
-            "8": "OC",
-        }
-
-"""
-sort = 8
-    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi OC IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
-sort = 1
-    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi MS IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
-sort = 2
-    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi Mi IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=2&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
-sort = 3
-    http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0Ijoi My IsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=3&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
 
-http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=8&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
-http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjozLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
-鞋子：
-http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU5NzhiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
 
-被子
-http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU4OGFiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
 
-程序：
-http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMyIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 5Nzh iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=3&pid=smart&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
 
-原：
-    被子：
-        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 4OGF iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
-    鞋子：
-        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjoyLCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 5Nzh iXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=2&pid=mm_122190119_26062749_101066938&search=%E9%9E%8B%E5%AD%90&_path=9001.SE.0
-    玩具：
-        http://dianjin.dg15.cn/a_api/index/search?wp=eyJwYWdlIjo2LCJzb3J0IjoiMSIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU 3M2E5 XHU1MTc3IiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0%3D&sort=1&pid=mm_122190119_26062749_101066938&search=%E7%8E%A9%E5%85%B7&_path=9001.SE.0
 
-        http://dianjin.dg15.cn/a_api/index/search?wp=e2JwYWdlIjo2LCJzb3J0IjoiOCIsImNpZCI6bnVsbCwic2VhcmNoIjoiXHU4OGFiXHU1YjUwIiwidHlwZSI6bnVsbCwic2VhcmNoUGFnZSI6MX0=&sort=8&pid=smart&search=%E8%A2%AB%E5%AD%90&_path=9001.SE.0
-"""
+
 
 
 

@@ -10,7 +10,7 @@ from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
-    AppSearchListView
+    AppSearchListView, SendArtificialMsg
 from broadcast.views.operating_views import GetProducts, EditProduct
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
@@ -53,7 +53,9 @@ tk_urls = [
     url(r'push_product', PushProduct.as_view()),
     url(r'search_product', AcceptSearchView.as_view()),
     url(r'set_pushtime', SetPushTime.as_view()),
-    url(r'get_pushtime', GetPushTIme.as_view())
+    url(r'get_pushtime', GetPushTIme.as_view()),
+
+    url(r'send_artifiacl_msg', SendArtificialMsg.as_view())
 ]
 
 auth_urls = [
