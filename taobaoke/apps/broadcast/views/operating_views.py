@@ -62,7 +62,7 @@ class RefreshProducts(View):
     def get(self, request):
         action = 'restart'
         if action:
-            target = 'http://localhost:9001/index.html?processname=taobaoke%3Afetch_lanlan&action={}'.format(action)
+            target = 'http://s-prod-07.qunzhu666.com:9001/index.html?processname=taobaoke%3Afetch_lanlan&action={}'.format(action)
             requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
 
 
@@ -70,5 +70,5 @@ class ChangePushStatus(View):
     def get(self, request):
         action = request.GET.get('action')
         if action:
-            target = 'http://localhost:9001/index.html?processname=taobaoke%3Asend_request&action={}'.format(action)
+            target = 'http://s-prod-07.qunzhu666.com:9001/index.html?processname=taobaoke%3Asend_request&action={}'.format(action)
             requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
