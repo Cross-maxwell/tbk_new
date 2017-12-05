@@ -14,9 +14,9 @@ class GetProducts(View):
     def post(self,request):
         products_list=[]
         # 使用title查找，对用户更舒服
-        title = request.POST.get('title')
-        if title:
-            products_list = list(Product.objects.filter(title__contains=title))
+        item_id = request.POST.get('item_id')
+        if item_id:
+            products_list = list(Product.objects.filter(item_id__contains=item_id))
         return render_to_response('products.html', {'products': products_list})
 
 class EditProduct(View):

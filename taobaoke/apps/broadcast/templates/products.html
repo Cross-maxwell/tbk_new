@@ -6,7 +6,7 @@
 </head>
 <body>
     <form method="post">
-        <input type="text" name="title" placeholder="商品标题.."/>
+        <input type="text" name="item_id" placeholder="商品ID.."/>
         <input type="submit" value="搜索" />
     </form>
     <table>
@@ -24,7 +24,7 @@
             {%  for p in products %}
         <tr>
             <td><a class="product-link" href="/operate/operating-edit/?product_id={{ p.item_id }}"> {{ p.item_id }}</a></td>
-            <td>{{ p.title }}</td>
+            <td style="font-size: larger">{{ p.title }}</td>
             <td>{{ p.org_price }}</td>
             <td>{{ p.cupon_left }}</td>
             <td>{{ p.cupon_value }}</td>
