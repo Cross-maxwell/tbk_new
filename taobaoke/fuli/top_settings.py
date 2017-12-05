@@ -1,2 +1,5 @@
 app_key = '23783625'
 app_secret = 'e9b343c489077ee3b54d21fee2115339'
+
+APPID = "wxb2a7ecf531203bba"
+APPSECRET = "52adf580854e066d75f8d88ba96e0823"

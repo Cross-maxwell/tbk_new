@@ -16,8 +16,7 @@ from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSeria
 from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
 from django.views.generic.base import View
-from taobaoke.scripts.wx_gzh import basic
-
+from taobaoke.fuli import top_settings
 @csrf_exempt
 def update_adzone(request):
     req_dict = json.loads(request.body)
@@ -89,7 +88,7 @@ def get_openid(request):
     if code and username:
         url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
               'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \
-            .format(APPID=basic.APPID, SECRET=basic.APPSECRET, CODE=code)
+            .format(APPID=top_settings.APPID, SECRET=top_settings.APPSECRET, CODE=code)
         res = requests.get(url)
         json_date = res.json()
         print json_date
