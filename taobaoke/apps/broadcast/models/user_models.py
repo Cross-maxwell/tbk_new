@@ -22,7 +22,7 @@ class TkUser(models.Model):
     invite_code = models.CharField(max_length=16, null=True, blank=True)
     inviter_id = models.CharField(max_length=16, null=True)
     inviter_backup_info = models.CharField(max_length=128, null=True)
-    openid = models.CharField(max_length=20,null=True)
+    openid = models.CharField(max_length=40,null=True)
     def get_adzone_id(self):
         return self.adzone.pid.split('_')[-1]
 
