@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>商品编辑</title>
+</head>
+<body>
+    <form method="post">
+        <input type="text" name="title" placeholder="商品标题.."/>
+        <input type="submit" value="搜索" />
+    </form>
+    <table>
+        <tr>
+            <th>商品ID</th>
+            <th>名称</th>
+            <th>原价</th>
+            <th>剩余券数</th>
+            <th>券值</th>
+            <th>优惠价</th>
+            <th>佣金比</th>
+            <th>佣金金额</th>
+            <th>推送</th>
+        </tr>
+            {%  for p in products %}
+        <tr>
+            <td><a class="product-link" href="/operate/operating-edit/?product_id={{ p.item_id }}"> {{ p.item_id }}</a></td>
+            <td>{{ p.title }}</td>
+            <td>{{ p.org_price }}</td>
+            <td>{{ p.cupon_left }}</td>
+            <td>{{ p.cupon_value }}</td>
+            <td>{{ p.price }}</td>
+            <td>{{ p.commision_rate }}</td>
+            <td>{{ p.commision_amount }}</td>
+            <td><button class="button-push" itemid={{ p.item_id }} b_text="{{ p.broadcast_text }}"  b_imgs="{{ p.broadcast_img }}" onclick=post_to_api()>推送</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+
+<style>
+    html {
+        font-family: "Ubuntu Mono";
+    }
+    form {
+        margin: 1rem;
+    }
+    table {
+        border-collapse: collapse;
+        margin: 10px ;
+        width: 90%;
+    }
+    tr{
+        text-align: center;
+    }
+    table, td{
+        padding: 1rem;
+        border: 1px solid black;
+    }
+    th {
+        padding: 0.5rem 1rem;
+        border: 1px solid black;
+        color: white;
+        background-color: darkblue;
+    }
+    td ,th{
+        width:10%
+    }
+
+</style>
+
+
+<script>
+    var post_to_api = function () {
+        var tmpbtn = document.querySelector(".button-push");
+        var item_id = tmpbtn.getAttribute("itemid");
+        var img_list = tmpbtn.getAttribute("b_imgs");
+        var text = tmpbtn.getAttribute('b_text');
+
+        var tmpdata = [];
+        if (img_list){
+                var imgs = JSON.parse(img_list);
+                for (var i=0;i<imgs.length;i++) {
+                    tmpdata.push(imgs[i]);
+                }
+        }
+        if (text){
+            tmpdata.push(text);
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log(2222);
+            }
+        }
+
+        xhr.open('post','/tk/send_artifiacl_msg', true);
+        var obj = JSON.stringify({'item_id': item_id,'data':tmpdata});
+        xhr.send(obj);
+    }
+
+</script>

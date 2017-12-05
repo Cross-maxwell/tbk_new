@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<button class="button-back"><a href="/operate/operating">返回</a></button>
+<form method="post" enctype="multipart/form-data">
+    <label for="product_id">商品id</label><span class="span-product_id">{{ product_id }}</span><br/>
+    <input class="hidden-input" id="product_id" name="product_id" value="{{ product_id }}" >
+    <hr/>
+    <label>商品名称</label>
+    <div class="product-title">{{ title }}</div>
+    <hr/>
+    <label for="text">文字描述</label>
+    <textarea  id="text" name="text" >{% if broadcast_text %}"{{ broadcast_text }}"{% endif %}</textarea>
+    <hr/>
+    <label for="imgs">商品图片</label>
+    {% for img in broadcast_img %}
+            <img src={{ img }} width="20%" />
+    {% endfor %}
+
+
+    <input type="file" id="imgs" name=imgs1 accept="image/*"  />
+    <input type="file" id="imgs" name=imgs2 accept="image/*"  />
+    <input type="file" id="imgs" name=imgs3 accept="image/*"  />
+    <input type="file" id="imgs" name=imgs4 accept="image/*"  />
+    <hr/>
+    <input type="submit" value="提交修改"/>
+
+</form>
+<script>
+    var textarea = document.querySelector('textarea');
+    console.log(textarea);
+    textarea.innerHTML = textarea.innerHTML.slice(1, -1);
+</script>
+</body>
+</html>
+
+<style>
+    html{
+        font-family: "Ubuntu Mono";
+    }
+    form {
+        width: 80%;
+        border: 1px solid black;
+        padding: 0.5rem;
+    }
+    label, input , textarea {
+        width:auto;
+        padding: 1rem;
+        display: block;
+    }
+    textarea {
+        margin-left: 1rem;
+        height: 8rem;
+        width: 90%;
+    }
+    .product-title {
+        margin-left: 1rem;
+    }
+    .hidden-input {
+        display: none;
+    }
+    .span-product_id {
+        padding: 1rem;
+    }
+    a {
+        text-decoration: none;
+        color: white;
+        background-color: ;
+    }
+    .button-back {
+        background-color: #aa312c;
+        font-size: larger;
+        margin-left: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .submit-button input{
+        width: auto;
+        padding: 1rem;
+        margin: 1rem 1rem;
+        font-size: larger;
+        background-color: #003788;
+        font-weight: bolder;
+        color: white;
+
+    }
+</style>
