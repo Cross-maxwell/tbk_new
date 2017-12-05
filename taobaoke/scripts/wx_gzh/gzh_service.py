@@ -26,7 +26,7 @@ def pushNotice(order):
             order_head = '恭喜又有新订单啦。。。'
             order_id = order.order_id
             order_price = order.good_price
-            order_time = order.create_time
+            order_time = str(order.create_time)
             order_earn = order.show_commision_amount
             order_foot = '再接再厉哦！！！'
             user_id = int(order.user_id)
