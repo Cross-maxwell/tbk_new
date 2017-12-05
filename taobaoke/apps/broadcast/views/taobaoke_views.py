@@ -507,7 +507,7 @@ class ProductDetail(View):
 
 class SendArtificialMsg(View):
     """
-    接口：  /tk/send_artifiacl_msg/
+    接口：  /tk/send_artifical_msg/
     """
     @csrf_exempt
     def post(self, request):
