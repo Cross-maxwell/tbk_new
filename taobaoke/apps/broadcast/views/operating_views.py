@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from broadcast.models.entry_models import Product
 from django.views.generic.base import View
 import json
+import requests
 from broadcast.utils import OSSMgr
 
 class GetProducts(View):
@@ -18,6 +19,7 @@ class GetProducts(View):
         if item_id:
             products_list = list(Product.objects.filter(item_id__contains=item_id))
         return render_to_response('products.html', {'products': products_list})
+
 
 class EditProduct(View):
     def get(self,request):
@@ -55,3 +57,18 @@ class EditProduct(View):
         p.save()
         return render_to_response('products.html', {'products': [p]})
 
+
+class RefreshProducts(View):
+    def get(self, request):
+        action = 'restart'
+        if action:
+            target = 'http://localhost:9001/index.html?processname=taobaoke%3Afetch_lanlan&action={}'.format(action)
+            requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
+
+
+class ChangePushStatus(View):
+    def get(self, request):
+        action = request.GET.get('action')
+        if action:
+            target = 'http://localhost:9001/index.html?processname=taobaoke%3Asend_request&action={}'.format(action)
+            requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
