@@ -23,6 +23,10 @@ user_urls = [
     url(r'^poster/', poster_url),
     url(r'^get-openid/', get_openid),
 ]
+code_urls = [
+    url(r'^code/', get_openid),
+]
+
 ## 新增了获取邀请码的接口,用于poster生成海报
 
 
@@ -75,5 +79,6 @@ urlpatterns = [
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
     url(r'account/', include('account.urls')),
+    url(r'wx/', include(code_urls)),
 ]
 
