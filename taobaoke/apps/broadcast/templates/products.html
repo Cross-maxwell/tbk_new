@@ -39,6 +39,7 @@
         </tr>
         {% endfor %}
     </table>
+    <button class="button-refresh-products" onclick=refresh_products()>拉取商品</button>
 </body>
 </html>
 
@@ -53,22 +54,40 @@
        background-color: #aa312c;
         color: white;
         border: 1px solid gray;
+        font-size: 20px;
     }
         .button-stop-push:hover{
        background-color: #6e0005;
         color: white;
         border: 1px solid gray;
+        font-size: 20px;
     }
     .button-start-push{
-       background-color: #19aa9a;
+       background-color: #32a768;
         color: white;
         border: 1px solid gray;
+        font-size: 20px;
     }
         .button-start-push:hover{
        background-color: #0c5742;
         color: white;
         border: 1px solid gray;
+        font-size: 20px;
     }
+        .button-refresh-products{
+            padding: 0.5rem;
+            margin: 1rem;
+            background-color: #003788;
+            color: white;
+            border: 1px solid gray;
+            font-size: 20px;
+        }
+        .button-refresh-products:hover {
+            background-color: #d5e0e3;
+            color: #003788;
+            border: 1px solid gray;
+            font-size: 20px;
+        }
 
     form {
         margin: 1rem;
@@ -77,6 +96,7 @@
         border-collapse: collapse;
         margin: 10px ;
         width: 90%;
+        margin-bottom: 6rem;
     }
     tr{
         text-align: center;
@@ -99,16 +119,27 @@
 
 
 <script>
+    var refresh_products = function(){
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log('yeah');
+            }
+        };
+        xhr.open('get','/operate/refresh-products/', true);
+        xhr.send();
+        alert('正在抓取商品，请耐心等候！');
+    };
     var stop_push = function(){
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-                console.log(1);
+                console.log('yeah');
             }
         };
-        xhr.open('get','http://localhost:9001/index.html?processname=send_request&action=stop', true);
+        xhr.open('get','/operate/change-push-status/?action=stop', true);
         xhr.send();
-{#        alert('停止发单！');#}
+        alert('停止发单！');
     };
     var start_push = function(){
         var xhr = new XMLHttpRequest();
@@ -117,7 +148,7 @@
                 console.log(1);
             }
         };
-        xhr.open('get','http://localhost:9001/index.html?processname=send_request&action=start', true);
+        xhr.open('get','/operate/change-push-status/?action=start', true);
         xhr.send();
         alert('开始发单！');
     };
