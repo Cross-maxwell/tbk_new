@@ -16,7 +16,7 @@ from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSeria
 from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
 from django.views.generic.base import View
-from taobaoke.fuli import top_settings
+from fuli import top_settings
 @csrf_exempt
 def update_adzone(request):
     req_dict = json.loads(request.body)
