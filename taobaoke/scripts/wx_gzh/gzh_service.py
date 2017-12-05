@@ -73,15 +73,15 @@ def send(send_msg):
     ACCESS_TOKEN = basic.Basic.accessToken
     send_url = 'https://api.weixin.qq.com/cgi-bin/message/' \
                'template/send?access_token=' + ACCESS_TOKEN
-    print 'send_url:'+send_url
-    print send_msg
+    print 'ACCESS_TOKEN:'+ACCESS_TOKEN
+    print 'send_msg:'+send_msg
     res = requests.post(send_url, json=send_msg)
     print 'response state:', res.status_code
 
 
 if __name__ == '__main__':
-    # b = basic.Basic()
-    # threading.Thread(target=b.run, name='baseLoop').start()
-    # time.sleep(3)
+    b = basic.Basic()
+    threading.Thread(target=b.run, name='baseLoop').start()
+    time.sleep(3)
     order = ['2680178799280122','5977258121980758']
     pushNotice(order)
