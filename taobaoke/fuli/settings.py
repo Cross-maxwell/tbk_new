@@ -118,7 +118,7 @@ from fuli.config import getDB
 
 # 可使用mode指定要使用的数据库。指定mode为'prod'，使用生产数据库; 指定为'test'或留空，将根据主机名进行选择。
 # 配置请查看fuli/config.py
-DATABASES = getDB(mode='test')
+DATABASES = getDB(mode='smart')
 
 
 # Password validation

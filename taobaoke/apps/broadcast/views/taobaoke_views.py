@@ -580,7 +580,7 @@ class SendArtificialMsg(View):
                 logger.info("SendArtificialMsg response: {}".format(send_msg_response.content))
 
                 artifical_data = req_dict["data"]
-                time.sleep(1.5)
+                time.sleep(3.5)
             except Exception as e:
                 logger.error(e)
 

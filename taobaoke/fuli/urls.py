@@ -55,7 +55,7 @@ tk_urls = [
     url(r'set_pushtime', SetPushTime.as_view()),
     url(r'get_pushtime', GetPushTIme.as_view()),
 
-    url(r'send_artifiacl_msg', SendArtificialMsg.as_view())
+    url(r'send_artifical_msg', SendArtificialMsg.as_view())
 ]
 
 auth_urls = [
