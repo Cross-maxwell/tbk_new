@@ -102,7 +102,7 @@ CSRF_COOKIE_SECURE = True
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-from fuli.config import getDB
+# from fuli.config import getDB
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
@@ -114,10 +114,19 @@ from fuli.config import getDB
 #         'PORT': '50001',
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {'charset': 'utf8mb4'},
+        'NAME': 'mmt',
+        'USER': 'root',
+        'PASSWORD': 'root',
+    }
+}
 
 # 可使用mode指定要使用的数据库。指定mode为'prod'，使用生产数据库; 指定为'test'或留空，将根据主机名进行选择。
 # 配置请查看fuli/config.py
-DATABASES = getDB(mode='smart')
+# DATABASES = getDB(mode='smart')
 
 
 # Password validation
