@@ -83,8 +83,8 @@ def push_data():
             if table.row_values(i)[j] is not None and table.row_values(i)[j] != "":
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
-        item_id = result_dict['good_id']
-        if assert_low_rate(item_id) and result_dict['order_status']==u'订单结算':
+        # item_id = result_dict['good_id']
+        if float(result_dict['commision_rate'][:-2])<0.2 and result_dict['order_status']==u'订单结算':
             result_dict['order_status'] = u'订单失效'
             result_dict['pay_amount'] = 0
             result_dict['show_commision_amount']=0.0
@@ -108,23 +108,23 @@ def push_data():
     cal_agent_commision()
     order_notice(new_order)
 
-
-def assert_low_rate(item_id):
-    # 判断是否低佣.
-    try:
-        p = Product.objects.get(item_id=item_id)
-        order = Order.objects.get(good_id=item_id)
-        p_rate = round(float(p.commision_amount)/p.price, 2)
-        order_rate = round(float(order.commision_amount)/order.pay_amount, 2)
-        if p_rate - order_rate > 0.1:
-            return True
-        else:
-            return False
-    except Product.DoesNotExist:
-        return False
-    except Exception, e:
-        print e.message
-        return False
+# 改规则了，不用了
+# def assert_low_rate(item_id):
+#     # 判断是否低佣.
+#     try:
+#         p = Product.objects.get(item_id=item_id)
+#         order = Order.objects.get(good_id=item_id)
+#         p_rate = round(float(p.commision_amount)/p.price, 2)
+#         order_rate = round(float(order.commision_amount)/order.pay_amount, 2)
+#         if p_rate - order_rate > 0.1:
+#             return True
+#         else:
+#             return False
+#     except Product.DoesNotExist:
+#         return False
+#     except Exception, e:
+#         print e.message
+#         return False
 
 
 def order_notice(order):

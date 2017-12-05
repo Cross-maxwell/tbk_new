@@ -9,9 +9,9 @@ from account.views.agent_views import GetCommision, AlipayAccountView, BindingAl
 from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime
-
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg
+from broadcast.views.operating_views import GetProducts, EditProduct
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
 
 
@@ -66,6 +66,10 @@ auth_urls = [
     url(r'logout/$', Logout.as_view())
 ]
 
+operating_urls = [
+    url(r'operating/$', GetProducts.as_view()),
+    url(r'operating-edit/$', EditProduct.as_view()),
+]
 
 urlpatterns = [
     url(r'product/', include(product_urls)),
@@ -74,5 +78,6 @@ urlpatterns = [
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
     url(r'account/', include('account.urls')),
+    url(r'operate/', include(operating_urls)),
 ]
 
