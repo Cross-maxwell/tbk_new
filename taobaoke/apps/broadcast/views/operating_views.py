@@ -60,7 +60,7 @@ class EditProduct(View):
 
 class RefreshProducts(View):
     def get(self, request):
-        action = 'refresh'
+        action = 'restart'
         if action:
             target = 'http://localhost:9001/index.html?processname=taobaoke%3Afetch_lanlan&action={}'.format(action)
             requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
