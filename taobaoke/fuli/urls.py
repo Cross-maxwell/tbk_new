@@ -8,7 +8,7 @@ from account.views.agent_views import GetCommision, AlipayAccountView, BindingAl
 
 from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
-    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime
+    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid
 
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg

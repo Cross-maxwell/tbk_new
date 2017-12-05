@@ -3,9 +3,14 @@
 import requests
 import time
 import threading
+import os,sys
 
 import logging
+sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke/')
 
+import django
+os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
+django.setup()
 logger = logging.getLogger("utils")
 
 from account.models.order_models import Order
@@ -26,10 +31,10 @@ def pushNotice(order):
             order_earn = order.show_commision_amount
             order_foot = '再接再厉哦！！！'
             user_id = int(order.user_id)
-            md_username = User.objects.filter(id=user_id).first().username
+            # md_username = User.objects.filter(id=user_id).first().username
             openid = TkUser.objects.filter(user_id=user_id).first().openid
             if openid:
-                msg = {
+                send_msg = {
                     "touser": openid,
                     "template_id": basic.TEMPLATE_ID,
                     "url": basic.MMT_URL,
@@ -60,22 +65,22 @@ def pushNotice(order):
                         }
                     }
                 }
-            send(msg)
+                send(send_msg)
         except Exception as e:
             logger.error(e)
 
 
-def send(msg):
+def send(send_msg):
     ACCESS_TOKEN = basic.Basic.accessToken
     send_url = 'https://api.weixin.qq.com/cgi-bin/message/' \
                'template/send?access_token=' + ACCESS_TOKEN
-    res = requests.post(send_url, json=msg)
+    res = requests.post(send_url, json=send_msg)
     print 'response state:', res.status_code
 
 
 if __name__ == '__main__':
-    b = basic.Basic()
-    threading.Thread(target=b.run, name='baseLoop').start()
-    time.sleep(3)
-    order = ['25312491163639094','95280257991019984']
+    # b = basic.Basic()
+    # threading.Thread(target=b.run, name='baseLoop').start()
+    # time.sleep(3)
+    order = ['2680178799280122','5977258121980758']
     pushNotice(order)
