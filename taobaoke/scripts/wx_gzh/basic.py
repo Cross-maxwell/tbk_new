@@ -3,6 +3,7 @@ import urllib
 import time
 import json
 import sys
+# sys.path.append('/root/project/new_taobaoke/taobaoke')
 sys.path.append('/root/project/new_taobaoke/taobaoke')
 from fuli import top_settings
 

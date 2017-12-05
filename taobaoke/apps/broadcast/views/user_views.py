@@ -17,6 +17,8 @@ from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
 from django.views.generic.base import View
 from fuli import top_settings
+
+
 @csrf_exempt
 def update_adzone(request):
     req_dict = json.loads(request.body)
@@ -60,6 +62,7 @@ def get_login_qrcode(request):
     threading.Thread(target=fetch_cookie_from_network).start()
     return Response(u"Bot is sending qr code snap through Bearychat, you can close this website now")
 
+
 @csrf_exempt
 def poster_url(request):
     if request.method == 'GET':
@@ -68,37 +71,44 @@ def poster_url(request):
         response_data = {'url': pic_url}
         return JsonResponse(response_data, status=200)
 
+
 def get_invite_code(request):
     if request.method == 'GET':
         user = request.user
         try:
             invite_code = user.tkuser.invite_code
-            data = {'invite_code':invite_code}
-            return  HttpResponse(json.dumps({'data': data}),status=200)
+            data = {'invite_code': invite_code}
+            return HttpResponse(json.dumps({'data': data}), status=200)
         except TkUser.DoesNotExist:
-            return  HttpResponse(json.dumps({'error':'TkUser does not exist.'}),status=400)
-        except Exception,e:
-            return  HttpResponse(json.dumps({'error': e.message}),status=400)
+            return HttpResponse(json.dumps({'error': 'TkUser does not exist.'}), status=400)
+        except Exception, e:
+            return HttpResponse(json.dumps({'error': e.message}), status=400)
+
 
 def get_openid(request):
     code = request.GET.get('code', '')
     username = request.GET.get('username', '')
     print 'code:' + code + '-----username:' + username
-
-    if code and username:
-        url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
-              'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \
-            .format(APPID=top_settings.APPID, SECRET=top_settings.APPSECRET, CODE=code)
-        res = requests.get(url)
-        json_date = res.json()
-        print json_date
-        open_id = json_date.get("openid", '')
-        print 'open_id:' + open_id
-        if open_id:
-            # 存数据库
+    try:
+        if code and username:
             user_id = User.objects.get(username=username).id
-            TkUser.objects.filter(user_id=user_id).update(openid=open_id)
-        return HttpResponse('ok')
+            OPENID = TkUser.objects.filter(user_id=user_id).first().openid
+            if not OPENID:
+                url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
+                      'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \
+                    .format(APPID=top_settings.APPID, SECRET=top_settings.APPSECRET, CODE=code)
+                res = requests.get(url)
+                json_date = res.json()
+                print json_date
+                open_id = json_date.get("openid", '')
+                print 'open_id:' + open_id
+                if open_id:
+                    # 存数据库
+                    user_id = User.objects.get(username=username).id
+                    TkUser.objects.filter(user_id=user_id).update(openid=open_id)
+            return HttpResponse('ok')
+    except Exception as e:
+        print e
     return HttpResponse('bad')
 
 
