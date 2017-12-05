@@ -86,9 +86,9 @@ class Product(Entry):
     # 商品id
     item_id = models.CharField(max_length=64, unique=True, db_index=True, null=False)
     # 商品推广文案
-    broadcast_text = models.CharField(max_length=4096, null=True)
+    broadcast_text = models.CharField(max_length=4096, default="")
     # 商品推广图片
-    broadcast_img = models.CharField(max_length=4096, null=True)
+    broadcast_img = models.CharField(max_length=4096, default="[]")
 
     @property
     def org_price(self):
