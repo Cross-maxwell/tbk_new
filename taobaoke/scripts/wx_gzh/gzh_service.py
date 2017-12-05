@@ -13,13 +13,15 @@ import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
 logger = logging.getLogger("utils")
+from django.core.cache import cache
+
 
 from account.models.order_models import Order
 from broadcast.models.user_models import TkUser
 
 import basic
 
-
+GZH_ACESS_KEY = 'gzh_acess_key'
 def pushNotice(order):
     for order_id in order:
         try:
@@ -72,7 +74,8 @@ def pushNotice(order):
 
 
 def send(send_msg):
-    ACCESS_TOKEN = basic.Basic.accessToken
+    # ACCESS_TOKEN = basic.Basic.accessToken
+    ACCESS_TOKEN = cache.get(GZH_ACESS_KEY)
     send_url = 'https://api.weixin.qq.com/cgi-bin/message/' \
                'template/send?access_token=' + ACCESS_TOKEN
     print 'ACCESS_TOKEN:'+ACCESS_TOKEN

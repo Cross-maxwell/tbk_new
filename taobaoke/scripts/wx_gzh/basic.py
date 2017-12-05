@@ -6,11 +6,12 @@ import sys
 # sys.path.append('/root/project/new_taobaoke/taobaoke')
 sys.path.append('/root/project/new_taobaoke/taobaoke')
 from fuli import top_settings
+from django.core.cache import cache
 
 openid = 'oo-aE1ghNVTBShFhW-vRHeaRH72Q'
 TEMPLATE_ID = '0g9k7JY2qBjJO1aLIiJap7WWLMw7FvvLpT7BrnEui5E'
 MMT_URL = 'http://tmp.zhiqun365.com/robot/robotlist'
-
+GZH_ACESS_KEY = 'gzh_acess_key'
 
 class Basic:
     accessToken = ''
@@ -27,6 +28,7 @@ class Basic:
         urlResp = json.loads(urlResp.read())
         self.__accessToken = urlResp['access_token']
         Basic.accessToken = urlResp['access_token']
+        cache.set(GZH_ACESS_KEY, urlResp['access_token'], 2*60 * 60)
         print 'Basic.accessToken:' + Basic.accessToken
         self.__leftTime = urlResp['expires_in']
 
@@ -37,7 +39,7 @@ class Basic:
 
     def run(self):
         while True:
-            if self.__leftTime > 10:
+            if self.__leftTime > 20:
                 time.sleep(2)
                 self.__leftTime -= 2
             else:
