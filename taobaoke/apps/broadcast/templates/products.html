@@ -8,6 +8,10 @@
     <form method="post">
         <input type="text" name="item_id" placeholder="商品ID.."/>
         <input type="submit" value="搜索" />
+        <span class="change-push-status">
+        <button class="button-stop-push" onclick=stop_push()>停止发单</button>
+        <button class="button-start-push" onclick=start_push()>开始发单</button>
+        </span>
     </form>
     <table>
         <tr>
@@ -42,6 +46,30 @@
     html {
         font-family: "Ubuntu Mono";
     }
+    .change-push-status{
+        margin-left: 5rem;
+    }
+    .button-stop-push{
+       background-color: #aa312c;
+        color: white;
+        border: 1px solid gray;
+    }
+        .button-stop-push:hover{
+       background-color: #6e0005;
+        color: white;
+        border: 1px solid gray;
+    }
+    .button-start-push{
+       background-color: #19aa9a;
+        color: white;
+        border: 1px solid gray;
+    }
+        .button-start-push:hover{
+       background-color: #0c5742;
+        color: white;
+        border: 1px solid gray;
+    }
+
     form {
         margin: 1rem;
     }
@@ -71,6 +99,28 @@
 
 
 <script>
+    var stop_push = function(){
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log(1);
+            }
+        };
+        xhr.open('get','/index.html?processname=send_request&action=stop', true);
+        xhr.send();
+{#        alert('停止发单！');#}
+    };
+    var start_push = function(){
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log(1);
+            }
+        };
+        xhr.open('get','/index.html?processname=send_request&action=start', true);
+        xhr.send();
+        alert('开始发单！');
+    };
     var post_to_api = function () {
         var tmpbtn = document.querySelector(".button-push");
         var item_id = tmpbtn.getAttribute("itemid");
@@ -91,13 +141,14 @@
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-                console.log(2222);
+                console.log(1);
             }
-        }
+        };
 
         xhr.open('post','/tk/send_artifical_msg', true);
         var obj = JSON.stringify({'item_id': item_id,'data':tmpdata});
         xhr.send(obj);
+        alert('推送成功！');
     }
 
 </script>
