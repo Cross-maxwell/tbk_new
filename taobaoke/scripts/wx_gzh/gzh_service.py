@@ -7,8 +7,8 @@ import datetime
 import os,sys
 
 import logging
-# sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
-sys.path.append('/root/project/new_taobaoke/taobaoke')
+sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
+# sys.path.append('/root/project/new_taobaoke/taobaoke')
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
@@ -26,11 +26,11 @@ def pushNotice(order):
             order = Order.objects.filter(order_id=order_id).first()
             order_head = '恭喜您又有新订单啦~'
             order_id = order.order_id
-            order_price = round(order.good_price,2)
+            order_price = str(round(order.good_price,2))
             create_time = order.create_time + datetime.timedelta(hours=8)
-            outtime = create_time.strftime('%y-%m-%d %H:%M:%S')
+            outtime = create_time.strftime('%Y-%m-%d %H:%M:%S')
             order_time = str(outtime)
-            order_earn = order.show_commision_amount
+            order_earn = str(round(order.show_commision_amount,2))
             order_foot = '再接再厉哦！'
             user_id = int(order.user_id)
             openid = TkUser.objects.filter(user_id=user_id).first().openid
@@ -82,8 +82,8 @@ def send(send_msg):
 
 
 if __name__ == '__main__':
-    b = basic.Basic()
-    threading.Thread(target=b.run, name='baseLoop').start()
-    time.sleep(3)
+    # b = basic.Basic()
+    # threading.Thread(target=b.run, name='baseLoop').start()
+    # time.sleep(3)
     order = ['2680178799280122','5977258121980758']
     pushNotice(order)
