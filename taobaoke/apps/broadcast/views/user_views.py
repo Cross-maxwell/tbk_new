@@ -92,7 +92,10 @@ def get_openid(request):
     try:
         if code and username:
             user_id = User.objects.get(username=username).id
-            OPENID = TkUser.objects.filter(user_id=user_id).first().openid
+            tkuser= TkUser.objects.filter(user_id=user_id).first()
+            OPENID=''
+            if tkuser:
+                OPENID = tkuser.openid
             if not OPENID:
                 url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
                       'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \

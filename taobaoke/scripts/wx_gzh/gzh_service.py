@@ -7,8 +7,8 @@ import datetime
 import os,sys
 
 import logging
-# sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
-sys.path.append('/root/project/new_taobaoke/taobaoke')
+sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
+# sys.path.append('/root/project/new_taobaoke/taobaoke')
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
@@ -82,8 +82,8 @@ def send(send_msg):
 
 
 if __name__ == '__main__':
-    b = basic.Basic()
-    threading.Thread(target=b.run, name='baseLoop').start()
-    time.sleep(3)
+    # b = basic.Basic()
+    # threading.Thread(target=b.run, name='baseLoop').start()
+    # time.sleep(3)
     order = ['2680178799280122','5977258121980758']
     pushNotice(order)
