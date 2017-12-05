@@ -3,11 +3,13 @@ import urllib
 import time
 import json
 
+sys.path.append('/root/project/new_taobaoke/taobaoke')
+from fuli import top_settings
+
 openid = 'oo-aE1ghNVTBShFhW-vRHeaRH72Q'
 TEMPLATE_ID = '0g9k7JY2qBjJO1aLIiJap7WWLMw7FvvLpT7BrnEui5E'
 MMT_URL = 'http://tmp.zhiqun365.com/robot/robotlist'
 
-from fuli import top_settings
 
 class Basic:
     accessToken = ''
