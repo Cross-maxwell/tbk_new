@@ -7,8 +7,8 @@ import datetime
 import os,sys
 
 import logging
-sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
-# sys.path.append('/root/project/new_taobaoke/taobaoke')
+# sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
+sys.path.append('/root/project/new_taobaoke/taobaoke')
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
