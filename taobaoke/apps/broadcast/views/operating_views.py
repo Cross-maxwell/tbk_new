@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from broadcast.models.entry_models import Product
 from django.views.generic.base import View
+from django.http import HttpResponse
 import json
 import requests
 from broadcast.utils import OSSMgr
@@ -63,7 +64,8 @@ class RefreshProducts(View):
         action = 'restart'
         if action:
             target = 'http://s-prod-07.qunzhu666.com:9001/index.html?processname=taobaoke%3Afetch_lanlan&action={}'.format(action)
-            requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
+            requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu", "connection": "close"})
+            return HttpResponse()
 
 
 class ChangePushStatus(View):
@@ -71,4 +73,5 @@ class ChangePushStatus(View):
         action = request.GET.get('action')
         if action:
             target = 'http://s-prod-07.qunzhu666.com:9001/index.html?processname=taobaoke%3Asend_request&action={}'.format(action)
-            requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu"})
+            requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu", "connection": "close"})
+            return HttpResponse()
