@@ -31,7 +31,7 @@ def pushNotice(order):
             outtime = create_time.strftime('%Y-%m-%d %H:%M:%S')
             order_time = str(outtime)
             order_earn = str(round(order.show_commision_amount,2))
-            order_foot = '再接再厉哦！'
+            order_foot = '请再接再厉哦！'
             user_id = int(order.user_id)
             openid = TkUser.objects.filter(user_id=user_id).first().openid
             if openid:
