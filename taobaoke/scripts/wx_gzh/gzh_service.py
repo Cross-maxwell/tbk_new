@@ -73,6 +73,8 @@ def send(send_msg):
     ACCESS_TOKEN = basic.Basic.accessToken
     send_url = 'https://api.weixin.qq.com/cgi-bin/message/' \
                'template/send?access_token=' + ACCESS_TOKEN
+    print 'send_url:'+send_url
+    print send_msg
     res = requests.post(send_url, json=send_msg)
     print 'response state:', res.status_code
 
