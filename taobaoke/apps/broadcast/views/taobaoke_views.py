@@ -268,67 +268,6 @@ class AppSearchListView(View):
     """
     @csrf_exempt
     def post(self, request):
-        # req_dict = json.loads(request.body)
-        # id = req_dict["id"]
-        # page = req_dict.get("page", "1")
-        # sort = req_dict.get("sort", "1")
-        #
-        # # 维护一个dict
-        # sort_dict = {
-        #     "1": "MS",
-        #     "2": "Mi",
-        #     "3": "My",
-        #     "8": "OC",
-        # }
-        # sort_params = sort_dict[sort]
-        #
-        # keyword = req_dict.get("keyword", "")
-        # keyword_mapping = SearchKeywordMapping.objects.get(id=id)
-        # md_username = keyword_mapping.username
-        # if not keyword:
-        #     keyword = keyword_mapping.keyword
-        #
-        # try:
-        #     tk_user = TkUser.get_user(md_username)
-        #     pid = tk_user.adzone.pid
-        #
-        #     midlle_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort=1&pid={pid}&search={keyword}&_path=9001.SE.0". \
-        #         format(pid=pid, keyword=keyword)
-        #     midlle_response = requests.get(midlle_url)
-        #     wp = json.loads(midlle_response.content)["result"]["wp"]
-        #     wp_list = list(wp)
-        #
-        #     if page == "1":
-        #         search_url = "http://dianjin.dg15.cn/a_api/index/search?wp=&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
-        #             sort=sort, pid=pid, keyword=keyword
-        #         )
-        #         response = requests.get(search_url)
-        #         return HttpResponse(response.content)
-        #
-        #     # 替换页码
-        #     if page == "2":
-        #         wp_list[11] = "y"
-        #     if page == "3":
-        #         wp_list[11] = "z"
-        #     if int(page) >= 4:
-        #         wp_list[11] = str(int(page) - 4)
-        #
-        #     # 替换排序方式
-        #     wp1 = ''.join(wp_list)
-        #     wp_list1 = list(wp1)
-        #     wp_list1[24:26] = list(sort_params)
-        #     final_wp = ''.join(wp_list1)
-        #
-        #     # TODO： 这里wp的值可能会发生改变
-        #     search_url = "http://dianjin.dg15.cn/a_api/index/search?wp={wp}&sort={sort}&pid={pid}&search={keyword}&_path=9001.SE.0".format(
-        #         wp=final_wp, sort=sort, pid=pid, keyword=keyword
-        #     )
-        #     response = requests.get(search_url)
-        #     return HttpResponse(response.content)
-        # except Exception as e:
-        #     logger.error(e)
-
-        # TODO: 待前端完成
         req_dict = json.loads(request.body)
         # TODO: 接受小程序传来的id值，去数据库中拿出相应数据
         id = req_dict["id"]
@@ -356,6 +295,7 @@ class AppSearchListView(View):
             return HttpResponse(response.content)
         except Exception as e:
             logger.error(e)
+            return HttpResponse(json.dumps({"ret": 0, "data": "发生未知错误"}))
 
 
 class AppSearchDetailView(View):

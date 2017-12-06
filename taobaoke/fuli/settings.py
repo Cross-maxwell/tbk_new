@@ -190,7 +190,6 @@ CORS_ALLOW_HEADERS = (
 # STATIC_ROOT = '/home/smartkeyerror/.virtualenvs/django_env/local/lib/python2.7/site-packages/django/contrib/admin/'
 STATIC_URL = '/static/'
 
-APPEND_SLASH = False
 
 import logging
 import django.utils.log
