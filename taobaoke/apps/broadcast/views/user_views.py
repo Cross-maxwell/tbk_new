@@ -17,6 +17,7 @@ from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
 from django.views.generic.base import View
 
+sys.path.append('/home/new_taobaoke/taobaoke/')
 from fuli import top_settings
 
 
