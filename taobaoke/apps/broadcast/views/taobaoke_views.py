@@ -6,26 +6,25 @@ import requests
 import datetime
 import random
 import time
+import urllib
+import qrcode
+
 from django.http import HttpResponse
 from django.views.generic.base import View
 from django.core.cache import cache
-from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.db.models import Q
+from django.utils.encoding import iri_to_uri
 
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product
-from django.db.models import Q
 from user_auth.models import PushTime
-import urllib
 from broadcast.models.user_models import Adzone
-from django.utils.encoding import iri_to_uri
-from fuli.oss_utils import beary_chat
-import random
 from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
-import qrcode
-import top.api
+
+from fuli.oss_utils import beary_chat
 
 
 # 本地测试
@@ -469,6 +468,20 @@ class ProductDetail(View):
         except Product.DoesNotExist:
             return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist'}), status=400)
         p_detail = p.productdetail
+        activity_id = re.findall('activityId=([\w\d]+)',p.cupon_url)[0]
+        try:
+            detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid=" \
+                         "&_path=9001.SE.0.i.{path}&src=".format(
+                itemId=p.item_id, activityId=activity_id, path=p.item_id
+            )
+            response = requests.get(detail_url)
+            detail_dict = json.loads(response.content)
+            item = detail_dict["result"]["item"]
+        except Exception, e:
+            p.available = False
+            p.save()
+            logger.info("itemId: {}, 商品已失效".format(p.item_id))
+            return HttpResponse(json.dumps({"ret": 0, "reason": "商品失效了哦～"}))
         resp_dict = {
             'title': p.title,
             'desc': p.desc,
@@ -478,7 +491,9 @@ class ProductDetail(View):
             'org_price': p.org_price,
             'provcity': p_detail.provcity,
             'seller_nick': p_detail.seller_nick,
-            'small_imgs': p_detail.small_imgs,
+            'small_imgs': json.loads(p_detail.small_imgs),
+            'detailImages': item['detailImages'],
+            'recommend': item['recommend'],
             # 最根类
             'root_cat': p_detail.cate.root_cat_name,
             # 类别
@@ -491,7 +506,7 @@ class ProductDetail(View):
 
 class SendArtificialMsg(View):
     """
-    接口：  /tk/send_artifiacl_msg/
+    接口：  /tk/send_artifical_msg/
     """
     @csrf_exempt
     def post(self, request):
@@ -564,7 +579,7 @@ class SendArtificialMsg(View):
                 logger.info("SendArtificialMsg response: {}".format(send_msg_response.content))
 
                 artifical_data = req_dict["data"]
-                time.sleep(1.5)
+                time.sleep(3.5)
             except Exception as e:
                 logger.error(e)
 

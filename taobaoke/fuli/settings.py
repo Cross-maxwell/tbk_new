@@ -68,16 +68,17 @@ ROOT_URLCONF = 'fuli.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
+        'DIRS': [os.path.join(BASE_DIR, 'apps/broadcast/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
+            'environment': 'broadcast.jinja2env.environment',
+            # 'context_processors': [
+            #     'django.template.context_processors.debug',
+            #     'django.template.context_processors.request',
+            #     'django.contrib.auth.context_processors.auth',
+            #     'django.contrib.messages.context_processors.messages',
+            # ],
         },
     },
 ]
@@ -188,6 +189,8 @@ CORS_ALLOW_HEADERS = (
 
 # STATIC_ROOT = '/home/smartkeyerror/.virtualenvs/django_env/local/lib/python2.7/site-packages/django/contrib/admin/'
 STATIC_URL = '/static/'
+
+APPEND_SLASH = False
 
 import logging
 import django.utils.log

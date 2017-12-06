@@ -23,6 +23,10 @@ class TkUser(models.Model):
     inviter_id = models.CharField(max_length=16, null=True)
     inviter_backup_info = models.CharField(max_length=128, null=True)
     openid = models.CharField(max_length=40,null=True,default='')
+
+    # 是否同意法律声明
+    is_agree_statement = models.BooleanField(default=False)
+
     def get_adzone_id(self):
         return self.adzone.pid.split('_')[-1]
 

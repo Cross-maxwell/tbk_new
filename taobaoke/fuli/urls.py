@@ -12,7 +12,8 @@ from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuse
 
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg
-from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
+from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts
+from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
 
 user_urls = [
@@ -57,7 +58,7 @@ tk_urls = [
     url(r'set_pushtime', SetPushTime.as_view()),
     url(r'get_pushtime', GetPushTIme.as_view()),
 
-    url(r'send_artifiacl_msg', SendArtificialMsg.as_view())
+    url(r'send_artifical_msg', SendArtificialMsg.as_view())
 ]
 
 auth_urls = [
@@ -65,9 +66,16 @@ auth_urls = [
     url(r'register/$', RegisterVIew.as_view()),
     url(r'send_verifyNum/$', SendTextMessage.as_view()),
     url(r'reset/$', ResetPassword.as_view()),
-    url(r'logout/$', Logout.as_view())
+    url(r'logout/$', Logout.as_view()),
+    url(r'is_agree_statement', JudgeIsAgreeStatement.as_view())
 ]
 
+operate_urls = [
+    url(r'operating/$', GetProducts.as_view()),
+    url(r'operating-edit/$', EditProduct.as_view()),
+    url(r'change-push-status/$', ChangePushStatus.as_view()),
+    url(r'refresh-products/$', RefreshProducts.as_view()),
+]
 
 urlpatterns = [
     url(r'product/', include(product_urls)),
@@ -76,5 +84,6 @@ urlpatterns = [
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
     url(r'account/', include('account.urls')),
+    url(r'operate/', include(operate_urls)),
 ]
 

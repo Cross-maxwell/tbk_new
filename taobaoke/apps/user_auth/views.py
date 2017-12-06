@@ -26,8 +26,8 @@ if sys.getdefaultencoding() != defaultencoding:
 import logging
 logger = logging.getLogger("django_views")
 
-class LoginView(View):
 
+class LoginView(View):
     @csrf_exempt
     def post(self, request):
         req_data = json.loads(request.body)
@@ -67,6 +67,8 @@ class RegisterVIew(View):
         verifyNum = req_data.get("verifyNum", "")
         invite_code = req_data.get("invite_code", None)
 
+        is_agree_statement = req_data.get("is_agree_statement", 0)
+
         cache_key = username + "_sms_send"
         verify_code = cache.get(cache_key)
         if verify_code is None or verify_code != verifyNum:
@@ -78,14 +80,19 @@ class RegisterVIew(View):
         user_list = [user.username for user in User.objects.all()]
         if username in user_list:
             return HttpResponse(json.dumps({"ret": 0, "data": "该用户已经存在"}))
+        if not is_agree_statement:
+            return HttpResponse(json.dumps({"ret": 0, "data": "未同意法律声明"}))
         user = User.objects.create_user(
             username=username,
             password=password1
         )
+        tk_user = TkUser.objects.get(user=user)
+        tk_user.is_agree_statement = True
+        tk_user.save()
         if invite_code:
-            tkuser = TkUser.objects.get(user_id = user.id)
+            tkuser = TkUser.objects.get(user_id=user.id)
             inviter = TkUser.objects.get(invite_code=invite_code)
-            tkuser.inviter_id=inviter.user_id
+            tkuser.inviter_id = inviter.user_id
             tkuser.save()
         return HttpResponse(json.dumps({"ret": 1, "data": "注册成功"}))
 
@@ -159,4 +166,32 @@ class SendTextMessage(View):
         return HttpResponse(json.dumps({'data': '短信发送成功,请查验', 'retCode': 200}))
 
 
+class JudgeIsAgreeStatement(View):
+    @csrf_exempt
+    def post(self, request):
+        req_data = json.loads(request.body)
+        md_username = req_data.get('username', None)
+        is_agree_statement = req_data.get('is_agree_statement', 0)
+        if not md_username:
+            return HttpResponse(json.dumps({"ret": 0, "data": "username为空"}))
+        if not is_agree_statement:
+            return HttpResponse(json.dumps({"ret": 0, "data": "未同意法律条文"}))
+        try:
+            tkuser = TkUser.objects.get(user__username=md_username)
+            tkuser.is_agree_statement = True
+            tkuser.save()
+            return HttpResponse(json.dumps({"ret": 1, "data": "添加法律条文成功"}))
+        except Exception as e:
+            logger.error(e)
+
+    def get(self, request):
+        md_username = request.GET.get("username", None)
+        if not md_username:
+            return HttpResponse(json.dumps({"ret": 0, "data": "username为空"}))
+        try:
+            tkuser = TkUser.objects.get(user__username=md_username)
+            is_agree_statement = tkuser.is_agree_statement
+            return HttpResponse(json.dumps({"ret": 1, "is_agree_statement": is_agree_statement}))
+        except Exception as e:
+            logger.error(e)
 
