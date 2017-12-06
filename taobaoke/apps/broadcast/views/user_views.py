@@ -16,6 +16,7 @@ from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSeria
 from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
 from django.views.generic.base import View
+
 from fuli import top_settings
 
 
@@ -62,7 +63,6 @@ def get_login_qrcode(request):
     threading.Thread(target=fetch_cookie_from_network).start()
     return Response(u"Bot is sending qr code snap through Bearychat, you can close this website now")
 
-
 @csrf_exempt
 def poster_url(request):
     if request.method == 'GET':
@@ -71,19 +71,17 @@ def poster_url(request):
         response_data = {'url': pic_url}
         return JsonResponse(response_data, status=200)
 
-
 def get_invite_code(request):
     if request.method == 'GET':
         user = request.user
         try:
             invite_code = user.tkuser.invite_code
-            data = {'invite_code': invite_code}
-            return HttpResponse(json.dumps({'data': data}), status=200)
+            data = {'invite_code':invite_code}
+            return  HttpResponse(json.dumps({'data': data}),status=200)
         except TkUser.DoesNotExist:
-            return HttpResponse(json.dumps({'error': 'TkUser does not exist.'}), status=400)
-        except Exception, e:
-            return HttpResponse(json.dumps({'error': e.message}), status=400)
-
+            return  HttpResponse(json.dumps({'error':'TkUser does not exist.'}),status=400)
+        except Exception,e:
+            return  HttpResponse(json.dumps({'error': e.message}),status=400)
 
 def get_openid(request):
     code = request.GET.get('code', '')
@@ -113,7 +111,6 @@ def get_openid(request):
     except Exception as e:
         print e
     return HttpResponse('bad')
-
 
 class SetPushTime(View):
     @csrf_exempt
