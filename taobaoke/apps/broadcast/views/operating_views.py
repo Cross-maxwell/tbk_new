@@ -8,13 +8,14 @@ import json
 import requests
 from broadcast.utils import OSSMgr
 
+
 class GetProducts(View):
-    def get(self,request):
+    def get(self, request):
         return render_to_response('products.html')
 
     @csrf_exempt
-    def post(self,request):
-        products_list=[]
+    def post(self, request):
+        products_list = []
         # 使用title查找，对用户更舒服
         item_id = request.POST.get('item_id')
         if item_id:

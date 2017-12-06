@@ -6,26 +6,25 @@ import requests
 import datetime
 import random
 import time
+import urllib
+import qrcode
+
 from django.http import HttpResponse
 from django.views.generic.base import View
 from django.core.cache import cache
-from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.db.models import Q
+from django.utils.encoding import iri_to_uri
 
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product
-from django.db.models import Q
 from user_auth.models import PushTime
-import urllib
 from broadcast.models.user_models import Adzone
-from django.utils.encoding import iri_to_uri
-from fuli.oss_utils import beary_chat
-import random
 from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
-import qrcode
-import top.api
+
+from fuli.oss_utils import beary_chat
 
 
 # 本地测试

@@ -12,7 +12,7 @@ from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuse
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts
-from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout
+from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
 
 user_urls = [
@@ -63,7 +63,8 @@ auth_urls = [
     url(r'register/$', RegisterVIew.as_view()),
     url(r'send_verifyNum/$', SendTextMessage.as_view()),
     url(r'reset/$', ResetPassword.as_view()),
-    url(r'logout/$', Logout.as_view())
+    url(r'logout/$', Logout.as_view()),
+    url(r'is_agree_statement', JudgeIsAgreeStatement.as_view())
 ]
 
 operate_urls = [
