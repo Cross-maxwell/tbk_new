@@ -5,6 +5,9 @@ import json
 import sys
 # sys.path.append('/root/project/new_taobaoke/taobaoke')
 sys.path.append('/root/project/new_taobaoke/taobaoke')
+import django
+os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
+django.setup()
 from fuli import top_settings
 from django.core.cache import cache
 
