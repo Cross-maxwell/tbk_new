@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 
 import json
 import threading
+import requests
+
+from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -13,6 +16,10 @@ from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSeria
 from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
 from django.views.generic.base import View
+
+sys.path.append('/home/new_taobaoke/taobaoke/')
+from fuli import top_settings
+
 
 @csrf_exempt
 def update_adzone(request):
@@ -77,6 +84,34 @@ def get_invite_code(request):
         except Exception,e:
             return  HttpResponse(json.dumps({'error': e.message}),status=400)
 
+def get_openid(request):
+    code = request.GET.get('code', '')
+    username = request.GET.get('username', '')
+    print 'code:' + code + '-----username:' + username
+    try:
+        if code and username:
+            user_id = User.objects.get(username=username).id
+            tkuser= TkUser.objects.filter(user_id=user_id).first()
+            OPENID=''
+            if tkuser:
+                OPENID = tkuser.openid
+            if not OPENID:
+                url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
+                      'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \
+                    .format(APPID=top_settings.APPID, SECRET=top_settings.APPSECRET, CODE=code)
+                res = requests.get(url)
+                json_date = res.json()
+                print json_date
+                open_id = json_date.get("openid", '')
+                print 'open_id:' + open_id
+                if open_id:
+                    # 存数据库
+                    user_id = User.objects.get(username=username).id
+                    TkUser.objects.filter(user_id=user_id).update(openid=open_id)
+            return HttpResponse('ok')
+    except Exception as e:
+        print e
+    return HttpResponse('bad')
 
 class SetPushTime(View):
     @csrf_exempt
