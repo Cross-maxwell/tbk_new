@@ -1,20 +1,19 @@
 # coding=utf-8
 
 import requests
-import time
-import threading
 import datetime
 import os,sys
 
-import logging
-# sys.path.append('/home/renyangfar/project/new_taobaoke/taobaoke')
-sys.path.append('/root/project/new_taobaoke/taobaoke')
+sys.path.append('/home/new_taobaoke/taobaoke/')
+# sys.path.append('/root/project/new_taobaoke/taobaoke')
+
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
-logger = logging.getLogger("utils")
-from django.core.cache import cache
 
+from django.core.cache import cache
+import logging
+logger = logging.getLogger("utils")
 
 from account.models.order_models import Order
 from broadcast.models.user_models import TkUser
@@ -22,6 +21,7 @@ from broadcast.models.user_models import TkUser
 import basic
 
 GZH_ACESS_KEY = 'gzh_acess_key'
+
 def pushNotice(order):
     for order_id in order:
         try:
