@@ -28,7 +28,7 @@ def pushNotice(order):
             order = Order.objects.filter(order_id=order_id).first()
             order_head = '恭喜您又有新订单啦~'
             order_id = order.order_id
-            order_price = str(round(order.good_price,2))
+            order_price = str(round(order.pay_amount,2))
             create_time = order.create_time + datetime.timedelta(hours=8)
             outtime = create_time.strftime('%Y-%m-%d %H:%M:%S')
             order_time = str(outtime)
