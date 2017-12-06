@@ -67,6 +67,8 @@ class RegisterVIew(View):
         verifyNum = req_data.get("verifyNum", "")
         invite_code = req_data.get("invite_code", None)
 
+        is_agree_statement = req_data.get("is_agree_statement", 0)
+
         cache_key = username + "_sms_send"
         verify_code = cache.get(cache_key)
         if verify_code is None or verify_code != verifyNum:
@@ -78,10 +80,15 @@ class RegisterVIew(View):
         user_list = [user.username for user in User.objects.all()]
         if username in user_list:
             return HttpResponse(json.dumps({"ret": 0, "data": "该用户已经存在"}))
+        if not is_agree_statement:
+            return HttpResponse(json.dumps({"ret": 0, "data": "未同意法律声明"}))
         user = User.objects.create_user(
             username=username,
             password=password1
         )
+        tk_user = TkUser.objects.get(user=user)
+        tk_user.is_agree_statement = True
+        tk_user.save()
         if invite_code:
             tkuser = TkUser.objects.get(user_id = user.id)
             inviter = TkUser.objects.get(invite_code=invite_code)
