@@ -31,7 +31,7 @@ user_urls = [
 product_urls = [
     url(r'insert/', insert_product),
     url(r'qrcode/', get_login_qrcode),
-    url(r'detail/', ProductDetail.as_view()),
+    url(r'detail', ProductDetail.as_view()),
 
     url(r'search_list', AppSearchListView.as_view()),
     url(r'search_detail', AppSearchDetailView.as_view())
