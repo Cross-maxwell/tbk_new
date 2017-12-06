@@ -128,9 +128,33 @@ ipad_weixin:
             {"ret": 1} 添加成功
 
 
-
-
-
+    1206新增接口，法律条文
+    6. 注册接口
+     http://s-prod-07.qunzhu666.com:9090/api/auth/register/
+        方法: POST
+        格式: json
+        参数：
+            username
+            password1
+            password2
+            verifyNum: 短信验证码
+            is_agree_statement 布尔值 0或者1
+    7. 
+     http://s-prod-07.qunzhu666.com:9090/api/auth/is_agree_statement/
+     get方法：
+        传入username, 返回是否同意法律条文
+        http://s-prod-07.qunzhu666.com:9090/api/auth/is_agree_statement?username=136xxx
+            返回：{"ret": 1, "is_agree_statement": 0或者1}
+     post方法：
+        添加用户同意法律条文
+        http://s-prod-07.qunzhu666.com:9090/api/auth/is_agree_statement/
+        参数：
+            username 手机号
+            is_agree_statement 布尔值
+        添加成功返回：
+            {"ret": 1, "data": "添加法律条文成功"}
+        添加失败返回：
+            {"ret": 0, "data": "未同意法律条文"}
 
 
 
