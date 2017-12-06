@@ -22,7 +22,7 @@ import requests
 from django.contrib.auth.models import User
 import json
 from fuli.oss_utils import beary_chat
-from taobaoke.scripts.wx_gzh.gzh_service import pushNotice
+from scripts.wx_gzh.gzh_service import pushNotice
 
 import logging
 logger = logging.getLogger("utils")
