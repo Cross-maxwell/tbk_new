@@ -462,14 +462,15 @@ class RecommendProduct(View):
     """
     def get(self, request):
         resp_list = []
-        products = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))[:3]
+        products = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))[:6]
         for product in products:
             resp_dict = {
                 "title": product.title,
                 "img_url": product.img_url,
                 "price": product.price,
                 "cupon_value": product.cupon_value,
-                "org_price": product.org_price
+                "org_price": product.org_price,
+                "sold_qty": product.sold_qty
             }
             resp_list.append(resp_dict)
         return HttpResponse(json.dumps(resp_list))

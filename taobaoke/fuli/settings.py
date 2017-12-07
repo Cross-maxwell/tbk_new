@@ -85,13 +85,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'fuli.wsgi.application'
 
-from broadcast.views.server_settings import REDIS_PORT, S_POC_01_INT
-REDIS_SERVER = S_POC_01_INT
+REDIS_SERVER = "localhost"
+REDIS_PORT = 6379
 
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.RedisCache',
-        'LOCATION': 'redis://'+ REDIS_SERVER +':' + str(REDIS_PORT),
+        'LOCATION': 'redis://' + REDIS_SERVER + ':' + str(REDIS_PORT),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -104,20 +104,10 @@ CSRF_COOKIE_SECURE = True
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 from fuli.config import getDB
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'OPTIONS': {'charset': 'utf8mb4'},
-#         'NAME': 'mmt',
-#         'USER': 'root',
-#         'PASSWORD': 'Xiaozuanfeng',
-#         'HOST': 's-prod-02.qunzhu666.com',
-#         'PORT': '50001',
-#     }
-# }
 
 # 可使用mode指定要使用的数据库。指定mode为'prod'，使用生产数据库; 指定为'test'或留空，将根据主机名进行选择。
 # 配置请查看fuli/config.py
+# TODO: 在做makemigrations以及migrate时请务必查看数据库是否为本地
 DATABASES = getDB(mode='smart')
 
 
