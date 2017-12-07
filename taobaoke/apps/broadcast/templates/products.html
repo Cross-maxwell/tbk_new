@@ -23,6 +23,8 @@
             <th>优惠价</th>
             <th>佣金比</th>
             <th>佣金金额</th>
+            <th>是否可用</th>
+            <th>最后更新日期</th>
             <th>推送</th>
         </tr>
             {%  for p in products %}
@@ -35,6 +37,8 @@
             <td>{{ p.price }}</td>
             <td>{{ p.commision_rate }}</td>
             <td>{{ p.commision_amount }}</td>
+            <td>{{ p.available }}</td>
+            <td>{{ p.last_update }}</td>
             <td><button class="button-push" itemid={{ p.item_id }} b_text="{{ p.broadcast_text }}"  b_imgs="{{ p.broadcast_img }}" onclick=post_to_api()>推送</button></td>
         </tr>
         {% endfor %}

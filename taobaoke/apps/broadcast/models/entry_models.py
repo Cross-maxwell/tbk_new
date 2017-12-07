@@ -114,7 +114,7 @@ class Product(Entry):
                  "「MMT一起赚」 高额优惠，你想要的都在这里～"
         return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
 
-    def get_img_msg_wxapp(self,pid=None):
+    def get_img_msg_wxapp(self, pid=None, tkuser_id=None):
         # 使用pid 更新淘口令
         if pid is not None:
             if re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
@@ -128,7 +128,7 @@ class Product(Entry):
         # 便于复用，首先调用生成wxapp二维码
         req_data = {
             "page": "pages/goods/goods",
-            "scene": "{0}${1}".format(self.id, self.tao_pwd)
+            "scene": "{0}${1}${2}".format(self.id, self.tao_pwd, tkuser_id)
         }
 
         logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))

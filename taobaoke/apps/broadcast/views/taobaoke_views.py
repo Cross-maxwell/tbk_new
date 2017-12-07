@@ -23,9 +23,10 @@ from user_auth.models import PushTime
 from broadcast.models.user_models import Adzone
 from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
+import fuli.top_settings
 
 from fuli.oss_utils import beary_chat
-
+import top.api
 
 # 本地测试
 # phantomjs_path = '/home/smartkeyerror/PycharmProjects/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
@@ -75,6 +76,7 @@ class PushProduct(View):
             # 找到该user所对应的pid
             try:
                 tk_user = TkUser.get_user(user)
+                tkuser_id = tk_user.id
             except Exception as e:
                 logger.error(e)
             try:
@@ -117,7 +119,7 @@ class PushProduct(View):
                 # text = p.get_text_msg(pid=pid)
                 # img_url = p.get_img_msg()
                 text = p.get_text_msg_wxapp()
-                img_url = p.get_img_msg_wxapp(pid=pid)
+                img_url = p.get_img_msg_wxapp(pid=pid, tkuser_id=tkuser_id)
 
                 data = [img_url, text]
 
@@ -401,10 +403,14 @@ class ProductDetail(View):
     """
     def get(self, request):
         id = request.GET.get('id')
+
+        tkuser_id = request.GET.get("tkuser_id", "")
+
         if id is None:
             return HttpResponse(json.dumps({'data': 'losing param \'id\'.'}), status=400)
         try:
             p = Product.objects.get(id=id)
+
         except Product.DoesNotExist:
             return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist'}), status=400)
         p_detail = p.productdetail
@@ -441,7 +447,32 @@ class ProductDetail(View):
             # 子类别
             'cat_leaf': p_detail.cate.cat_leaf_name
         }
+        if tkuser_id:
+            pid = TkUser.objects.get(id=tkuser_id).adzone.pid
+            tkl = get_tkl(p, pid)
+            resp_dict["tkl"] = tkl
         return HttpResponse(json.dumps({'data': resp_dict}), status=200)
+
+
+class RecommendProduct(View):
+    """
+    接口：
+    GET方法：
+        在商品库中随机选取3件商品，返回商品信息以及id
+    """
+    def get(self, request):
+        resp_list = []
+        products = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))[:3]
+        for product in products:
+            resp_dict = {
+                "title": product.title,
+                "img_url": product.img_url,
+                "price": product.price,
+                "cupon_value": product.cupon_value,
+                "org_price": product.org_price
+            }
+            resp_list.append(resp_dict)
+        return HttpResponse(json.dumps(resp_list))
 
 
 class SendArtificialMsg(View):
@@ -526,7 +557,36 @@ class SendArtificialMsg(View):
         return HttpResponse(json.dumps({"ret": 1}))
 
 
+def get_tkl(p, pid):
+    """
+    根据商品实例以及Pid生成对应的淘口令
+    """
+    title = p.title
+    img_url = p.img_url
+    cupon_url = p.cupon_url
 
+    if pid is not None:
+        if re.search('mm_\d+_\d+_\d+', p.cupon_url) is None:
+            cupon_url = p.cupon_url + '&pid=' + pid
+        else:
+            cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, p.cupon_url)
+
+    for _ in range(5):
+        try:
+            req = top.api.TbkTpwdCreateRequest()
+            req.set_app_info(top.appinfo(fuli.top_settings.app_key, fuli.top_settings.app_secret))
+
+            req.text = title.encode('utf-8')
+            req.logo = img_url
+            req.url = cupon_url
+
+            resp = req.getResponse()
+            tao_pwd = resp['tbk_tpwd_create_response']['data']['model']
+            return tao_pwd[1:-1]
+        except Exception as e:
+            print cupon_url, title
+            print e.message
+            continue
 
 # class SendSignNotice(View):
 #     """

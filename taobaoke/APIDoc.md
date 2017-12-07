@@ -155,6 +155,34 @@ ipad_weixin:
             {"ret": 1, "data": "添加法律条文成功"}
         添加失败返回：
             {"ret": 0, "data": "未同意法律条文"}
+     8. 商品推荐粗略
+     url: localhost:9090/product/recommand_product [替换域名即可]
+     返回:
+        [
+            {
+                "price":39.9,
+                "img_url":
+                "org_price":49.9,
+                "cupon_value":10,
+                "title":
+            },
+            {},
+            {},
+            ......
+        ]
+        
+     9. 推荐商品的详情页
+     url: http://127.0.0.1:9090/product/detail?id=71705&tkuser_id=35
+     其中id为商品id， tkuser_id为用户id，在scene中传递
+        scene: {}${}${tkuser_id}
+     返回结果与 /product/detail几乎相同，但字典中多一个淘口令
+        {
+            "": "",
+            ......,
+            
+            "tkl": "balabala"
+        
+        }
 
 
 
