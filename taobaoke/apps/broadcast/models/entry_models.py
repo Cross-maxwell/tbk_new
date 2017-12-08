@@ -266,7 +266,7 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
     detail_dict['seller_nick'] = item_info['nick']
     try:
         detail_dict['small_imgs'] = json.dumps(map(lambda x: x.encode('utf-8'), item_info['small_images']['string']))
-    except IndexError:
+    except KeyError:
         detail_dict['small_imgs'] = json.dumps([])
     detail_dict['cate'] = cate
     # detail_dict['describe_imgs'] = describe_imgs
