@@ -206,7 +206,7 @@ class AcceptSearchView(View):
 
                     short_url = get_short_url(url_to_show.format(pid, to_search_title))
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image([product_url], qrcode_flow)
+                    img_url = generate_image([product_url], qrcode_flow,[])
 
                     data = [img_url, text]
                 else:
@@ -231,7 +231,7 @@ class AcceptSearchView(View):
 
                     # short_url = get_short_url(template_url)
                     # qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    # img_url = generate_image([product_url], qrcode_flow)
+                    # img_url = generate_image([product_url], qrcode_flow,[])
 
                     # TODO: 待前端完成
                     logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
@@ -242,7 +242,7 @@ class AcceptSearchView(View):
                         "scene": "{0}".format(keyword_mapping_id)
                     }
                     qrcode_flow = generate_qrcode(req_data)
-                    img_url = generate_image([product_url], qrcode_flow)
+                    img_url = generate_image([product_url], qrcode_flow,[])
 
                     random_seed = random.randint(1000, 2000)
                     text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
