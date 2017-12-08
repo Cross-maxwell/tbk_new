@@ -85,7 +85,9 @@ def push_data():
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
         # item_id = result_dict['good_id']
-        if float(result_dict['commision_rate'][:-2])<0.2 and result_dict['order_status']==u'订单结算':
+        tmp_orderlist = ['103464948244158964', '103994545408936737', '105064483564347613', '99319425000698282', '105933855709464234', '99431763401739791']
+        tmp_condition = result_dict['order_id'] not in tmp_orderlist
+        if (float(result_dict['commision_rate'][:-2])<0.2 and result_dict['order_status']==u'订单结算') and tmp_condition:
             result_dict['order_status'] = u'订单失效'
             result_dict['pay_amount'] = 0
             result_dict['show_commision_amount']=0.0

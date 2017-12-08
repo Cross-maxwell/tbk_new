@@ -30,7 +30,7 @@
             {%  for p in products %}
         <tr>
             <td><a class="product-link" href="/operate/operating-edit/?product_id={{ p.item_id }}"> {{ p.item_id }}</a></td>
-            <td style="font-size: larger">{{ p.title }}</td>
+            <td style="font-size: smaller">{{ p.title }}</td>
             <td>{{ p.org_price }}</td>
             <td>{{ p.cupon_left }}</td>
             <td>{{ p.cupon_value }}</td>
@@ -44,6 +44,12 @@
         {% endfor %}
     </table>
     <button class="button-refresh-products" onclick=refresh_products()>拉取商品</button>
+    <hr/>
+    <div class="send-message-frame" >
+        <p style="font-weight: bolder">群发消息</p>
+        <textarea name="global-message" class="global-message" rows="5" cols="50"></textarea>
+        <button class="button-send-message" onclick=send_message_to_all()>全局发送</button>
+    </div>
 </body>
 </html>
 
@@ -100,7 +106,7 @@
         border-collapse: collapse;
         margin: 10px ;
         width: 90%;
-        margin-bottom: 6rem;
+        margin-bottom: 1rem;
     }
     tr{
         text-align: center;
@@ -116,7 +122,35 @@
         background-color: darkblue;
     }
     td ,th{
-        width:10%
+        width:9%
+    }
+
+    .send-message-frame{
+        margin: 1rem;
+        margin-top: 3rem;
+    }
+    .send-message-frame , .global-message, .button-send-message{
+        display: block;
+        margin-bottom: 1rem;
+    }
+    .global-message {
+        overflow: hidden;
+        resize: none;
+        padding: 5px;
+    }
+    .button-send-message{
+        padding: 0.5rem;
+        background-color: #003788;
+        color: white;
+        border: 1px solid gray;
+        font-size: 10px;
+    }
+    .button-send-message:hover {
+        background-color: #d5e0e3;
+        color: #003788;
+        border: 1px solid gray;
+        font-size: 10px;
+        font-weight: bolder;
     }
 
 </style>
@@ -179,11 +213,27 @@
                 console.log(1);
             }
         };
-
         xhr.open('post','/tk/send_artifical_msg', true);
         var obj = JSON.stringify({'item_id': item_id,'data':tmpdata});
         xhr.send(obj);
         alert('推送成功！');
-    }
+    };
+    var send_message_to_all = function(){
+        var tmpdata = [];
+        var message  = document.getElementsByClassName("global-message")[0].value;
+        tmpdata.push(message);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log(1);
+            }
+        };
+        xhr.open('post','http://s-prod-04.qunzhu666.com/api/robot/send_group_msg/', true);
+        var obj = JSON.stringify({"platform_id":"make_money_together", "data":tmpdata});
+        xhr.send(obj);
+        alert("发送成功！");
+    };
+
+{#    s-prod-04.qunzhu666.com/api/robot/send_group_msg/#}
 
 </script>
