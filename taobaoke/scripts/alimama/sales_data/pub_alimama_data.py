@@ -131,7 +131,7 @@ def push_data():
 
 def order_notice(order):
     user_set = set()
-    data = [u'有新订单啦，请查收。',]
+    data = [u'[愉快]恭喜我们群里又有成员抢到高额优惠券啦～',]
     for order_id in order:
         try:
             order = Order.objects.filter(order_id=order_id).first()
