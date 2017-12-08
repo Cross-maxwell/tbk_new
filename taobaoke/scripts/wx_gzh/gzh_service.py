@@ -18,11 +18,12 @@ logger = logging.getLogger("utils")
 from account.models.order_models import Order
 from broadcast.models.user_models import TkUser
 
-import basic
+from scripts.wx_gzh import basic
 
 GZH_ACESS_KEY = 'gzh_acess_key'
 
 def pushNotice(order):
+    logger.info('进入pushNotice')
     for order_id in order:
         try:
             order = Order.objects.filter(order_id=order_id).first()
@@ -36,39 +37,43 @@ def pushNotice(order):
             order_foot = '请再接再厉哦！'
             user_id = int(order.user_id)
             openid = TkUser.objects.filter(user_id=user_id).first().openid
-            if openid:
-                send_msg = {
-                    "touser": openid,
-                    "template_id": basic.TEMPLATE_ID,
-                    "url": basic.MMT_URL,
-                    "data": {
-                        "first": {
-                            "value": order_head,
-                            "color": "#173177"
-                        },
-                        "keyword1": {
-                            "value": order_id,
-                            "color": "#173177"
-                        },
-                        "keyword2": {
-                            "value": order_price,
-                            "color": "#173177"
-                        },
-                        "keyword3": {
-                            "value": order_time,
-                            "color": "#173177"
-                        },
-                        "keyword4": {
-                            "value": order_earn,
-                            "color": "#173177"
-                        },
-                        "remark": {
-                            "value": order_foot,
-                            "color": "#173177"
+            try:
+                if openid:
+                    send_msg = {
+                        "touser": openid,
+                        "template_id": basic.TEMPLATE_ID,
+                        "url": basic.MMT_URL,
+                        "data": {
+                            "first": {
+                                "value": order_head,
+                                "color": "#173177"
+                            },
+                            "keyword1": {
+                                "value": order_id,
+                                "color": "#173177"
+                            },
+                            "keyword2": {
+                                "value": order_price,
+                                "color": "#173177"
+                            },
+                            "keyword3": {
+                                "value": order_time,
+                                "color": "#173177"
+                            },
+                            "keyword4": {
+                                "value": order_earn,
+                                "color": "#173177"
+                            },
+                            "remark": {
+                                "value": order_foot,
+                                "color": "#173177"
+                            }
                         }
                     }
-                }
-                send(send_msg)
+                    send(send_msg)
+            except Exception, e:
+                logger.error(str(e))
+                logger.error(e.message)
         except Exception as e:
             logger.error(e)
 

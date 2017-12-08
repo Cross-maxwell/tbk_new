@@ -16,7 +16,7 @@ from fuli import top_settings
 from django.core.cache import cache
 
 openid = 'oo-aE1ghNVTBShFhW-vRHeaRH72Q'
-TEMPLATE_ID = '0g9k7JY2qBjJO1aLIiJap7WWLMw7FvvLpT7BrnEui5E'
+TEMPLATE_ID = 'Uh_R2qBYZNFQ3uLEQieqh-9a5kbU-VL_hq2vYZgyOUs'
 MMT_URL = 'http://tmp.zhiqun365.com/robot/robotlist'
 GZH_ACESS_KEY = 'gzh_acess_key'
 
