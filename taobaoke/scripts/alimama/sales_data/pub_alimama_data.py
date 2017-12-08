@@ -17,6 +17,7 @@ from account.utils.commision_utils import cal_commision, cal_agent_commision
 from broadcast.models.entry_models import Product
 
 send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+send_msg_url2 = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_mmt_msg'
 
 import requests
 from django.contrib.auth.models import User
@@ -151,7 +152,11 @@ def order_notice(order):
         logger.info(notice_msg)
 
         send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
+        payload = {'md_username': md_username}
+        send_msg_response2 = requests.get(send_msg_url2, params=payload)
+
         logger.info("request wxbot status code: {}".format(send_msg_response.status_code))
+        logger.info("request wxbot status code2: {}".format(send_msg_response2.status_code))
 
 
 
