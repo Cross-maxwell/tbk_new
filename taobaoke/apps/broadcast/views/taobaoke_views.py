@@ -462,7 +462,16 @@ class RecommendProduct(View):
     """
     def get(self, request):
         resp_list = []
-        products = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))[:6]
+        products_list = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))
+        products = []
+        for _ in range(6):
+            try:
+                r = random.randint(0, products_list.count() - 1)
+                p = products_list[r]
+                products.append(p)
+            except Exception as exc:
+                beary_chat("推荐商品没有商品了没有商品了商品了...")
+                logger.error(exc)
         for product in products:
             resp_dict = {
                 "title": product.title,
