@@ -470,7 +470,8 @@ class RecommendProduct(View):
                 "price": product.price,
                 "cupon_value": product.cupon_value,
                 "org_price": product.org_price,
-                "sold_qty": product.sold_qty
+                "sold_qty": product.sold_qty,
+                "id": product.id
             }
             resp_list.append(resp_dict)
         return HttpResponse(json.dumps(resp_list))
