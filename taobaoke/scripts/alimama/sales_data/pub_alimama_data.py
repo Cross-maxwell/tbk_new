@@ -97,8 +97,9 @@ def push_data():
             status = result[1]
             if status:
                 insert_num += 1
-                new_order.append(result_dict['order_id'])
-                beary_chat('新增订单:{}'.format(result_dict['order_id']))
+                if u'失效' not in result_dict['order_status']:
+                    new_order.append(result_dict['order_id'])
+                    beary_chat('新增订单:{}'.format(result_dict['order_id']))
             elif not status:
                 update_num += 1
         except Exception, e:
