@@ -140,7 +140,7 @@ class Product(Entry):
         logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))
         qrcode_flow = generate_qrcode(req_data)
         product_url_list = [self.img_url]
-        price_list = [round(self.org_price,2),round(self.price,2)]
+        price_list = [round(self.org_price, 2), round(self.price, 2)]
         try:
             product_detail = ProductDetail.objects.filter(product_id=self.id).first()
             if product_detail:
@@ -152,7 +152,7 @@ class Product(Entry):
                 product_url_list.append(img_list[1])
         except Exception as e:
             logger.error(e)
-        return generate_image(product_url_list, qrcode_flow,price_list)
+        return generate_image(product_url_list, qrcode_flow, price_list)
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"

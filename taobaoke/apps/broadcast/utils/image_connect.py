@@ -24,6 +24,7 @@ import logging
 logger = logging.getLogger("weixin_bot")
 
 base_path = '/home/new_taobaoke/taobaoke/'
+# base_path = '/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke'
 font_path = os.path.join(base_path, 'apps/broadcast/statics/poster/fonts/')
 
 app_id = "wx82b7a0d64e85afd9"
@@ -93,7 +94,7 @@ def generate_qrcode(req_data):
         return qrcode_response.content
 
 
-def generate_image(product_url_list, qrcode_flow,price_list):
+def generate_image(product_url_list, qrcode_flow, price_list):
 
     # 首先调用二维码生成函数
     extra = 0
@@ -164,6 +165,7 @@ def generate_image(product_url_list, qrcode_flow,price_list):
     print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
     return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
 
+
 def image_update(price_list):
     image = Image.new('RGB', (400, 200), (255, 255, 255))
     truetype = os.path.join(font_path, 'hei.ttf')
@@ -180,26 +182,27 @@ def image_update(price_list):
     draw.line([(100, 63), (180 + (len(str(price_list[0])) - 3) * 15, 63)], fill=blackColor, width=3)
     return image
 
+
 def qrcode_wrap(qrcode_img):
     redColor = "#ff0000"
     blackColor = "#000000"
-    Im = Image.new('RGB',(200,200),(255,255,255))
-    Im.paste(qrcode_img.resize((160, 160)),(18,13))
+    Im = Image.new('RGB', (200, 200), (255, 255, 255))
+    Im.paste(qrcode_img.resize((160, 160)), (18, 13))
     draw = ImageDraw.Draw(Im)
     truetype = os.path.join(font_path, 'hei.ttf')
-    font =ImageFont.truetype(font=truetype,size=16)
-    draw.text((32,173),u'长按识别小程序码',font=font,fill=blackColor)
-    draw.line([(15,10),(35,10)],fill=redColor,width=2)
-    draw.line([(15,10),(15,30)],fill=redColor,width=2)
+    font = ImageFont.truetype(font=truetype, size=16)
+    draw.text((32, 173), u'长按识别小程序码',font=font,fill=blackColor)
+    draw.line([(15, 10), (35, 10)], fill=redColor, width=2)
+    draw.line([(15, 10), (15, 30)], fill=redColor, width=2)
 
-    draw.line([(15,170),(35,170)],fill=redColor,width=2)
-    draw.line([(15,170),(15,150)],fill=redColor,width=2)
+    draw.line([(15, 170), (35, 170)], fill=redColor, width=2)
+    draw.line([(15, 170), (15, 150)], fill=redColor, width=2)
 
-    draw.line([(185,10),(165,10)],fill=redColor,width=2)
-    draw.line([(185,10),(185,30)],fill=redColor,width=2)
+    draw.line([(185, 10), (165, 10)], fill=redColor, width=2)
+    draw.line([(185, 10), (185, 30)], fill=redColor, width=2)
 
-    draw.line([(185,170),(165,170)],fill=redColor,width=2)
-    draw.line([(185,170),(185,150)],fill=redColor,width=2)
+    draw.line([(185, 170), (165, 170)], fill=redColor, width=2)
+    draw.line([(185, 170), (185, 150)], fill=redColor, width=2)
     return Im
 if __name__ == '__main__':
     product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
