@@ -166,14 +166,14 @@ def generate_image(product_url_list, qrcode_flow,price_list):
 
 def image_update(price_list):
     image = Image.new('RGB', (400, 200), (255, 255, 255))
-    truetype = os.path.join(font_path, 'ya.ttc')
+    truetype = os.path.join(font_path, 'hei.ttf')
     font1 = ImageFont.truetype(truetype, 32)
     font2 = ImageFont.truetype(truetype, 64)
     redColor = "#ff0000"
     blackColor = "#000000"
     whiteColor = '#ffffff'
     draw = ImageDraw.Draw(image)
-    draw.rectangle([(20, 100), (100, 150)], fill=redColor)
+    draw.rectangle([(15, 98), (100, 150)], fill=redColor)
     draw.text((20, 40), u'现价:￥' + str(price_list[0]), font=font1, fill=blackColor)
     draw.text((20, 100), u'券后:', font=font1, fill=whiteColor)
     draw.text((100, 80), u'￥' + str(price_list[1]), font=font2, fill=redColor)
@@ -186,7 +186,7 @@ def qrcode_wrap(qrcode_img):
     Im = Image.new('RGB',(200,200),(255,255,255))
     Im.paste(qrcode_img.resize((160, 160)),(18,13))
     draw = ImageDraw.Draw(Im)
-    truetype = os.path.join(font_path, 'ya.ttc')
+    truetype = os.path.join(font_path, 'hei.ttf')
     font =ImageFont.truetype(font=truetype,size=16)
     draw.text((32,173),u'长按识别小程序码',font=font,fill=blackColor)
     draw.line([(15,10),(35,10)],fill=redColor,width=2)
