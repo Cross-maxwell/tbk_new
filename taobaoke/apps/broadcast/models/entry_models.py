@@ -245,7 +245,9 @@ class ProductDetail(models.Model):
     # 类别，外键关联到ProductCategory模型
     cate = models.ForeignKey('ProductCategory')
     # 商品描述图片，从商品页面用BS获取, todo
-    describe_imgs = models.CharField(max_length=4096, null=True)
+    describe_imgs = models.CharField(max_length=4096, default='[]')
+    # 商品描述/推荐理由
+    recommend = models.CharField(max_length=4096, default='')
 
 
 class ProductCategory(models.Model):
@@ -270,7 +272,21 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
     except KeyError:
         detail_dict['small_imgs'] = json.dumps([])
     detail_dict['cate'] = cate
-    # detail_dict['describe_imgs'] = describe_imgs
+    activity_id = re.findall('activityId=([\w\d]+)', product.cupon_url)[0]
+    try:
+        detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid=" \
+                     "&_path=9001.SE.0.i.{path}&src=".format(
+            itemId=product.item_id, activityId=activity_id, path=product.item_id
+        )
+        response = requests.get(detail_url)
+        detail_dict = json.loads(response.content)
+        item = detail_dict["result"]["item"]
+        detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
+        detail_dict['recommend'] = item['recommend']
+    except Exception, e:
+        product.available = False
+        product.save()
+        logger.info("itemId: {}, 商品已失效".format(product.item_id))
     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
 
 

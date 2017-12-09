@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from broadcast.models.entry_models import Product
 from django.views.generic.base import View
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 import json
 import requests
 from broadcast.utils import OSSMgr
@@ -57,7 +57,7 @@ class EditProduct(View):
         p.broadcast_text=text
         p.broadcast_img=json.dumps(img_list)
         p.save()
-        return render_to_response('products.html', {'products': [p]})
+        return HttpResponseRedirect('operate/operating-edit/?product_id={}'.format(p.item_id))
 
 
 class RefreshProducts(View):
