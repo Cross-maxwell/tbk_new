@@ -103,16 +103,19 @@ class Product(Entry):
         return math.log(self.sold_qty)
 
     def get_text_msg_wxapp(self):
-        template="{title}\n" \
-                 "【原价】{org_price}元\n" \
-                 "【券后】{price}元秒杀[闪电]!!\n" \
-                 "【销售量】超过{sold_qty}件\n" \
-                 "===============\n" \
-                 "下单方式：点开任意图片，长按识别图中小程序码\n" \
-                 "===============\n" \
-                 "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～\n" \
-                 "「MMT一起赚」 高额优惠，你想要的都在这里～"
-        return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
+        recommend = '暂无推荐信息～'
+        try:
+            recommend = self.productdetail.recommend
+        except Exception as e:
+            logger.error(e.message)
+        template = "折扣商品：{title}\n" \
+                   "【推荐理由】：{recommend}\n"
+        if random.randrange(1, 5) == 1:
+            template = template + "===============\n" \
+                                  "下单方式：点开任意图片，长按识别图中小程序码\n" \
+                                  "===============\n" \
+                                  "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
+        return template.format(**dict(self.__dict__, **{'recommend': recommend}))
 
     def get_img_msg_wxapp(self, pid=None, tkuser_id=None):
         # 使用pid 更新淘口令
