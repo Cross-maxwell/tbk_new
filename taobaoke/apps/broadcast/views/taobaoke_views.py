@@ -38,7 +38,6 @@ import re
 import logging
 logger = logging.getLogger('django_views')
 
-
 class PushProduct(View):
     def get(self, request):
         # 随机筛选商品
@@ -55,7 +54,7 @@ class PushProduct(View):
         # send_msg_url = 'http://127.0.0.1:10024/api/robot/send_msg/'
         send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
         # url = "http://s-prod-04.qunzhu666.com:8080/robot/xxxx?platform_key={}".format(platform_id)
-
+        pic_url = "http://md-oss.di25.cn/5d763e9e-dcb6-11e7-80b7-1c1b0d3e23eb.jpeg?x-oss-process=image/quality,q_65"
         response = requests.get(url)
         response_dict = json.loads(response.content)
         if response_dict["ret"] != 1:
@@ -122,7 +121,8 @@ class PushProduct(View):
                 img_url = p.get_img_msg_wxapp(pid=pid, tkuser_id=tkuser_id)
 
                 data = [img_url, text]
-
+                if random.randrange(1,11) in [1,2,3]:
+                    data.append(pic_url)
                 request_data = {
                     "md_username": user,
                     "data": data
@@ -206,7 +206,7 @@ class AcceptSearchView(View):
 
                     short_url = get_short_url(url_to_show.format(pid, to_search_title))
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image([product_url], qrcode_flow)
+                    img_url = generate_image([product_url], qrcode_flow,[])
 
                     data = [img_url, text]
                 else:
@@ -231,7 +231,7 @@ class AcceptSearchView(View):
 
                     # short_url = get_short_url(template_url)
                     # qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    # img_url = generate_image([product_url], qrcode_flow)
+                    # img_url = generate_image([product_url], qrcode_flow,[])
 
                     # TODO: 待前端完成
                     logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
@@ -242,7 +242,7 @@ class AcceptSearchView(View):
                         "scene": "{0}".format(keyword_mapping_id)
                     }
                     qrcode_flow = generate_qrcode(req_data)
-                    img_url = generate_image([product_url], qrcode_flow)
+                    img_url = generate_image([product_url], qrcode_flow,[])
 
                     random_seed = random.randint(1000, 2000)
                     text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \

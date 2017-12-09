@@ -103,16 +103,22 @@ class Product(Entry):
         return math.log(self.sold_qty)
 
     def get_text_msg_wxapp(self):
-        template="{title}\n" \
-                 "【原价】{org_price}元\n" \
-                 "【券后】{price}元秒杀[闪电]!!\n" \
-                 "【销售量】超过{sold_qty}件\n" \
-                 "===============\n" \
-                 "下单方式：点开任意图片，长按识别图中小程序码\n" \
-                 "===============\n" \
-                 "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～\n" \
-                 "「MMT一起赚」 高额优惠，你想要的都在这里～"
-        return template.format(**dict(self.__dict__, **{'org_price':self.org_price}))
+        recommend = ''
+        try:
+            recommend = self.productdetail.recommend
+        except Exception as e:
+            logger.error(e.message)
+        template = "折扣商品：{title}\n" \
+                    "销售数量：{sold_qty}\n" \
+                    "剩余券数：{cupon_left}\n"
+        if recommend:
+            template = template + "【推荐理由】：{recommend}\n"
+        if random.randrange(1, 5) == 1:
+            template = template + "===============\n" \
+                                      "下单方式：点开任意图片，长按识别图中小程序码\n" \
+                                      "===============\n" \
+                                      "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
+        return template.format(**dict(self.__dict__, **{'recommend': recommend}))
 
     def get_img_msg_wxapp(self, pid=None, tkuser_id=None):
         # 使用pid 更新淘口令
@@ -134,6 +140,7 @@ class Product(Entry):
         logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))
         qrcode_flow = generate_qrcode(req_data)
         product_url_list = [self.img_url]
+        price_list = [round(self.org_price,2),round(self.price,2)]
         try:
             product_detail = ProductDetail.objects.filter(product_id=self.id).first()
             if product_detail:
@@ -145,7 +152,7 @@ class Product(Entry):
                 product_url_list.append(img_list[1])
         except Exception as e:
             logger.error(e)
-        return generate_image(product_url_list, qrcode_flow)
+        return generate_image(product_url_list, qrcode_flow,price_list)
 
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"

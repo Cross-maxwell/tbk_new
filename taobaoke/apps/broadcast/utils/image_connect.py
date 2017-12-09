@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PIL import Image
+from PIL import ImageFont, ImageDraw
 
 import os
 # import django
@@ -21,6 +22,9 @@ import time
 
 import logging
 logger = logging.getLogger("weixin_bot")
+
+base_path = '/home/new_taobaoke/taobaoke/'
+font_path = os.path.join(base_path, 'apps/broadcast/statics/poster/fonts/')
 
 app_id = "wx82b7a0d64e85afd9"
 app_secret = "d38bed17f6b53122007c94fe8be1b5f5"
@@ -89,7 +93,7 @@ def generate_qrcode(req_data):
         return qrcode_response.content
 
 
-def generate_image(product_url_list, qrcode_flow):
+def generate_image(product_url_list, qrcode_flow,price_list):
 
     # 首先调用二维码生成函数
     extra = 0
@@ -98,14 +102,6 @@ def generate_image(product_url_list, qrcode_flow):
 
     # 新建画布
     toImage = Image.new('RGBA', (600, 800+extra))
-
-    # 获取二维码
-
-    qrcode_bytes = qrcode_flow
-    qrcode_img = Image.open(BytesIO(qrcode_bytes))
-    qrcode_size = qrcode_img.resize((200, 200))
-    qrcode_location = (0, 600 + extra)
-    toImage.paste(qrcode_size, qrcode_location)
 
     # 获取商品主图
     product_data = urllib2.urlopen(product_url_list[0]).read()
@@ -129,14 +125,35 @@ def generate_image(product_url_list, qrcode_flow):
         product_2_location = (300, 600)
         toImage.paste(product_2_size, product_2_location)
 
-    # 获取长按扫描图# 将图片进行拼接
-    BASE_DIR = os.getcwd()
-    saomiao_img = Image.open(os.path.join(BASE_DIR, 'apps/broadcast/utils/lingqu.jpg'))
-    saomiao_size = saomiao_img.resize((400, 200))
-    saomiao_location = (200, 600+extra)
-    toImage.paste(saomiao_size, saomiao_location)
-    new_image = toImage.convert("RGBA").tobytes("jpeg", "RGBA")
+    if len(price_list) == 2:
+        # 填充券前券后价格
+        price_img = image_update(price_list)
+        price_location = (200, 600 + extra)
+        toImage.paste(price_img, price_location)
 
+        # 获取二维码
+        qrcode_bytes = qrcode_flow
+        qrcode_img = Image.open(BytesIO(qrcode_bytes))
+        qrcode_size = qrcode_wrap(qrcode_img)
+        qrcode_location = (0, 600 + extra)
+        toImage.paste(qrcode_size, qrcode_location)
+
+    else:
+        # 获取长按扫描图# 将图片进行拼接
+        BASE_DIR = os.getcwd()
+        saomiao_img = Image.open(os.path.join(BASE_DIR, 'apps/broadcast/utils/lingqu.jpg'))
+        saomiao_size = saomiao_img.resize((400, 200))
+        saomiao_location = (200, 600 + extra)
+        toImage.paste(saomiao_size, saomiao_location)
+
+        # 获取二维码
+        qrcode_bytes = qrcode_flow
+        qrcode_img = Image.open(BytesIO(qrcode_bytes))
+        qrcode_size = qrcode_img.resize((200, 200))
+        qrcode_location = (0, 600 + extra)
+        toImage.paste(qrcode_size, qrcode_location)
+
+    new_image = toImage.convert("RGBA").tobytes("jpeg", "RGBA")
     filename = '{}.jpeg'.format(uuid.uuid1())
     # 将图片进行拼接
     print(toImage.size)
@@ -147,7 +164,43 @@ def generate_image(product_url_list, qrcode_flow):
     print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
     return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
 
+def image_update(price_list):
+    image = Image.new('RGB', (400, 200), (255, 255, 255))
+    truetype = os.path.join(font_path, 'hei.ttf')
+    font1 = ImageFont.truetype(truetype, 32)
+    font2 = ImageFont.truetype(truetype, 64)
+    redColor = "#ff0000"
+    blackColor = "#000000"
+    whiteColor = '#ffffff'
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([(15, 98), (100, 150)], fill=redColor)
+    draw.text((20, 40), u'现价:￥' + str(price_list[0]), font=font1, fill=blackColor)
+    draw.text((20, 100), u'券后:', font=font1, fill=whiteColor)
+    draw.text((100, 80), u'￥' + str(price_list[1]), font=font2, fill=redColor)
+    draw.line([(100, 63), (180 + (len(str(price_list[0])) - 3) * 15, 63)], fill=blackColor, width=3)
+    return image
 
+def qrcode_wrap(qrcode_img):
+    redColor = "#ff0000"
+    blackColor = "#000000"
+    Im = Image.new('RGB',(200,200),(255,255,255))
+    Im.paste(qrcode_img.resize((160, 160)),(18,13))
+    draw = ImageDraw.Draw(Im)
+    truetype = os.path.join(font_path, 'hei.ttf')
+    font =ImageFont.truetype(font=truetype,size=16)
+    draw.text((32,173),u'长按识别小程序码',font=font,fill=blackColor)
+    draw.line([(15,10),(35,10)],fill=redColor,width=2)
+    draw.line([(15,10),(15,30)],fill=redColor,width=2)
+
+    draw.line([(15,170),(35,170)],fill=redColor,width=2)
+    draw.line([(15,170),(15,150)],fill=redColor,width=2)
+
+    draw.line([(185,10),(165,10)],fill=redColor,width=2)
+    draw.line([(185,10),(185,30)],fill=redColor,width=2)
+
+    draw.line([(185,170),(165,170)],fill=redColor,width=2)
+    draw.line([(185,170),(185,150)],fill=redColor,width=2)
+    return Im
 if __name__ == '__main__':
     product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
     # product_url_list = [product_url, product_url, product_url]
