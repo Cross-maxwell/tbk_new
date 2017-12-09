@@ -92,23 +92,19 @@ def get_openid(request):
         if code and username:
             user_id = User.objects.get(username=username).id
             tkuser= TkUser.objects.filter(user_id=user_id).first()
-            OPENID=''
-            if tkuser:
-                OPENID = tkuser.openid
-            if not OPENID:
-                url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
-                      'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \
-                    .format(APPID=top_settings.APPID, SECRET=top_settings.APPSECRET, CODE=code)
-                res = requests.get(url)
-                json_date = res.json()
-                print json_date
-                open_id = json_date.get("openid", '')
-                print 'open_id:' + open_id
-                if open_id:
-                    # 存数据库
-                    user_id = User.objects.get(username=username).id
-                    TkUser.objects.filter(user_id=user_id).update(openid=open_id)
-            return HttpResponse('ok')
+            url = 'https://api.weixin.qq.com/sns/oauth2/access_token?' \
+                    'appid={APPID}&secret={SECRET}&code={CODE}&grant_type=authorization_code' \
+                .format(APPID=top_settings.APPID, SECRET=top_settings.APPSECRET, CODE=code)
+            res = requests.get(url)
+            json_date = res.json()
+            print json_date
+            open_id = json_date.get("openid", '')
+            print 'open_id:' + open_id
+            if open_id:
+                # 存数据库
+                user_id = User.objects.get(username=username).id
+                TkUser.objects.filter(user_id=user_id).update(openid=open_id)
+        return HttpResponse('ok')
     except Exception as e:
         print e
     return HttpResponse('bad')
