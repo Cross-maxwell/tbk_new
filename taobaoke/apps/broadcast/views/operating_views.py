@@ -60,6 +60,19 @@ class EditProduct(View):
         return HttpResponseRedirect('operate/operating-edit/?product_id={}'.format(p.item_id))
 
 
+class DeleteProductImg(View):
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        product_id = req_dict.get('product_id')
+        index = req_dict.get('index')
+        p = Product.objects.get(item_id=product_id)
+        imgs = json.loads(p.broadcast_img)
+        del imgs[index-1]
+        p.broadcast_img = json.dumps(imgs)
+        p.save()
+        return HttpResponseRedirect('operate/operating-edit/?product_id={}'.format(product_id))
+
+
 class RefreshProducts(View):
     def get(self, request):
         action = 'restart'

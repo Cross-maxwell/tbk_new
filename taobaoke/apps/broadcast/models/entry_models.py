@@ -283,8 +283,6 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
         detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
         detail_dict['recommend'] = item['recommend']
     except Exception, e:
-        product.available = False
-        product.save()
         logger.info("itemId: {}, 商品已失效".format(product.item_id))
     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
 

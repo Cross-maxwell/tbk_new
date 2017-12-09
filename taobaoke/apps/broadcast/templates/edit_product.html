@@ -16,10 +16,7 @@
     <label for="text">文字描述</label>
     <textarea  id="text" name="text" >{% if broadcast_text %}"{{ broadcast_text }}"{% endif %}</textarea>
     <hr/>
-    <label for="imgs">商品图片</label>
-    {% for img in broadcast_img %}
-            <img src={{ img }} width="20%" />
-    {% endfor %}
+    <label for="imgs">添加图片</label>
 
 
     <input type="file" id="imgs" name=imgs1 accept="image/*"  />
@@ -30,6 +27,12 @@
     <input type="submit" value="提交修改"/>
 
 </form>
+    <div class="product-imgs">
+    {% for img in broadcast_img %}
+       <span><img class="product-img" id="product-img-{{ loop.index }}" src={{ img }} width="20%" />
+           <button class="delete-img" id="delete-img-{{ loop.index }}" onclick=delete_img({{ loop.index }})>X</button></span>
+    {% endfor %}
+    </div>
 <script>
     var textarea = document.querySelector('textarea');
     console.log(textarea);
@@ -43,6 +46,11 @@
         font-family: "Ubuntu Mono";
     }
     form {
+        width: 80%;
+        border: 1px solid black;
+        padding: 0.5rem;
+    }
+    .product-imgs {
         width: 80%;
         border: 1px solid black;
         padding: 0.5rem;
@@ -86,6 +94,34 @@
         background-color: #003788;
         font-weight: bolder;
         color: white;
-
     }
+    span .product-img {
+        vertical-align: top;
+    }
+    .delete-img {
+        position: relative;
+        background-color: #aa312c;
+        font-size: small;
+        font-weight: bold;
+        color: white;
+        border: none;
+        left: -30px;
+    }
+
 </style>
+
+<script>
+    function delete_img(index) {
+        var product_id = window.location.search.match('\\d+')[0];
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                console.log(1);
+            }
+        };
+        xhr.open('post','/operate/delete-product-img/', true);
+        var obj = JSON.stringify({'product_id': product_id,'index':index});
+        xhr.send(obj);
+        location.reload();
+    }
+</script>
