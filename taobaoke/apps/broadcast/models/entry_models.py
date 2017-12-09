@@ -103,15 +103,16 @@ class Product(Entry):
         return math.log(self.sold_qty)
 
     def get_text_msg_wxapp(self):
-        recommend = '暂无推荐信息～'
+        recommend = ''
         try:
             recommend = self.productdetail.recommend
         except Exception as e:
             logger.error(e.message)
         template = "折扣商品：{title}\n" \
                     "销售数量：{sold_qty}\n" \
-                    "剩余券数：{cupon_left}\n"\
-                    "【推荐理由】：{recommend}\n"
+                    "剩余券数：{cupon_left}\n"
+        if recommend:
+            template = template + "【推荐理由】：{recommend}\n"
         if random.randrange(1, 5) == 1:
             template = template + "===============\n" \
                                       "下单方式：点开任意图片，长按识别图中小程序码\n" \
