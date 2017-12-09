@@ -414,20 +414,6 @@ class ProductDetail(View):
         except Product.DoesNotExist:
             return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist'}), status=400)
         p_detail = p.productdetail
-        activity_id = re.findall('activityId=([\w\d]+)',p.cupon_url)[0]
-        try:
-            detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid=" \
-                         "&_path=9001.SE.0.i.{path}&src=".format(
-                itemId=p.item_id, activityId=activity_id, path=p.item_id
-            )
-            response = requests.get(detail_url)
-            detail_dict = json.loads(response.content)
-            item = detail_dict["result"]["item"]
-        except Exception, e:
-            p.available = False
-            p.save()
-            logger.info("itemId: {}, 商品已失效".format(p.item_id))
-            return HttpResponse(json.dumps({"ret": 0, "reason": "商品失效了哦～"}))
         resp_dict = {
             'title': p.title,
             'desc': p.desc,
@@ -438,8 +424,8 @@ class ProductDetail(View):
             'provcity': p_detail.provcity,
             'seller_nick': p_detail.seller_nick,
             'small_imgs': json.loads(p_detail.small_imgs),
-            'detailImages': item['detailImages'],
-            'recommend': item['recommend'],
+            'detailImages':p_detail.describe_imgs,
+            'recommend': p_detail.recommend,
             # 最根类
             'root_cat': p_detail.cate.root_cat_name,
             # 类别
