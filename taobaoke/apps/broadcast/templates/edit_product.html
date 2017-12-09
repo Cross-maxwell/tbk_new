@@ -122,6 +122,7 @@
         xhr.open('post','/operate/delete-product-img/', true);
         var obj = JSON.stringify({'product_id': product_id,'index':index});
         xhr.send(obj);
-        location.reload();
+        alert('删除成功！');
+        setTimeout(location.reload(),500);
     }
 </script>
