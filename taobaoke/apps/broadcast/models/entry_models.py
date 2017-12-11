@@ -285,8 +285,8 @@ def create_detail_and_cate(sender, instance, created, **kwargs):
             itemId=product.item_id, activityId=activity_id, path=product.item_id
         )
         response = requests.get(detail_url)
-        detail_dict = json.loads(response.content)
-        item = detail_dict["result"]["item"]
+        resp_dict = json.loads(response.content)
+        item = resp_dict["result"]["item"]
         detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
         detail_dict['recommend'] = item['recommend']
     except Exception, e:
