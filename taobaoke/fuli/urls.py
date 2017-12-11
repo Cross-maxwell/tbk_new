@@ -15,6 +15,9 @@ from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, Produc
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
+from mini_program.views import WishWallView
+from rest_framework.documentation import include_docs_urls
+
 
 user_urls = [
     url(r'^update-adzone/', update_adzone),
@@ -79,6 +82,10 @@ operate_urls = [
     url(r'refresh-products/$', RefreshProducts.as_view()),
 ]
 
+wish_urls = [
+    url(r'index', WishWallView.as_view())
+]
+
 urlpatterns = [
     url(r'product/', include(product_urls)),
     url(r'user/', include(user_urls)),
@@ -87,5 +94,7 @@ urlpatterns = [
     url(r'auth/', include(auth_urls)),
     url(r'account/', include('account.urls')),
     url(r'operate/', include(operate_urls)),
+
+    url(r'wish', include(wish_urls))
 ]
 
