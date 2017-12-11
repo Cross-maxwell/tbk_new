@@ -183,6 +183,7 @@ class JudgeIsAgreeStatement(View):
             return HttpResponse(json.dumps({"ret": 1, "data": "添加法律条文成功"}))
         except Exception as e:
             logger.error(e)
+            return HttpResponse(json.dumps({"ret": 0, "data": "发生未知错误"}))
 
     def get(self, request):
         md_username = request.GET.get("username", None)
@@ -194,4 +195,5 @@ class JudgeIsAgreeStatement(View):
             return HttpResponse(json.dumps({"ret": 1, "is_agree_statement": is_agree_statement}))
         except Exception as e:
             logger.error(e)
+            return HttpResponse(json.dumps({"ret": 0, "data": "发生未知错误"}))
 
