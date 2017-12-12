@@ -12,6 +12,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from broadcast.models.user_models import TkUser, Adzone
+from broadcast.models.chatroom_models import ChatRoomQrcode
 from broadcast.serializers.user_serializers import AdzoneSerializer, TkUserSerializer
 from broadcast.utils import generatePoster_ran
 from user_auth.models import PushTime
@@ -108,6 +109,19 @@ def get_openid(request):
     except Exception as e:
         print e
     return HttpResponse('bad')
+
+
+def get_update_qrcode(request):
+    if request.method == 'GET':
+        try:
+            chatroom = ChatRoomQrcode.objects.filter(chatroom_id='7218909824@chatroom').first()
+            qrcode_url = chatroom.qrcode_url
+            return HttpResponse(qrcode_url)
+        except Exception as e:
+            print e
+    return HttpResponse('error')
+
+
 
 class SetPushTime(View):
     @csrf_exempt
