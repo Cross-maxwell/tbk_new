@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'user_auth',
-    'account'
+    'account',
+    'mini_program'
 ]
 
 MIDDLEWARE_CLASSES = [

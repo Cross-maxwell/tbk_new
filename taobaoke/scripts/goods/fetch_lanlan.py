@@ -18,6 +18,7 @@ os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
 
 from broadcast.models.entry_models import Product
+from django.db import connection
 
 import logging
 logger = logging.getLogger('fetch_lanlan')
@@ -81,6 +82,8 @@ def main():
 
                     p.refresh_from_db()
                     p.assert_available()
+
+                    connection.close()
 
                 except Exception as e:
                     logger.error(e)
