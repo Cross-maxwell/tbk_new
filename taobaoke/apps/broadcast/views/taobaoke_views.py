@@ -38,6 +38,7 @@ import re
 import logging
 logger = logging.getLogger('django_views')
 
+
 class PushProduct(View):
     def get(self, request):
         # 随机筛选商品
