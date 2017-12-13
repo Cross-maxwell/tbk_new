@@ -111,7 +111,7 @@ def push_data():
 
     cal_commision()
     cal_agent_commision()
-    order_notice(new_order)
+    # order_notice(new_order)
     pushNotice(new_order)
 
 # 改规则了，不用了
