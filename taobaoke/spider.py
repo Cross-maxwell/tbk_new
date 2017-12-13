@@ -25,11 +25,14 @@ def main(source):
     for wish in wish_list:
         content = wish.xpath('div[@class="Detail"]/span[@class="content"]/text()')
         sign = wish.xpath('div[@class="Sign"]/div[1]/text()')
-        if content[0] and sign[0].split()[1]:
-            wish_wall = WishWall()
-            wish_wall.wish_content = content[0]
-            wish_wall.username = sign[0].split()[1]
-            wish_wall.save()
+        try:
+            if content[0] and sign[0].split()[1]:
+                wish_wall = WishWall()
+                wish_wall.wish_content = content[0]
+                wish_wall.username = sign[0].split()[1]
+                wish_wall.save()
+        except Exception as e:
+            pass
 
 
 if __name__ == "__main__":
