@@ -88,7 +88,8 @@ def push_data():
         # item_id = result_dict['good_id']
         tmp_orderlist = ['103464948244158964', '103994545408936737', '105064483564347613', '99319425000698282', '105933855709464234', '99431763401739791']
         tmp_condition = result_dict['order_id'] not in tmp_orderlist
-        if (float(result_dict['commision_rate'][:-2])<0.2 and result_dict['order_status']==u'订单结算') and tmp_condition:
+        # 2017.12.13 王培钦：低于15%就算低佣
+        if (float(result_dict['commision_rate'][:-2])<0.15 and result_dict['order_status']==u'订单结算') and tmp_condition:
             result_dict['order_status'] = u'订单失效'
             result_dict['pay_amount'] = 0
             result_dict['show_commision_amount']=0.0
@@ -114,7 +115,7 @@ def push_data():
     order_notice(new_order)
     pushNotice(new_order)
 
-# 改规则了，不用了
+#
 # def assert_low_rate(item_id):
 #     # 判断是否低佣.
 #     try:
@@ -122,7 +123,7 @@ def push_data():
 #         order = Order.objects.get(good_id=item_id)
 #         p_rate = round(float(p.commision_amount)/p.price, 2)
 #         order_rate = round(float(order.commision_amount)/order.pay_amount, 2)
-#         if p_rate - order_rate > 0.1:
+#         if p_rate - order_rate > 0.15:
 #             return True
 #         else:
 #             return False
