@@ -6,6 +6,7 @@ from django.views.generic.base import View
 from django.http import HttpResponse, HttpResponseRedirect
 import json
 import requests
+from datetime import datetime
 from broadcast.utils import OSSMgr
 
 
@@ -89,3 +90,13 @@ class ChangePushStatus(View):
             target = 'http://s-prod-07.qunzhu666.com:9001/index.html?processname=taobaoke%3Asend_request&action={}'.format(action)
             requests.get(target, headers={"Authorization": "Basic bWF4d2VsbDptYXh3ZWxsX2FkbWlu", "connection": "close"})
             return HttpResponse()
+
+
+class ParseImg(View):
+    def post(self,request):
+        cur_file = request.FILES.get('global-img')
+        oss = OSSMgr()
+        monthday = str(datetime.now().month) + str(datetime.now().day)
+        oss.bucket.put_object(monthday+cur_file.name, cur_file.file)
+        img_url = 'http://md-oss.di25.cn/{0}{1}{2}?x-oss-process=image/quality,q_65'.format(datetime.now().month, datetime.now().day,cur_file.name)
+        return HttpResponse(json.dumps({'data':img_url}))

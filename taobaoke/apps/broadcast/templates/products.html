@@ -29,7 +29,8 @@
         </tr>
             {%  for p in products %}
         <tr>
-            <td><a class="product-link" href="/operate/operating-edit/?product_id={{ p.item_id }}"> {{ p.item_id }}</a></td>
+{#            <td><a class="product-link" href="/operate/operating-edit/?product_id={{ p.item_id }}"> {{ p.item_id }}</a></td>#}
+            <td> {{ p.item_id }}</td>
             <td style="font-size: smaller">{{ p.title }}</td>
             <td>{{ p.org_price }}</td>
             <td>{{ p.cupon_left }}</td>
@@ -48,6 +49,8 @@
     <div class="send-message-frame" >
         <p style="font-weight: bolder">群发消息</p>
         <textarea name="global-message" class="global-message" rows="5" cols="50"></textarea>
+        <input type="file" name="global-img" class="global-img" accept="image/*" onchange="select_img()"/>
+        <div><img src="" class="global-img-img" width=400px></div>
         <button class="button-send-message" onclick=send_message_to_all()>全局发送</button>
     </div>
 </body>
@@ -133,7 +136,7 @@
         display: block;
         margin-bottom: 1rem;
     }
-    .global-message {
+    .global-message , .global-img{
         overflow: hidden;
         resize: none;
         padding: 5px;
@@ -221,19 +224,38 @@
     var send_message_to_all = function(){
         var tmpdata = [];
         var message  = document.getElementsByClassName("global-message")[0].value;
+        var img_url = document.getElementsByClassName("global-img-img")[0].src;
+        tmpdata.push(img_url);
         tmpdata.push(message);
+{#        console.log(tmpdata);#}
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
-                console.log(1);
+                alert("发送成功！");
             }
         };
         xhr.open('post','http://s-prod-04.qunzhu666.com/api/robot/send_group_msg/', true);
         var obj = JSON.stringify({"platform_id":"make_money_together", "data":tmpdata});
         xhr.send(obj);
-        alert("发送成功！");
     };
+    function select_img() {
+        var img_url;
+        var img  = document.getElementsByClassName("global-img")[0].files[0];
+        var form_img = new FormData();
+        form_img.append('global-img', img);
+        var img_req = new XMLHttpRequest();
+        img_req.onreadystatechange = function (res) {
+            if (img_req.readyState === 4) {
+                img_url = JSON.parse(res.target.response).data;
+                console.log(img_url);
+                var img_tag  = document.getElementsByClassName("global-img-img")[0];
+                img_tag.src = img_url
+            }
+        };
+        img_req.open('post','http://localhost:9999/operate/parse-img/', true);
+        img_req.send(form_img);
 
+    }
 {#    s-prod-04.qunzhu666.com/api/robot/send_group_msg/#}
 
 </script>
