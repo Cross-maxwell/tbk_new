@@ -1,0 +1,7 @@
+# Should be used by crontab
+
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:
+MAILTO=root
+
+00 00 * * * /home/django_env/bin/python /home/new_taobaoke/taobaoke/scripts/clear_zombies.py

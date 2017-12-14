@@ -45,6 +45,9 @@ class LoginView(View):
                 return HttpResponse(json.dumps({"ret": 0, "data": "万能密码出错"}))
         if user:
             login(request, user)
+            if user.tkuser.adzone is None:
+                user.tkuser.assign_pid()
+                user.tkuser.save()
             return HttpResponse(json.dumps({"ret": 1, "data": "登录成功", "user_id": user.id, "username": username}))
         else:
             try:
