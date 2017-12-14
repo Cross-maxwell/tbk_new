@@ -273,3 +273,7 @@ LOGGING = {
 RAVEN_CONFIG = {
     'dsn': 'https://1b1b8817e06a4ed9bd4e29e5919b0833:efc6063ca18143d081c22d6a3140bbc7@sentry.io/258638',
 }
+
+REST_FRAMEWORK = {
+    "PAGE_SIZE": 40
+}
