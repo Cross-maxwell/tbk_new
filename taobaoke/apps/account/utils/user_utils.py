@@ -20,7 +20,8 @@ def get_ad_zone(key, value):
         elif key == 'adzone_id':
             adzone = Adzone.objects.get(pid__contains=value)
         return AdzoneSerializer(adzone).data
-
+    except Adzone.DoesNotExist:
+        return None
     except Exception, e:
         print '##get_ad_zone error:'+str(value)
         print e
