@@ -6,6 +6,7 @@ from django.views.generic.base import View
 from django.http import HttpResponse, HttpResponseRedirect
 import json
 import requests
+import urllib
 from datetime import datetime
 from broadcast.utils import OSSMgr
 
@@ -52,8 +53,9 @@ class EditProduct(View):
             if img:
                 # if type(img)
                 oss = OSSMgr()
-                oss.bucket.put_object(img.name, img.file)
-                img_url = 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(img.name)
+                oss.bucket.put_object(img.name.encode('utf-8'), img.file)
+                monthday = str(datetime.now().month) + str(datetime.now().day)
+                img_url = 'http://md-oss.di25.cn/{0}{1}?x-oss-process=image/quality,q_65'.format(monthday, urllib.quote(img.name.encode('utf-8')))
                 img_list.append(img_url)
         p.broadcast_text=text
         p.broadcast_img=json.dumps(img_list)
@@ -97,6 +99,6 @@ class ParseImg(View):
         cur_file = request.FILES.get('global-img')
         oss = OSSMgr()
         monthday = str(datetime.now().month) + str(datetime.now().day)
-        oss.bucket.put_object(monthday+cur_file.name, cur_file.file)
-        img_url = 'http://md-oss.di25.cn/{0}{1}{2}?x-oss-process=image/quality,q_65'.format(datetime.now().month, datetime.now().day,cur_file.name)
+        oss.bucket.put_object(monthday+cur_file.name.encode('utf-8'), cur_file.file)
+        img_url = 'http://md-oss.di25.cn/{0}{1}?x-oss-process=image/quality,q_65'.format(monthday,urllib.quote(cur_file.name.encode('utf-8')))
         return HttpResponse(json.dumps({'data':img_url}))
