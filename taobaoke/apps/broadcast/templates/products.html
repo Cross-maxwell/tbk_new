@@ -50,7 +50,7 @@
         <p style="font-weight: bolder">群发消息</p>
         <textarea name="global-message" class="global-message" rows="5" cols="50"></textarea>
         <input type="file" name="global-img" class="global-img" accept="image/*" onchange="select_img()"/>
-        <div><img src="" class="global-img-img" width=400px></div>
+        <div><img class="global-img-img" width=400px></div>
         <button class="button-send-message" onclick=send_message_to_all()>全局发送</button>
     </div>
 </body>
@@ -227,7 +227,8 @@
         var img_url = document.getElementsByClassName("global-img-img")[0].src;
         tmpdata.push(img_url);
         tmpdata.push(message);
-{#        console.log(tmpdata);#}
+
+        console.log(tmpdata);
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
@@ -246,6 +247,7 @@
         var img_req = new XMLHttpRequest();
         img_req.onreadystatechange = function (res) {
             if (img_req.readyState === 4) {
+                console.log(res.target.response);
                 img_url = JSON.parse(res.target.response).data;
                 console.log(img_url);
                 var img_tag  = document.getElementsByClassName("global-img-img")[0];
