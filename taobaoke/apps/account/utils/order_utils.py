@@ -13,7 +13,7 @@ __author__ = 'mingv'
 def get_order_list_by_user(user, order_status, enter_account):
     from account.models.order_models import Order
     adzone_set = Adzone.objects.filter(tkuser__user_id=str(user.id))
-    if adzone_set == [] :
+    if adzone_set.count() == 0 :
         return []
     ad_id = adzone_set.first().pid.split("_")[3]
     order_list = Order.objects.filter(ad_id=ad_id, order_status=order_status, enter_account=enter_account)
