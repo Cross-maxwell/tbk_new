@@ -6,7 +6,8 @@ from django.utils.timezone import utc
 
 from django.db import models
 from broadcast.models.user_models import TkUser
-
+import logging
+logger = logging.getLogger('sales_data')
 
 class AgentOrderStatus(models.Model):
     ## 订单状态, 记录订单是否入账了
@@ -143,5 +144,8 @@ class Order(models.Model):
             self.show_commision_rate = self.get_show_commision_rate
             self.show_commision_amount = self.get_show_commision_amount
         if not self.user_id:
-            self.user_id = TkUser.objects.get(adzone__pid__contains=self.ad_id).user_id
+            try:
+                self.user_id = TkUser.objects.get(adzone__pid__contains=self.ad_id).user_id
+            except Exception, e:
+                logger.error('{0} : {1}'.format(str(e), e.message))
         return super(Order, self).save(*args, **kwargs)
