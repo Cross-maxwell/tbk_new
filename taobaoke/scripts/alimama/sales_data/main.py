@@ -27,7 +27,7 @@ def __main__():
     """
     :return: True for Success, False for Fail
     """
-    logger.info("===========开始更新销售数据===========")
+    logger.info("===========Starting Updating Sales Data===========")
     now_time = datetime.datetime.now()
     yes_time = (now_time + datetime.timedelta(days=-7)).strftime('%Y-%m-%d')
     now_time = now_time.strftime('%Y-%m-%d')
@@ -57,10 +57,10 @@ def __main__():
         if fetch_excel(cookie_str, url):
             pub_alimama_data.push_data()
 
-        logger.info("===========销售数据更新成功！===========")
+        logger.info("===========Success Updating Sales Data！===========")
         return True
     else:
-        logger.warning("==[跪了]==销售数据用的cookie跪了啊！==[跪了]==")
+        logger.warning("==[Fucked up]==Cookie For Updating Orders Has Fucked Up！==[Fucked up]==")
         beary_chat("销售数据用的cookie跪了啊跪了啊跪了啊！")
         return False
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     cookie_effective = True
     N = 0
     while True:
-        print('{} time runs'.format(N))
+        print('{} Time Runs'.format(N))
         # 文件已经被更改 或者 cookie上一次是有效的
         if mtime_before != os.stat(COOKIES_PATH).st_mtime or cookie_effective:
             mtime_before = os.stat(COOKIES_PATH).st_mtime

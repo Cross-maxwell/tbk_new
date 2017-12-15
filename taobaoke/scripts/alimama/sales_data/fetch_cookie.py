@@ -18,7 +18,7 @@ def fetch_cookie_fromfile():
     # 读取cookie文件
     with open(COOKIES_PATH, 'r') as f:
         cookie_str = f.read()
-    print cookie_str.strip()
+    # print cookie_str.strip()
     return cookie_str.strip()
 
 

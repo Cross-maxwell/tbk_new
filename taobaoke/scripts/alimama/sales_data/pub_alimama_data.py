@@ -107,7 +107,7 @@ def push_data():
             print e
             continue
     leave_num = nrows - 1 - update_num - insert_num
-    return_str = '更新 {0} 条已存在订单数据，\n插入 {1} 条新订单数据,\n有 {2} 条数据出错.'.format(update_num, insert_num, leave_num)
+    return_str = '{0}Exist Orders Updated，\n{1} New Orders Inserted  ,\n{2} Exceptions Raised .'.format(update_num, insert_num, leave_num)
     logger.info(return_str)
 
     cal_commision()
