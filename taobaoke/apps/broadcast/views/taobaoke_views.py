@@ -8,6 +8,7 @@ import random
 import time
 import urllib
 import qrcode
+import thread
 
 from django.http import HttpResponse
 from django.views.generic.base import View
@@ -43,8 +44,8 @@ class PushProduct(View):
     def get(self, request):
         # 随机筛选商品
         # TODO: 为了解决推送记录的记录，则先筛选user，而非先筛选商品
-        platform_id = 'make_money_together'
 
+        platform_id = 'make_money_together'
         # 本地测试
         # 获取登录了一起赚平台的所有user列表
         # url = "http://localhost:10024/robot/platform_user_list?platform_id={}".format(platform_id)
@@ -53,7 +54,6 @@ class PushProduct(View):
         url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
 
         # send_msg_url = 'http://127.0.0.1:10024/api/robot/send_msg/'
-        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
         response = requests.get(url)
         response_dict = json.loads(response.content)
         if response_dict["ret"] != 1:
@@ -70,64 +70,70 @@ class PushProduct(View):
         """
         for user_object in login_user_list:
             user = user_object["user"]
-
-            # 找到该user所对应的pid
-            try:
-                tk_user = TkUser.get_user(user)
-                tkuser_id = tk_user.id
-            except Exception as e:
-                logger.error(e)
-            try:
-                pid = tk_user.adzone.pid
-            except Exception as e:
-                logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
-
-            wxuser_list = user_object["wxuser_list"]
-
-            # 根据phone_num判定是否到达发单时间
-            ret = is_push(user, platform_id)
-            if ret == 0:
-                for wxuser in wxuser_list:
-                    logger.info("%s 未到发单时间" % wxuser)
-            if ret == 1:
-                for wxuser in wxuser_list:
-                    logger.info("%s 开始本单发送" % wxuser)
-                qs = Product.objects.filter(
-                    ~Q(pushrecord__user_key__icontains=user,
-                       pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
-                    available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-                )
-
-                # 用发送过的随机商品替代
-                if qs.count() == 0:
-                    qs = Product.objects.filter(
-                        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-                    )
-                    beary_chat('点金推送商品失败：%s:%s 无可用商品' % (user, user_object["wxuser_list"]))
-
-                for _ in range(50):
-                    try:
-                        r = random.randint(0, qs.count() - 1)
-                        p = qs.all()[r]
-                        break
-                    except Exception as exc:
-                        print "Get entry exception. Count=%d." % qs.count()
-                        logger.error(exc)
-
-                # text = p.get_text_msg(pid=pid)
-                # img_url = p.get_img_msg()
-                text = p.get_text_msg_wxapp()
-                img_url = p.get_img_msg_wxapp(pid=pid, tkuser_id=tkuser_id)
-
-                data = [img_url, text]
-                request_data = {
-                    "md_username": user,
-                    "data": data
-                }
-                PushRecord.objects.create(entry=p, user_key=user)
-                send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
-
+            thread.start_new_thread(send_product, (user, user_object))
         return HttpResponse(json.dumps({"ret": 1}))
+
+
+def send_product(user, user_object):
+    # 找到该user所对应的pid
+    random_seed = random.randint(0, 5)
+    time.sleep(random_seed)
+    send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+    platform_id = 'make_money_together'
+    try:
+        tk_user = TkUser.get_user(user)
+        tkuser_id = tk_user.id
+    except Exception as e:
+        logger.error(e)
+    try:
+        pid = tk_user.adzone.pid
+    except Exception as e:
+        logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
+
+    wxuser_list = user_object["wxuser_list"]
+
+    # 根据phone_num判定是否到达发单时间
+    ret = is_push(user, platform_id)
+    if ret == 0:
+        for wxuser in wxuser_list:
+            logger.info("%s 未到发单时间" % wxuser)
+    if ret == 1:
+        for wxuser in wxuser_list:
+            logger.info("%s 开始本单发送" % wxuser)
+        qs = Product.objects.filter(
+            ~Q(pushrecord__user_key__icontains=user,
+               pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
+            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+        )
+
+        # 用发送过的随机商品替代
+        if qs.count() == 0:
+            qs = Product.objects.filter(
+                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+            )
+            beary_chat('点金推送商品失败：%s:%s 无可用商品' % (user, user_object["wxuser_list"]))
+
+        for _ in range(50):
+            try:
+                r = random.randint(0, qs.count() - 1)
+                p = qs.all()[r]
+                break
+            except Exception as exc:
+                print "Get entry exception. Count=%d." % qs.count()
+                logger.error(exc)
+
+        # text = p.get_text_msg(pid=pid)
+        # img_url = p.get_img_msg()
+        text = p.get_text_msg_wxapp()
+        img_url = p.get_img_msg_wxapp(pid=pid, tkuser_id=tkuser_id)
+
+        data = [img_url, text]
+        request_data = {
+            "md_username": user,
+            "data": data
+        }
+        PushRecord.objects.create(entry=p, user_key=user)
+        send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
 
 
 class AcceptSearchView(View):
