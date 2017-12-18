@@ -20,6 +20,6 @@ from django.utils import timezone
 forgotten_orders = Order.objects.filter(order_status='订单付款', create_time__lte=timezone.now()-timedelta(weeks=8))
 
 for o in forgotten_orders:
-    o.order_status = '订单失踪'
+    o.order_status = '订单失效'
     o.save()
 
