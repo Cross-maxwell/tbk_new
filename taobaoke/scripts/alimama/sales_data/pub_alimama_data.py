@@ -112,7 +112,7 @@ def push_data():
 
     cal_commision()
     cal_agent_commision()
-    # order_notice(new_order)
+    order_notice(new_order)
     pushNotice(new_order)
 
 #
@@ -155,11 +155,11 @@ def order_notice(order):
         beary_chat(notice_msg)
         logger.info(notice_msg)
 
-        send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
+        #send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
         payload = {'md_username': md_username}
         send_msg_response2 = requests.get(send_msg_url2, params=payload)
 
-        logger.info("request wxbot status code: {}".format(send_msg_response.status_code))
+        #logger.info("request wxbot status code: {}".format(send_msg_response.status_code))
         logger.info("request wxbot status code2: {}".format(send_msg_response2.status_code))
 
 
