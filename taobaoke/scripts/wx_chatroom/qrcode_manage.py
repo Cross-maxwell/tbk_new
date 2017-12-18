@@ -7,6 +7,7 @@ import os
 import sys
 
 sys.path.append('/home/new_taobaoke/taobaoke/')
+# sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
 
 import django
 
@@ -57,8 +58,8 @@ if __name__ == '__main__':
                                 time.sleep(3600)
                             break
                 else:
-                    logger.error("刷新二维码请求返回异常，请求参数可能错误，请检查～")
-                    beary_chat("刷新二维码请求返回异常，请求参数可能错误，请检查～")
+                    logger.error("刷新二维码请求返回异常，请求参数可能错误, 机器人小小未登录，请检查～")
+                    beary_chat("刷新二维码请求返回异常，请求参数可能错误，机器人小小未登录请检查～")
                     time.sleep(7200)
             else:
                 logger.info("刷新二维码请求返回失败，机器人可能未上线,等待下一次请求中～")

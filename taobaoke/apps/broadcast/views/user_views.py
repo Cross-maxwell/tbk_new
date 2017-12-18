@@ -122,7 +122,6 @@ def get_update_qrcode(request):
     return HttpResponse('error')
 
 
-
 class SetPushTime(View):
     @csrf_exempt
     def post(self, request):
