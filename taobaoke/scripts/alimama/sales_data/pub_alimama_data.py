@@ -7,7 +7,7 @@ sys.path.append('/home/new_taobaoke/taobaoke/')
 import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
-
+from datetime import datetime
 import xlrd
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -86,7 +86,8 @@ def push_data():
                 # 映射后端需要的字段
                 result_dict[field_mapping[headers[j]]] = table.row_values(i)[j]
         # item_id = result_dict['good_id']
-        # 12 月应失效已结算订单， 一月结算完后删除此临时条件。
+        # =================================== to be deleted on 2018.01.23
+        # 12 月应失效已结算订单， 01.22结算完后删除此临时条件。
         tmp_orderlist = ['103464948244158964', '103994545408936737', '105064483564347613', '99319425000698282', '105933855709464234', '99431763401739791']
         tmp_orderlist += ['98188871442438090', '99938914993063108', '94398810214883174', '99930540669909042', '94404831691893574',
                           '98325817771190283', '98367370374190283', '94428236370806770', '100617716909456530', '100640873530937620',
@@ -108,13 +109,20 @@ def push_data():
                           '110068223612914644', '95781476087755768', '110468959751222940', '111152409754563342', '111622809069937620',
                           '111665565257786212', '111999802048523303', '100913184337257687', '112362038306538115', '112526034470395820',
                           '101610302247257687', '101721826694863064', '102126342180468770', '102478162300468770']
-
         tmp_condition = result_dict['order_id'] not in tmp_orderlist
         # 2017.12.13 王培钦：低于15%就算失效
-        if (float(result_dict['commision_rate'][:-2])/100.0 < 0.15 and result_dict['order_status']==u'订单结算') and tmp_condition:
-            result_dict['order_status'] = u'订单失效'
-            result_dict['pay_amount'] = 0
-            result_dict['show_commision_amount']=0.0
+        # 2018.12.18 对于付款状态的订单，也按照15%做失效判断
+        create_time = datetime.strptime(result_dict['create_time'], "%Y-%m-%d %H:%M:%S")
+        if result_dict['order_status'] == u'订单付款' and (create_time<datetime(2017,12,19)):
+            pass
+        else:
+        # =================================== to be deleted on 2018.01.23
+        # and unindent below block
+            if (float(result_dict['commision_rate'][:-2])/100.0 < 0.15 ) and tmp_condition:
+                result_dict['order_status'] = u'订单失效'
+                result_dict['pay_amount'] = 0
+                result_dict['show_commision_amount']=0.0
+
         try:
             result = Order.objects.update_or_create(order_id=result_dict['order_id'], defaults=result_dict)
             status = result[1]
