@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from PIL import Image
-from PIL import ImageFont, ImageDraw
+from PIL import ImageFont, ImageDraw, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 import os
 # import django

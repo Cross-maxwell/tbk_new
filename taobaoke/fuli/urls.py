@@ -12,7 +12,7 @@ from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuse
 
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg, RecommendProduct
-from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg
+from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
 from mini_program.views import WishWallView
@@ -81,6 +81,7 @@ operate_urls = [
     url(r'delete-product-img/$', DeleteProductImg.as_view()),
     url(r'change-push-status/$', ChangePushStatus.as_view()),
     url(r'refresh-products/$', RefreshProducts.as_view()),
+    url(r'parse-img/$', ParseImg.as_view()),
 ]
 
 wish_urls = [

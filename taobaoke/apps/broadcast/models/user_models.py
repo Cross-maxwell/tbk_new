@@ -44,8 +44,8 @@ class TkUser(models.Model):
             )
 
     def save(self, *args, **kwargs):
-        if self.adzone is None:
-            self.assign_pid()
+        # if self.adzone is None:
+        #     self.assign_pid()
         if self.invite_code is None:
             self.invite_code=random_str(8)
         super(TkUser, self).save(*args, **kwargs)

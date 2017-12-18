@@ -29,9 +29,9 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 SECRET_KEY = 'tdw1=k(f2=%^*9bj*_+h_05(!wk03^(_jto+m0t6322uo!2y-('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost', 'tmp.zhiqun365.com']
+ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost', 'tmp.zhiqun365.com', "s-prod-07.qunzhu666.com"]
 
 # Application definition
 
@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'user_auth',
     'account',
-    'mini_program'
+    'mini_program',
+    'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -61,6 +62,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'fuli.disable_csrf.DisableCSRF'
 ]
 
 
@@ -265,4 +267,13 @@ LOGGING = {
         },
 
     }
+}
+
+
+RAVEN_CONFIG = {
+    'dsn': 'https://1b1b8817e06a4ed9bd4e29e5919b0833:efc6063ca18143d081c22d6a3140bbc7@sentry.io/258638',
+}
+
+REST_FRAMEWORK = {
+    "PAGE_SIZE": 40
 }
