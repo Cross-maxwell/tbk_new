@@ -107,22 +107,23 @@ def cal_commision():
 
         with transaction.atomic():
             for order in order_list:
-                share_rate=float(order.share_rate.split(' ')[0])/100.0
-                if share_rate <= 0.6:
-                    order_commision = order.commision_amount
+                # 2017.12.18 没有第三方分成的说法了，所有第三方订单按照正常结算
+                # share_rate=float(order.share_rate.split(' ')[0])/100.0
+                # if share_rate <= 0.6:
+                #     order_commision = order.commision_amount
+                #     order.show_commision_amount = order_commision
+                #     order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
+                # else:
+                pay_amount = order.pay_amount
+                order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
+                # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。
+                # adam 2017.11.20  19:50
+                if pay_amount >500 and order_commision_rate<0.25:
+                    order_commision = pay_amount * order_commision_rate*0.5
                     order.show_commision_amount = order_commision
                     order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
                 else:
-                    pay_amount = order.pay_amount
-                    order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
-                    # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。
-                    # adam 2017.11.20  19:50
-                    if pay_amount >500 and order_commision_rate<0.25:
-                        order_commision = pay_amount * order_commision_rate*0.5
-                        order.show_commision_amount = order_commision
-                        order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
-                    else:
-                        order_commision = order.show_commision_amount
+                    order_commision = order.show_commision_amount
                 new_earning_amount += order_commision
                 order.enter_account = True
                 order.save()
