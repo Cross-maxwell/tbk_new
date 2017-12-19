@@ -165,17 +165,17 @@ def push_data():
 
 
 def order_notice(order):
-    user_set = set()
+    user_list = []
     data = [u'[愉快]恭喜我们群里又有成员抢到高额优惠券啦～',]
     for order_id in order:
         try:
             order = Order.objects.filter(order_id=order_id).first()
             user_id = order.user_id
             md_username = User.objects.filter(id=int(user_id)).first().username
-            user_set.add(md_username)
+            user_list.append(md_username)
         except Exception as e:
             logger.error(e)
-    for md_username in user_set:
+    for md_username in user_list:
         request_data = {
             "md_username": md_username,
             "data": data
