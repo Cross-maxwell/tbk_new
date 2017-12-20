@@ -235,7 +235,7 @@
                 alert("发送成功！");
             }
         };
-        xhr.open('post','http://s-prod-04.qunzhu666.com/test/send_group_msg/', true);
+        xhr.open('post','http://s-prod-04.qunzhu666.com/api/robot/send_group_msg/', true);
         var obj = JSON.stringify({"platform_id":"make_money_together", "data":tmpdata});
         xhr.send(obj);
         location.reload();
