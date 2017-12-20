@@ -194,7 +194,7 @@ class SelectProducts(View):
             except ProductDetail.DoesNotExist:
                 pass
             ret_list.append(q_dict)
-        return  HttpResponse({'data':json.dumps(ret_list)})
+        return  HttpResponse(json.dumps({'data':ret_list}))
 
 
 class AcceptSearchView(View):
@@ -482,7 +482,7 @@ class AppProductJsonView(View):
         pass
 
 
-class ProductDetail(View):
+class ProductDetail_(View):
     """
     给小程序用的商品详情请求接口
     """
