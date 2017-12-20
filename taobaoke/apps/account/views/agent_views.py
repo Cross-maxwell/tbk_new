@@ -11,62 +11,65 @@ from django.views.generic.base import View
 from account.models.commision_models import AlipayAccount, Commision
 from account.serializers.agent_serializers import AlipayAccountSerializer, CommisionSerializer
 
+import logging
+logger = logging.getLogger("django_views")
 
-'''
-对用户所绑定的支付宝账户 进行查询,修改
-'''
+
 class AlipayAccountView(View):
+    """
+    对用户所绑定的支付宝账户 进行查询,修改
+    """
     def get(self, request):
         user_id = request.user.id
         try:
             account = AlipayAccount.objects.get(user_id=user_id)
             serializer = AlipayAccountSerializer(account)
-            return HttpResponse(json.dumps({'data' : serializer.data}),status=200)
+            return HttpResponse(json.dumps({'data': serializer.data}), status=200)
         except AlipayAccount.DoesNotExist:
-            return HttpResponse(json.dumps({'data': 'Alipay account does not exist.'}),status=200)
+            return HttpResponse(json.dumps({'data': 'Alipay account does not exist.'}), status=200)
         except Exception as e:
-            return HttpResponse(json.dumps({'data': self.request.method + e.message}),status=400)
+            return HttpResponse(json.dumps({'data': self.request.method + e.message}), status=400)
 
     def post(self, request):
         user_id = request.user.id
         req_dict = json.loads(request.body)
         try:
             account = AlipayAccount.objects.get(user_id=user_id)
-            account.alipay_id = req_dict.get('alipay_id','')
-            account.alipay_name = req_dict.get('alipay_name','')
-            account.identity_num = req_dict.get('identity_num','')
-            account.phone_num = req_dict.get('phone_num','')
+            account.alipay_id = req_dict.get('alipay_id', '')
+            account.alipay_name = req_dict.get('alipay_name', '')
+            account.identity_num = req_dict.get('identity_num', '')
+            account.phone_num = req_dict.get('phone_num', '')
             account.save()
-            return HttpResponse(json.dumps({'data': 'success'}),status=200)
+            return HttpResponse(json.dumps({'data': 'success'}), status=200)
         except AlipayAccount.DoesNotExist:
-            return HttpResponse(json.dumps({'data':'alipay account doesn\'t exist'}),status=400)
-        except Exception as e :
+            return HttpResponse(json.dumps({'data': 'alipay account doesn\'t exist'}), status=400)
+        except Exception as e:
             return HttpResponse(json.dumps({'data': self.request.method + e.message}), status=400)
 
 
-"""
-绑定支付宝账户
-"""
 class BindingAlipayAccountView(View):
+    """
+    绑定支付宝账户
+    """
     def post(self, request):
         req_dict = json.loads(request.body)
         try:
             AlipayAccount.objects.create(
                 user_id=str(request.user.id),
-                alipay_id=req_dict.get('alipay_id',''),
-                alipay_name=req_dict.get('alipay_name',''),
-                identity_num=req_dict.get('identity_num',''),
-                phone_num=req_dict.get('phone_num','')
+                alipay_id=req_dict.get('alipay_id', ''),
+                alipay_name=req_dict.get('alipay_name', ''),
+                identity_num=req_dict.get('identity_num', ''),
+                phone_num=req_dict.get('phone_num', '')
             )
         except Exception as e:
-            return HttpResponse(json.dumps({'data': 'Binding error:' + e.message}),status=400)
-        return HttpResponse(json.dumps({'data': 'success'}),status=200)
+            return HttpResponse(json.dumps({'data': 'Binding error:' + e.message}), status=400)
+        return HttpResponse(json.dumps({'data': 'success'}), status=200)
 
 
-"""
-获取淘宝客账户
-"""
 class GetCommision(View):
+    """
+    获取淘宝客账户
+    """
     def get(self, request):
         try:
             user_id = request.user.id
@@ -82,12 +85,10 @@ class GetCommision(View):
                 'intime_balance': get_intime_balance(user_id)
             }
         except Exception as e:
-            return HttpResponse(json.dumps({'data': 'query error' + e.message}),status=400)
-        return HttpResponse(json.dumps({'data': ret_dict}),status=200)
+            return HttpResponse(json.dumps({'data': 'query error' + e.message}), status=400)
+        return HttpResponse(json.dumps({'data': ret_dict}), status=200)
 
-"""
-GET或POST修改用户头像
-"""
+
 class UserAvatarView(View):
     """
     获取/修改 用户头像
@@ -95,21 +96,26 @@ class UserAvatarView(View):
     """
     def get(self, request):
         ret_data = {}
-        avatar_url = request.user.tkuser.avatar_url
-        ret_data['avatar_url'] = '' if avatar_url is None else avatar_url
-        ret_data['username'] = request.user.username
-        return HttpResponse(json.dumps({'data': ret_data}),status=200)
+        try:
+            avatar_url = request.user.tkuser.avatar_url
+            ret_data['avatar_url'] = '' if avatar_url is None else avatar_url
+            ret_data['username'] = request.user.username
+            return HttpResponse(json.dumps({'data': ret_data}), status=200)
+        except Exception as e:
+            logger.error(e)
+            return HttpResponse(json.dumps({'data': "尚未登录"}), status=400)
 
     def post(self, request):
         try:
             req_dict = json.loads(request.body)
-            post_url = req_dict.get('avatar_url','')
+            post_url = req_dict.get('avatar_url', '')
 
             request.user.tkuser.avatar_url = post_url
             request.user.tkuser.save()
-            return HttpResponse(json.dumps({'data': "success"}),status=200)
+            return HttpResponse(json.dumps({'data': "success"}), status=200)
         except Exception as e:
-            return HttpResponse(json.dumps({'data': "exception occurred:{}".format(e.message)}),status=400)
+            logger.error(e)
+            return HttpResponse(json.dumps({'data': "exception occurred:{}".format(e.message)}), status=400)
 
 
 

@@ -11,7 +11,7 @@ from django.dispatch import receiver
 class PushTime(models.Model):
     user = models.OneToOneField(User)
     # 发单间隔
-    interval_time = models.CharField(max_length=20, default=5)
+    interval_time = models.CharField(max_length=20, default=10)
     # 每天开始时间
     begin_time = models.CharField(max_length=20, default="07:00")
     # 每天停止时间

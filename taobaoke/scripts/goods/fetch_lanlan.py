@@ -40,12 +40,11 @@ def main():
             #'http://www.lanlanlife.com/taoke/sendlist/gatherList?uuid=803cef07c9c80627cd75d1bf8c97683a&page=%d' % (i+1),
             headers={'Cookie': cookie_str.strip()}
         )
-        if resp.json()['status']['code'] == 1001 :
-            for item in resp.json()['result']['items']:
-                try:
+        if resp.json()['status']['code'] == 1001:
+            try:
+                for item in resp.json()['result']['items']:
                     if item['status'] != '1':
                         continue
-
                     data_dict = {
                         'title': item['itemTitle'],
                         'desc': item['recommend'],
@@ -56,7 +55,7 @@ def main():
                         'sold_qty': item['monthSales'],
                         'cupon_left': item['surplus'],
                         'is_finished': item['isFinished'],
-                        'commision_rate' : item['tkRate'],
+                        'commision_rate': item['tkRate'],
                         'commision_amount': float(item['tkPrice'].strip(u'\xa5'))
                     }
 
@@ -85,9 +84,10 @@ def main():
 
                     connection.close()
 
-                except Exception as e:
-                    logger.error(e)
-                    print Exception.message
+            except Exception as e:
+                logger.error(e)
+                beary_chat("懒懒cookie已失效，请更新")
+                print Exception.message
         else:
             # beary_chat('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
             logger.error('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
