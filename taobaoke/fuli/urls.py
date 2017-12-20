@@ -10,8 +10,8 @@ from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid,get_update_qrcode
 
-from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail, AppSearchDetailView, \
-    AppSearchListView, SendArtificialMsg, RecommendProduct
+from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail_, AppSearchDetailView, \
+    AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
@@ -35,11 +35,14 @@ user_urls = [
 product_urls = [
     url(r'insert/', insert_product),
     url(r'qrcode/', get_login_qrcode),
-    url(r'detail/', ProductDetail.as_view()),
+    url(r'detail/', ProductDetail_.as_view()),
 
     url(r'search_list', AppSearchListView.as_view()),
     url(r'search_detail', AppSearchDetailView.as_view()),
-    url(r'recommand_product', RecommendProduct.as_view())
+    url(r'recommand_product', RecommendProduct.as_view()),
+    url(r'select-products', SelectProducts.as_view()),
+    url(r'push-certain-product', PushCertainProduct.as_view()),
+
 ]
 
 account_urls = [
