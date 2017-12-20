@@ -113,15 +113,15 @@ def push_data():
         # 2017.12.13 王培钦：低于15%就算失效
         # 2018.12.18 对于付款状态的订单，也按照15%做失效判断
         create_time = datetime.strptime(result_dict['create_time'], "%Y-%m-%d %H:%M:%S")
-        if result_dict['order_status'] == u'订单付款' and (create_time<datetime(2017,12,19)):
+        if result_dict['order_status'] == u'订单付款' and (create_time < datetime(2017,12,19)):
             pass
         else:
         # =================================== to be deleted on 2018.01.23
         # and unindent below block
-            if (float(result_dict['commision_rate'][:-2])/100.0 < 0.15 ) and tmp_condition:
+            if (float(result_dict['commision_rate'][:-2])/100.0 < 0.1) and tmp_condition:
                 result_dict['order_status'] = u'订单失效'
                 result_dict['pay_amount'] = 0
-                result_dict['show_commision_amount']=0.0
+                result_dict['show_commision_amount'] = 0.0
 
         try:
             result = Order.objects.update_or_create(order_id=result_dict['order_id'], defaults=result_dict)

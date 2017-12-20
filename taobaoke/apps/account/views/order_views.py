@@ -1,11 +1,12 @@
 # coding=utf-8
 import json
-# import traceback
-# from django.db import transaction
 
+from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny
+from django.views.generic.base import View
+from account.utils import account_utils
+from django.http import HttpResponse
 
-# from account.temp import admin_phone
-# from account.temp import send_message
 from account.models.commision_models import AgentCommision
 from account.models.order_models import Order
 from account.serializers.order_serializers import OrderSerializer
@@ -14,22 +15,11 @@ from account.utils.common_utils import cut_decimal
 from account.utils.user_utils import get_ad_zone, get_ad_id
 from broadcast.models.user_models import TkUser
 
-# from rest_framework import generics
-from django.contrib.auth.models import User
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from django.views.generic.base import View
-from account.utils import account_utils
-from django.http import HttpResponse
 
-__author__ = 'mingv'
-
-
-'''
-    获取订单列表
-'''
 class OrderList(View):
+    """
+    获取订单列表
+    """
     def get(self, request):
         try:
             # sortKey = request.GET.get('sortKey')
@@ -56,7 +46,7 @@ class GetGoodPv(View):
     获取浏览量
     """
     def get(self, request):
-        ad_zone = get_ad_zone('username',request.user.username)
+        ad_zone = get_ad_zone('username', request.user.username)
         click_30d = ad_zone['click_30d']
         return HttpResponse(json.dumps({'data': click_30d}),status=200)
 
@@ -75,13 +65,8 @@ class PostingAccount(View):
         order_id = request.GET.get('order_id')
         type1 = request.GET.get('type')
         account_utils.post(md_user_id, amount, in_or_out, order_id, type1)
-        return HttpResponse(json.dumps({'data': 'successful update the data'}),status=200)
+        return HttpResponse(json.dumps({'data': 'successful update the data'}), status=200)
 
-
-'''
-修改二级代理的备注信息
-inviter_backup_info放到TkUser
-'''
 
 class SetBackUpInfoView(View):
     """
@@ -96,33 +81,31 @@ class SetBackUpInfoView(View):
         try:
             sub_agent_user_id = User.objects.get(username=sub_agent_username).id
         except User.DoesNotExist as e:
-            return HttpResponse(json.dumps({'data': "{} user is not exist".format(sub_agent_username)}),status=400)
+            return HttpResponse(json.dumps({'data': "{} user is not exist".format(sub_agent_username)}), status=400)
 
         # 防止接口被恶意使用, 判断此下级代理是否为该用户下级代理
         try:
             tmp = TkUser.objects.get(user_id=sub_agent_user_id)
         except TkUser.DoesNotExist as e:
-            return HttpResponse(json.dumps({'data': "{} userid in tkuser is not exist".format(sub_agent_user_id)}),status=400)
+            return HttpResponse(json.dumps({'data': "{} userid in tkuser is not exist".format(sub_agent_user_id)}), status=400)
 
         if not tmp.inviter_id == str(user_id):
-            return HttpResponse(json.dumps({'data': "{}'s superior is not you".format(sub_agent_user_id)}),status=400)
-
-
+            return HttpResponse(json.dumps({'data': "{}'s superior is not you".format(sub_agent_user_id)}), status=400)
         tmp.inviter_backup_info = backup_info
         tmp.save()
-        return HttpResponse(json.dumps({'data': "success"}),status=200)
+        return HttpResponse(json.dumps({'data': "success"}), status=200)
 
 
-'''
-获取下级代理人员列表，显示最后登录时间
-'''
 class InviterLastLoginView(View):
+    """
+    获取下级代理人员列表，显示最后登录时间
+    """
     def get(self, request):
         username = request.user.username
         try:
             agent_user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return HttpResponse(json.dumps({'error': 'username does not exist'}),status=400)
+            return HttpResponse(json.dumps({'error': 'username does not exist'}), status=400)
         sub_agent_list = TkUser.objects.filter(inviter_id=agent_user.id)
         data = []
         for sub_agent in sub_agent_list:
@@ -132,13 +115,13 @@ class InviterLastLoginView(View):
                 last_login = format(sub_agent.user.last_login, "%Y-%m-%d %H:%M:%S")
             md_list_json = {'username': sa_username, 'last_login': last_login}
             data.append(md_list_json)
-        return HttpResponse(json.dumps({'data': data}),status=200)
+        return HttpResponse(json.dumps({'data': data}), status=200)
 
 
-'''
-获取下级代理订单信息，下级代理总赚取佣金，产生总二级佣金
-'''
 class InviterOrderListView(View):
+    """
+    获取下级代理订单信息，下级代理总赚取佣金，产生总二级佣金
+    """
     def get(self, request):
         user_id = request.user.id
         # sort_key = request.GET.get('order-sortKey')
@@ -146,7 +129,7 @@ class InviterOrderListView(View):
         try:
             agent_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return HttpResponse(json.dumps({'error': 'username does not exist'}),status=400)
+            return HttpResponse(json.dumps({'error': 'username does not exist'}), status=400)
         # 拿到所有下级代理
         sub_agent_list = TkUser.objects.filter(inviter_id=agent_user.id)
         # 下级代理的订单详情列表
@@ -202,16 +185,16 @@ class InviterOrderListView(View):
             sum_user_earning += cut_decimal(user_earning, 2)
 
         data = {'sum_user_earning': sum_user_earning, 'detail_list': detail_list}
-        return HttpResponse(json.dumps({'data': data}),status=200)
+        return HttpResponse(json.dumps({'data': data}), status=200)
 
 
-'''
-  获取所有人的未结算订单
-'''
 class OrderCommisionView(View):
+    """
+    获取所有人的未结算订单
+    """
     def get(self, request):
         data = get_all_order()
-        return HttpResponse(json.dumps({'data':data}),status=200)
+        return HttpResponse(json.dumps({'data': data}), status=200)
 
 
 

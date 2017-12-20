@@ -427,7 +427,7 @@ class ProductDetail(View):
             'provcity': p_detail.provcity,
             'seller_nick': p_detail.seller_nick,
             'small_imgs': json.loads(p_detail.small_imgs),
-            'detailImages':json.loads(p_detail.describe_imgs),
+            'detailImages': json.loads(p_detail.describe_imgs),
             'recommend': p_detail.recommend,
             # 最根类
             'root_cat': p_detail.cate.root_cat_name,

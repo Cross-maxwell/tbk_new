@@ -94,7 +94,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'tk', include(tk_urls)),
     url(r'auth/', include(auth_urls)),
-    url(r'account/', include('account.urls')),
+    url(r'account/', include(account_urls)),
     url(r'operate/', include(operate_urls)),
 
     url(r'wish', include(wish_urls))
