@@ -19,7 +19,7 @@ from django.db.models import Q
 from django.utils.encoding import iri_to_uri
 
 from broadcast.models.user_models import TkUser
-from broadcast.models.entry_models import Product
+from broadcast.models.entry_models import Product, ProductDetail
 from user_auth.models import PushTime
 from broadcast.models.user_models import Adzone
 from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
@@ -134,6 +134,67 @@ def send_product(user, user_object):
         }
         PushRecord.objects.create(entry=p, user_key=user)
         send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
+
+
+class PushCertainProduct(View):
+    def post(self, request):
+        username = request.user.username
+        platform_id = 'make_money_together'
+        req_dict = json.loads(request.body)
+        item_id = req_dict.get('item_id')
+        p = Product.objects.get(item_id = item_id)
+        if is_handle_push(username, platform_id):
+            thread.start_new_thread(send_certain_product, (username, p))
+            return HttpResponse(json.dumps({'data': '推送成功！'}))
+        else:
+            return HttpResponse(json.dumps({'data': '发送太频繁啦！请稍后再试！（手动推单间隔10分钟噢～）'}))
+
+
+def send_certain_product(username, p_object):
+    """
+    process : 传入username和指定的商品实例，向该用户所有生产群推送该商品。
+    :param username: mmt平台用户名（手机号）
+    :param p_object: 一个Product实例
+    :return:
+    """
+    send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+    tkuser = TkUser.get_user(username)
+    text = p_object.get_text_msg_wxapp()
+    img_url = p_object.get_img_msg_wxapp(pid=tkuser.adzone.pid, tkuser_id=tkuser.id)
+    request_data = {
+        "md_username": username,
+        "data": [img_url, text]
+    }
+    PushRecord.objects.create(entry=p_object, user_key=username)
+    send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
+
+
+class SelectProducts(View):
+    def get(self, request):
+        qs = Product.objects.filter(
+                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+            ).order_by('-create_time')[:50]
+        ret_list = []
+        for q in qs:
+            q_dict = {
+                'item_id': q.item_id,
+                'title': q.title,
+                'img_url': q.img_url,
+                'org_price': q.org_price,
+                'cupon_value': q.cupon_value,
+                'price': q.price,
+                'sold_qty': q.sold_qty,
+                'describe_imgs': None,
+                'recommend': None
+            }
+            try:
+                pd = ProductDetail.objects.get(product=q)
+                q_dict['describe_imgs'] = json.loads(pd.describe_imgs)
+                q_dict['recommend'] = pd.recommend
+            except ProductDetail.DoesNotExist:
+                pass
+            ret_list.append(q_dict)
+        return  HttpResponse(json.dumps({'data':ret_list}))
 
 
 class AcceptSearchView(View):
@@ -394,13 +455,34 @@ def is_push(md_username, wx_id):
         logger.error(e)
 
 
+def is_handle_push(md_username, platform_id):
+    try:
+        cur_time = datetime.datetime.now()
+        handle_push_interval = 5
+        cache_key = md_username + '_' + platform_id + '_last_handle_push'
+        cache_time_format = "%Y-%m-%d %H:%M:%S"
+        last_push_time = cache.get(cache_key)
+        if last_push_time is None:
+            is_within_interval = True
+        else:
+            dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
+            is_within_interval = dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval)) <= cur_time
+
+        if is_within_interval:
+            cache.set(cache_key, datetime.datetime.strftime(cur_time, cache_time_format), 3600 * 10)
+
+        return int(is_within_interval)
+    except Exception, e:
+        logger.error(e.message)
+
+
 class AppProductJsonView(View):
     def get(self, request):
         # 返回商品的类别，
         pass
 
 
-class ProductDetail(View):
+class ProductDetail_(View):
     """
     给小程序用的商品详情请求接口
     """
