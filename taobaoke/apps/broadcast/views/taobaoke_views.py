@@ -147,7 +147,7 @@ class PushCertainProduct(View):
             thread.start_new_thread(send_certain_product, (username, p))
             return HttpResponse(json.dumps({'data': '推送成功！'}))
         else:
-            return HttpResponse(json.dumps({'data': '发送太频繁啦！请稍后再试！（手动推单间隔10分钟噢～）'}))
+            return HttpResponse(json.dumps({'data': '发送太频繁啦！请稍后再试！（手动推单间隔5分钟噢～）'}))
 
 
 def send_certain_product(username, p_object):
@@ -173,7 +173,7 @@ class SelectProducts(View):
     def get(self, request):
         qs = Product.objects.filter(
                 available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-            ).order_by('-create_time')[:50]
+            ).order_by('-commision_amount')[:50]
         ret_list = []
         for q in qs:
             q_dict = {
@@ -183,6 +183,7 @@ class SelectProducts(View):
                 'org_price': q.org_price,
                 'cupon_value': q.cupon_value,
                 'price': q.price,
+                'predict_balance': q.price * 0.15,
                 'sold_qty': q.sold_qty,
                 'describe_imgs': None,
                 'recommend': None
