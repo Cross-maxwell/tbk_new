@@ -535,7 +535,7 @@ class RecommendProduct(View):
         resp_list = []
         products_list = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))
         products = []
-        for _ in range(100):
+        for _ in range(10):
             try:
                 r = random.randint(0, products_list.count() - 1)
                 p = products_list[r]
@@ -632,7 +632,6 @@ class SendArtificialMsg(View):
                 logger.info("SendArtificialMsg response: {}".format(send_msg_response.content))
 
                 artifical_data = req_dict["data"]
-                time.sleep(3.5)
             except Exception as e:
                 logger.error(e)
 
