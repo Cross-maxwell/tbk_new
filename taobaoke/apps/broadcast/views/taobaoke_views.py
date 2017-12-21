@@ -172,7 +172,7 @@ def send_certain_product(username, p_object):
 class SelectProducts(View):
     def get(self, request):
         qs = Product.objects.filter(
-                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),cupon_left__gte=10, cupon_value__gte=10
             ).order_by('-commision_amount')[:50]
         ret_list = []
         for q in qs:
