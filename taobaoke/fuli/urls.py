@@ -11,7 +11,7 @@ from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuse
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid,get_update_qrcode
 
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail_, AppSearchDetailView, \
-    AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct
+    AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct, get_handle_pushtime
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
@@ -27,6 +27,7 @@ user_urls = [
     url(r'^poster/', poster_url),
     url(r'^get-openid/', get_openid),
     url(r'^get-chatqrcode/', get_update_qrcode),
+    url(r'^get-handle-pushtime/', get_handle_pushtime),
 ]
 
 ## 新增了获取邀请码的接口,用于poster生成海报
