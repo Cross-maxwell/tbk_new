@@ -17,6 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Q
 from django.utils.encoding import iri_to_uri
+from django.contrib.auth.models import User, AnonymousUser
 
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product, ProductDetail
@@ -475,6 +476,30 @@ def is_handle_push(md_username, platform_id):
         return int(is_within_interval)
     except Exception, e:
         logger.error(e.message)
+
+
+def get_handle_pushtime(request):
+    if request.method == 'GET':
+        user = request.user
+        if isinstance(user, AnonymousUser):
+            return HttpResponse(json.dumps({'data': 'Login Required.'}), status=403)
+        try:
+            username = user.username
+            handle_push_interval = 5
+            cache_key = username + '_' + 'make_money_together' + '_last_handle_push'
+            cache_time_format = "%Y-%m-%d %H:%M:%S"
+            last_push_time = cache.get(cache_key)
+            dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
+            can_push = (dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval)) <= datetime.datetime.now()) or (last_push_time is None)
+            if can_push:
+                return HttpResponse(json.dumps({'data':'ok'}))
+            else:
+                dt_next_push_time = dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval))
+                next_push_time = dt_next_push_time.strftime(cache_time_format)
+                return HttpResponse(json.dumps({'data':next_push_time}))
+        except Exception, e:
+            logger.error('{0} : {1}'.format(str(e), e.message))
+
 
 
 class AppProductJsonView(View):
