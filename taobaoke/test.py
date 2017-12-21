@@ -18,6 +18,6 @@ for root, dirs, files in os.walk(dirName):
             filename = '{}.jpeg'.format(uuid.uuid1())
             oss = OSSMgr()
             oss.bucket.put_object(filename, new_image)
-            print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
+            print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,Q_80'.format(filename)
 
 

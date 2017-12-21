@@ -535,7 +535,7 @@ class RecommendProduct(View):
         resp_list = []
         products_list = Product.objects.filter(available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=2))
         products = []
-        for _ in range(6):
+        for _ in range(100):
             try:
                 r = random.randint(0, products_list.count() - 1)
                 p = products_list[r]

@@ -23,7 +23,7 @@ get_date_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/get_chatroom_qrco
 # get_date_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/get_chatroom_qrcode/'
 
 postdate = {
-    "wx_id": "wxid_fh235f4nylp22",
+    "wx_id": "wxid_3drnq3ee20fg22",
     "chatroom_id": "7218909824@chatroom"
 }
 
