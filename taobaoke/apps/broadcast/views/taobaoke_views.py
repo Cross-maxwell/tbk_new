@@ -489,8 +489,9 @@ def get_handle_pushtime(request):
             cache_key = username + '_' + 'make_money_together' + '_last_handle_push'
             cache_time_format = "%Y-%m-%d %H:%M:%S"
             last_push_time = cache.get(cache_key)
-            dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
-            can_push = (dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval)) <= datetime.datetime.now()) or (last_push_time is None)
+            if last_push_time:
+                dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
+            can_push =(last_push_time is None) or (dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval)) <= datetime.datetime.now())
             if can_push:
                 return HttpResponse(json.dumps({'data':'ok'}))
             else:
