@@ -8,7 +8,7 @@ from account.views.agent_views import GetCommision, AlipayAccountView, BindingAl
 
 from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
-    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid,get_update_qrcode
+    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid,get_update_qrcode, UserAutoPush
 
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail_, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct, get_handle_pushtime
@@ -28,6 +28,7 @@ user_urls = [
     url(r'^get-openid/', get_openid),
     url(r'^get-chatqrcode/', get_update_qrcode),
     url(r'^get-handle-pushtime/', get_handle_pushtime),
+    url(r'^auto-push/', UserAutoPush.as_view()),
 ]
 
 ## 新增了获取邀请码的接口,用于poster生成海报

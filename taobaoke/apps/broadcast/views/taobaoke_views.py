@@ -70,8 +70,13 @@ class PushProduct(View):
         }
         """
         for user_object in login_user_list:
-            user = user_object["user"]
-            thread.start_new_thread(send_product, (user, user_object))
+            username = user_object["user"]
+            try:
+                user = User.objects.get(username=username)
+                if user.tkuser.autopush :
+                    thread.start_new_thread(send_product, (username, user_object))
+            except User.DoesNotExist:
+                continue
         return HttpResponse(json.dumps({"ret": 1}))
 
 

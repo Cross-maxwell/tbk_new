@@ -5,7 +5,7 @@ import json
 import threading
 import requests
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
@@ -159,3 +159,26 @@ class GetPushTIme(View):
         end_time = pushtime.end_time
         return HttpResponse(json.dumps({"interval_time": interval_time,
                                         "begin_time": begin_time, "end_time": end_time}))
+
+
+class UserAutoPush(View):
+    def get(self, request):
+        user = request.user
+        if isinstance(user, AnonymousUser):
+            return HttpResponse(json.dumps({'data': 'Login Required'}))
+        return HttpResponse(json.dumps({'data': user.tkuser.autopush}))
+    def post(self, request):
+        user = request.user
+        if isinstance(user, AnonymousUser):
+            return HttpResponse(json.dumps({'data': 'Login Required'}))
+        req_dict = json.loads(request.body)
+        action = req_dict.get('action', True)
+        if type(action) != bool:
+            return HttpResponse(json.dumps({'data': 'Param \'action\' should be bool.'}))
+        try:
+            tkuser = user.tkuser
+            tkuser.autopush = action
+            tkuser.save()
+            return HttpResponse(json.dumps({'data': '修改成功！'}))
+        except Exception, e:
+            return  HttpResponse(json.dumps({'data': 'Error: {}'.format(e.message)}))
