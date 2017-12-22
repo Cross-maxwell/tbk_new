@@ -89,28 +89,6 @@ class PrepayView(View):
                    openid=openid, out_trade_no=out_trade_no, spbill_create_ip=spbill_create_ip, total_fee=total_fee,
                    sign=sign)
 
-        req_data = {
-            "appid": AppID,
-            # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
-            # 微信支付分配的商户号
-            "mch_id": MCH_ID,
-            # 随机字符串，不长于32位。推荐随机数生成算法
-            "nonce_str": get_random_str(),
-            "body": body,
-            # 商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号,必须唯一
-            "out_trade_no": get_trade_num(item_id=item_id),
-            "total_fee": total_fee,
-            # APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
-            "spbill_create_ip": IP,
-            # 接收微信支付异步通知回调地址，通知url必须为直接可访问的url，不能携带参数。
-            "notify_url": notify_url,
-            "attach": "商品附加数据测试",
-            # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
-            "trade_type": "JSAPI",
-            # 签名，详见签名生成算法
-            "sign": get_sign_str(appid=appid, mch_id=mch_id, body=body),
-
-        }
         response = requests.post(prepay_url, data=req_xml_data, headers={'Content-Type': 'text/xml'})
         print response.content
 
@@ -146,6 +124,30 @@ class SendAppTextMessage(View):
 
 
 
+
+
+
+# req_data = {
+#     "appid": AppID,
+#     # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
+#     # 微信支付分配的商户号
+#     "mch_id": MCH_ID,
+#     # 随机字符串，不长于32位。推荐随机数生成算法
+#     "nonce_str": get_random_str(),
+#     "body": body,
+#     # 商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号,必须唯一
+#     "out_trade_no": get_trade_num(item_id=item_id),
+#     "total_fee": total_fee,
+#     # APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
+#     "spbill_create_ip": IP,
+#     # 接收微信支付异步通知回调地址，通知url必须为直接可访问的url，不能携带参数。
+#     "notify_url": notify_url,
+#     "attach": "商品附加数据测试",
+#     # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
+#     "trade_type": "JSAPI",
+#     # 签名，详见签名生成算法
+#     "sign": get_sign_str(appid=appid, mch_id=mch_id, body=body),
+# }
 
 
 
