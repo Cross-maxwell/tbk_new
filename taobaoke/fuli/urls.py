@@ -15,8 +15,9 @@ from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, Produc
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
-from mini_program.views import WishWallView
-from rest_framework.documentation import include_docs_urls
+from mini_program.views.wishwall_views import WishWallView
+from mini_program.views.appuser_views import GetSessionKey
+from mini_program.views.payment_views import PrepayView
 
 
 user_urls = [
@@ -92,6 +93,11 @@ wish_urls = [
     url(r'index', WishWallView.as_view())
 ]
 
+payment_urls = [
+    url(r'get_session_key', GetSessionKey.as_view()),
+    url(r'prepay', PrepayView.as_view())
+]
+
 urlpatterns = [
     url(r'product/', include(product_urls)),
     url(r'user/', include(user_urls)),
@@ -101,6 +107,7 @@ urlpatterns = [
     url(r'account/', include(account_urls)),
     url(r'operate/', include(operate_urls)),
 
-    url(r'wish', include(wish_urls))
+    url(r'wish', include(wish_urls)),
+    url(r'payment', include(payment_urls))
 ]
 

@@ -14,3 +14,4 @@ class WishWall(models.Model):
     font_img = models.CharField(max_length=500, default='', null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
 
+

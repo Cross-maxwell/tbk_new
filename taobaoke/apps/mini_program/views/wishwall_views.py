@@ -2,7 +2,7 @@
 from rest_framework.generics import ListCreateAPIView
 
 from mini_program.serializer import WishWallModelSerializer
-from mini_program.models import WishWall
+from mini_program.models.wishwall_models import WishWall
 
 import logging
 logger = logging.getLogger('django_views')
@@ -17,6 +17,5 @@ class WishWallView(ListCreateAPIView):
 
     def get_queryset(self):
         return WishWall.objects.all().order_by('-created')
-
 
 
