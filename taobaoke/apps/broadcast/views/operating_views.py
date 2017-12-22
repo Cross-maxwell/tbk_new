@@ -17,10 +17,16 @@ class GetProducts(View):
 
     @csrf_exempt
     def post(self, request):
+        req_dict = json.loads(request.body)
         products_list = []
-        item_id = request.POST.get('item_id')
+        item_id = req_dict.get('item_id')
         if item_id:
-            products_list = list(Product.objects.filter(item_id__contains=item_id))
+            for p in  list(Product.objects.filter(item_id__contains=item_id)):
+                p_dict = p.__dict__
+                p_dict.pop('_state')
+                p_dict['create_time'] = p_dict['create_time'].strftime("%Y-%m-%d %H:%M:%S")
+                p_dict['last_update'] = p_dict['last_update'].strftime("%Y-%m-%d %H:%M:%S")
+                products_list.append(p_dict)
         return HttpResponse(json.dumps({'data':{'products': products_list}}))
     # todo: 等彩云搞定之后用这个
 
