@@ -4,25 +4,25 @@ from django.views.decorators.csrf import csrf_exempt
 from broadcast.models.entry_models import Product
 from django.views.generic.base import View
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.cache import cache
 import json
 import requests
 import urllib
 from datetime import datetime
 from broadcast.utils import OSSMgr
+from broadcast.utils.sql_utils import SQLHandler
 
 
 class GetProducts(View):
-    def get(self, request):
-        return render_to_response('products.html')
 
     @csrf_exempt
     def post(self, request):
         products_list = []
-        # 使用title查找，对用户更舒服
         item_id = request.POST.get('item_id')
         if item_id:
             products_list = list(Product.objects.filter(item_id__contains=item_id))
-        return render_to_response('products.html', {'products': products_list})
+        return HttpResponse(json.dumps({'data':{'products': products_list}}))
+    # todo: 等彩云搞定之后用这个
 
 
 class EditProduct(View):
@@ -102,3 +102,26 @@ class ParseImg(View):
         oss.bucket.put_object(monthday+cur_file.name.encode('utf-8'), cur_file.file)
         img_url = 'http://md-oss.di25.cn/{0}{1}?x-oss-process=image/quality,q_65'.format(monthday,urllib.quote(cur_file.name.encode('utf-8')))
         return HttpResponse(json.dumps({'data':img_url}))
+
+
+class SelectCate(View):
+    def get(self, request):
+        cur_cate = cache.get('mmt_select_cate')
+        if cur_cate is None:
+            cur_cate = []
+            cache.set('mmt_select_cate', json.dumps(cur_cate), 60*60*24*3)
+        sql_sentence = "SELECT DISTINCT root_cat_name from broadcast_productcategory"
+        all_cate = [cate[0] for cate in SQLHandler.execute(sql_sentence)]
+        ret_dict = {
+            'cur_cate':cur_cate,
+            'all_cate': all_cate
+        }
+        return HttpResponse(json.dumps({'data': ret_dict}))
+    def post(self, request):
+        try:
+            req_dict = json.loads(request.body)
+        except ValueError:
+            return HttpResponse(json.dumps({'data': 'Wrong JSON format.'}))
+        cate = req_dict.get('mmt_select_cate')
+        cache.set('mmt_select_cate', cate, 60*60*24*3)
+        return HttpResponse(json.dumps({'data': 'success'}))

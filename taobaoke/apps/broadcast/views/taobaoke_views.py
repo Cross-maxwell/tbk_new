@@ -143,12 +143,15 @@ class PushCertainProduct(View):
         platform_id = 'make_money_together'
         req_dict = json.loads(request.body)
         item_id = req_dict.get('item_id')
-        p = Product.objects.get(item_id = item_id)
+        try:
+            p = Product.objects.get(item_id = item_id)
+        except Product.DoesNotExist :
+            return HttpResponse(json.dumps({'data': '商品不存在！'}))
         if is_handle_push(username, platform_id):
             thread.start_new_thread(send_certain_product, (username, p))
             return HttpResponse(json.dumps({'data': '推送成功！'}))
         else:
-            return HttpResponse(json.dumps({'data': '发送太频繁啦！请稍后再试！（手动推单间隔5分钟噢～）'}))
+            return HttpResponse(json.dumps({'data': '发送太频繁啦！请稍后再试！（手动推单间隔2分钟噢～）'}))
 
 
 def send_certain_product(username, p_object):
@@ -172,9 +175,21 @@ def send_certain_product(username, p_object):
 
 class SelectProducts(View):
     def get(self, request):
-        qs = Product.objects.filter(
-                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),cupon_left__gte=10, cupon_value__gte=10
-            ).order_by('-price')[:50]
+        page_num = request.GET.get('page')
+        if not page_num:
+            return HttpResponse(json.dumps({'data': 'Param \'page\' is required.'}))
+        root_cat_names = cache.get('mmt_select_cate')
+        root_cat_names = [] if root_cat_names is None else root_cat_names
+        query_dict = {
+            'available': True,
+            'last_update__gt' : timezone.now() - datetime.timedelta(hours=4),
+            'cupon_left__gte' : 10,
+            'cupon_value__gte': 10,
+        }
+        if root_cat_names:
+            query_dict['root_cat_name__in'] = root_cat_names
+        qs = Product.objects.filter(**query_dict).order_by('-sold_qty')
+        qs = qs[int(page_num) * 20 : int(page_num) * 20 + 20]
         ret_list = []
         for q in qs:
             q_dict = {
@@ -460,7 +475,7 @@ def is_push(md_username, wx_id):
 def is_handle_push(md_username, platform_id):
     try:
         cur_time = datetime.datetime.now()
-        handle_push_interval = 5
+        handle_push_interval = 2
         cache_key = md_username + '_' + platform_id + '_last_handle_push'
         cache_time_format = "%Y-%m-%d %H:%M:%S"
         last_push_time = cache.get(cache_key)
@@ -500,7 +515,6 @@ def get_handle_pushtime(request):
                 return HttpResponse(json.dumps({'data':next_push_time}))
         except Exception, e:
             logger.error('{0} : {1}'.format(str(e), e.message))
-
 
 
 class AppProductJsonView(View):
@@ -695,6 +709,7 @@ def get_tkl(p, pid):
             print cupon_url, title
             print e.message
             continue
+
 
 # class SendSignNotice(View):
 #     """
