@@ -13,5 +13,7 @@ IP = "172.17.0.1"
 
 notify_url = "http://s-prod-07.qunzhu666.com:9090/payment/notify_url"
 
+prepay_url = "https://api.mch.weixin.qq.com/pay/unifiedorder"
+
 
 

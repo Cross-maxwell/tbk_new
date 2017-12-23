@@ -11,8 +11,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 
 
-from mini_program.settings import AppID, AppSecret, MCH_ID, IP, notify_url
+from mini_program.settings import AppID, AppSecret, MCH_ID, IP, notify_url, prepay_url
 from mini_program.utils import get_sign_str, get_random_str, get_trade_num
+from mini_program.utils import trans_dict_to_xml, trans_xml_to_dict, beary_chat
 from broadcast.models.entry_models import Product
 from mini_program.models.payment_models import Payment, AppUser, UserAddress, AppSession
 
@@ -23,28 +24,30 @@ import logging
 logger = logging.getLogger("django_views")
 
 
-class AcceptNotifyView(View):
-    def get(self, request):
-        print "heihei"
+# Todo: 用户登录状态如何维持？
+"""
+首先，排除Django-middleware，因为middleware会对全局的请求进行加工处理，而这里只是单独的一个session维护
+1. 前端从何处传递session_key? headers, body, queryString?
+    body，传递一个dict对象，多一个session_key字段即可
+2. 后端session表组成:
+    
 
-    def post(self, request):
-        print request.body
 
+
+
+"""
 
 class PrepayView(View):
     def post(self, request):
         req_dict = json.loads(request.body)
+
         openid = req_dict["openid"]
-
         goods_id = req_dict["goods_id"]
-
         item_id = req_dict["item_id"]
         # 商品数量
         goods_num = req_dict["goods_num"]
         # 商品名称
         goods_title = req_dict["goods_title"]
-
-        prepay_url = "https://api.mch.weixin.qq.com/pay/unifiedorder"
 
         # 订单总金额，单位为分，详见支付金额
         try:
@@ -54,8 +57,6 @@ class PrepayView(View):
             logger.error(e)
             return HttpResponse(json.dumps({"ret": 0, "data": "商品不存在"}, status=404))
 
-        appid = "wxb2e3e953b7f9c832"
-        mch_id = "1481668232"
         body = goods_title
         if len(body) > 128:
             body = body[:128]
@@ -63,9 +64,8 @@ class PrepayView(View):
         attach = "商品附加数据测试"
         nonce_str = get_random_str()
         out_trade_no = get_trade_num(item_id=item_id)
-        spbill_create_ip = IP
 
-        req_data = {
+        param_data = {
             "appid": AppID,
             # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
             # 微信支付分配的商户号
@@ -74,45 +74,46 @@ class PrepayView(View):
             "nonce_str": nonce_str,
             "body": body,
             # 商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号,必须唯一
-            "out_trade_no": get_trade_num(item_id=item_id),
+            "out_trade_no": out_trade_no,
             "total_fee": total_fee,
             # APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
             "spbill_create_ip": IP,
             # 接收微信支付异步通知回调地址，通知url必须为直接可访问的url，不能携带参数。
             "notify_url": notify_url,
-            "attach": "商品附加数据测试",
+            "attach": attach,
             # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
             "trade_type": "JSAPI",
             # 签名，详见签名生成算法
             "openid": openid
         }
-        sorted_dict = sorted(req_data.iteritems(), key=lambda x: x[0])
+        sorted_dict = sorted(param_data.iteritems(), key=lambda x: x[0])
         sign = get_sign_str(sorted_dict)
+        param_data["sign"] = sign
 
         # 这里写XML是真的蠢，什么年代了还用这种鬼东西
-        req_xml_data = """
-        <xml>
-           <appid>{appid}</appid>
-           <attach>{attach}</attach>
-           <body>{body}</body>
-           <mch_id>{mch_id}</mch_id>
-           <nonce_str>{nonce_str}</nonce_str>
-           <notify_url>{notify_url}</notify_url>
-           <openid>{openid}</openid>
-           <out_trade_no>{out_trade_no}</out_trade_no>
-           <spbill_create_ip>{spbill_create_ip}</spbill_create_ip>
-           <total_fee>{total_fee}</total_fee>
-           <trade_type>JSAPI</trade_type>
-           <sign>{sign}</sign>
-        </xml>
-        
-        """.format(appid=appid, attach=attach, body=body, mch_id=mch_id, nonce_str=nonce_str, notify_url=notify_url,
-                   openid=openid, out_trade_no=out_trade_no, spbill_create_ip=spbill_create_ip, total_fee=total_fee,
-                  sign=sign)
+        req_xml_data = trans_dict_to_xml(param_data)
         print req_xml_data
 
-        response = requests.post(prepay_url, data=req_xml_data, headers={'Content-Type': 'text/xml'})
-        print response.content
+        try:
+            response = requests.post(prepay_url, data=req_xml_data, headers={'Content-Type': 'text/xml'})
+            logger.info("统一下单接口返回状态码: {}".format(response.status_code))
+            resp_dict = trans_xml_to_dict(response.content)
+            if resp_dict["return_code"] == "SUCCESS" and resp_dict["result_code"] == "SUCCESS":
+                return HttpResponse(json.dumps(resp_dict), status=200)
+            else:
+                beary_chat("统一下单接口返回出错，请排查")
+                return HttpResponse(json.dumps({"ret": 0, "data": "统一下单接口返回出错"}), status=500)
+            # a = {'trade_type': u'JSAPI',
+            #      'prepay_id': u'wx20171223152334f343581c200328355275',
+            #      'nonce_str': u'Sr0LAd3XasY0l8aC',
+            #      'return_code': u'SUCCESS',
+            #      'return_msg': u'OK',
+            #      'sign': u'2AC32D4662E7C2FC9984DCC224D54978',
+            #      'mch_id': u'1481668232',
+            #      'appid': u'wxb2e3e953b7f9c832',
+            #      'result_code': u'SUCCESS'}
+        except Exception as e:
+            logger.error(e)
 
 
 class SendAppTextMessage(View):
@@ -144,39 +145,12 @@ class SendAppTextMessage(View):
         return HttpResponse(json.dumps({'data': '短信发送成功,请查验', 'ret': 1}), status=200)
 
 
+class AcceptNotifyView(View):
+    def get(self, request):
+        print "heihei"
 
-
-"""
-appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=4XLxNZwnHI8qM7uC&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&openid=oTOok0b1l7yJDvlS1VBVepbQrV0A&out_trade_no=1514002198557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
-appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=7AhruBCJviylEdVG&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&out_trade_no=1514002198557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
-
-
-appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=RqCmYzFjaJBNupDZ&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&openid=oTOok0b1l7yJDvlS1VBVepbQrV0A&out_trade_no=1514009486557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
-appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=0apJQoimcxfyk6bn&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&openid=oTOok0b1l7yJDvlS1VBVepbQrV0A&out_trade_no=1514009486557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
-
-"""
-
-
-# req_data = {
-#     "appid": AppID,
-#     # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
-#     # 微信支付分配的商户号
-#     "mch_id": MCH_ID,
-#     # 随机字符串，不长于32位。推荐随机数生成算法
-#     "nonce_str": get_random_str(),
-#     "body": body,
-#     # 商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号,必须唯一
-#     "out_trade_no": get_trade_num(item_id=item_id),
-#     "total_fee": total_fee,
-#     # APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
-#     "spbill_create_ip": IP,
-#     # 接收微信支付异步通知回调地址，通知url必须为直接可访问的url，不能携带参数。
-#     "notify_url": notify_url,
-#     "attach": "商品附加数据测试",
-#     # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
-#     "trade_type": "JSAPI",
-#     # 签名，详见签名生成算法
-# }
+    def post(self, request):
+        print request.body
 
 
 

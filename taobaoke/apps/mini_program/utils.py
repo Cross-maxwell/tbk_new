@@ -3,6 +3,8 @@ import hashlib
 import random
 import string
 import time
+import requests
+from bs4 import BeautifulSoup
 
 MCH_KEY = "1c1b0d3e23eb4a88f54bcdih155wvndkjn545"
 
@@ -43,4 +45,63 @@ def get_trade_num(item_id):
     timestamp = str(int(time.time()))
     trade_num = timestamp + item_id
     return trade_num
+
+
+def trans_dict_to_xml(data):
+    """
+    将dict对象转换成微信支付交互所需的XML格式数据
+    """
+    xml = []
+    for k in sorted(data.keys()):
+        v = data.get(k)
+        if k == 'detail' and not v.startswith('<![CDATA['):
+            v = '<![CDATA[{}]]>'.format(v)
+        xml.append('<{key}>{value}</{key}>'.format(key=k, value=v))
+    fin_xml = '<xml>{}</xml>'.format(''.join(xml))
+    return fin_xml
+
+
+def trans_xml_to_dict(xml):
+    """
+    将微信支付交互返回的XML格式数据转化为Dict对象
+    """
+    soup = BeautifulSoup(xml, features='xml')
+    xml = soup.find('xml')
+
+    # 将 XML 数据转化为 Dict
+    data = dict([(item.name, item.text) for item in xml.find_all()])
+    return data
+
+
+def beary_chat(text, user=None):
+    requests.post(
+        "https://hook.bearychat.com/=bw8Zi/incoming/Nd082nGFy60ZZl1NggGBPj3kpwo0TFuur4HLVqAUPrY=",
+        json={
+            "user": user,
+            "text": text
+        }
+    )
+
+
+
+
+# req_xml_data = """
+# <xml>
+#    <appid>{appid}</appid>
+#    <attach>{attach}</attach>
+#    <body>{body}</body>
+#    <mch_id>{mch_id}</mch_id>
+#    <nonce_str>{nonce_str}</nonce_str>
+#    <notify_url>{notify_url}</notify_url>
+#    <openid>{openid}</openid>
+#    <out_trade_no>{out_trade_no}</out_trade_no>
+#    <spbill_create_ip>{spbill_create_ip}</spbill_create_ip>
+#    <total_fee>{total_fee}</total_fee>
+#    <trade_type>JSAPI</trade_type>
+#    <sign>{sign}</sign>
+# </xml>
+# """.format(appid=appid, attach=attach, body=body, mch_id=mch_id, nonce_str=nonce_str, notify_url=notify_url,
+#            openid=openid, out_trade_no=out_trade_no, spbill_create_ip=spbill_create_ip, total_fee=total_fee,
+#           sign=sign)
+# print req_xml_data
 
