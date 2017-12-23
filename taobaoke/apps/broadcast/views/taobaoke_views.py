@@ -192,7 +192,7 @@ class SelectProducts(View):
             'cupon_value__gte': 10,
         }
         if root_cat_names:
-            query_dict['root_cat_name__in'] = root_cat_names
+            query_dict['productdetail__cate__root_cat_name__in'] = root_cat_names
         qs = Product.objects.filter(**query_dict).order_by('-sold_qty')
         qs = qs[int(page_num) * 20 : int(page_num) * 20 + 20]
         ret_list = []
