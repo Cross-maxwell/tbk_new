@@ -49,7 +49,7 @@ class PrepayView(View):
         # 订单总金额，单位为分，详见支付金额
         try:
             product = Product.objects.get(item_id=item_id, id=goods_id)
-            total_fee = (product.price * int(goods_num)) * 100
+            total_fee = int((product.price * int(goods_num)) * 100)
         except Exception as e:
             logger.error(e)
             return HttpResponse(json.dumps({"ret": 0, "data": "商品不存在"}, status=404))
@@ -60,13 +60,34 @@ class PrepayView(View):
         if len(body) > 128:
             body = body[:128]
 
-
-
         attach = "商品附加数据测试"
         nonce_str = get_random_str()
         out_trade_no = get_trade_num(item_id=item_id)
         spbill_create_ip = IP
-        sign = get_sign_str(appid=appid, mch_id=mch_id, body=body)
+
+        req_data = {
+            "appid": AppID,
+            # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
+            # 微信支付分配的商户号
+            "mch_id": MCH_ID,
+            # 随机字符串，不长于32位。推荐随机数生成算法
+            "nonce_str": nonce_str,
+            "body": body,
+            # 商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号,必须唯一
+            "out_trade_no": get_trade_num(item_id=item_id),
+            "total_fee": total_fee,
+            # APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
+            "spbill_create_ip": IP,
+            # 接收微信支付异步通知回调地址，通知url必须为直接可访问的url，不能携带参数。
+            "notify_url": notify_url,
+            "attach": "商品附加数据测试",
+            # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
+            "trade_type": "JSAPI",
+            # 签名，详见签名生成算法
+            "openid": openid
+        }
+        sorted_dict = sorted(req_data.iteritems(), key=lambda x: x[0])
+        sign = get_sign_str(sorted_dict)
 
         # 这里写XML是真的蠢，什么年代了还用这种鬼东西
         req_xml_data = """
@@ -87,7 +108,8 @@ class PrepayView(View):
         
         """.format(appid=appid, attach=attach, body=body, mch_id=mch_id, nonce_str=nonce_str, notify_url=notify_url,
                    openid=openid, out_trade_no=out_trade_no, spbill_create_ip=spbill_create_ip, total_fee=total_fee,
-                   sign=sign)
+                  sign=sign)
+        print req_xml_data
 
         response = requests.post(prepay_url, data=req_xml_data, headers={'Content-Type': 'text/xml'})
         print response.content
@@ -124,7 +146,15 @@ class SendAppTextMessage(View):
 
 
 
+"""
+appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=4XLxNZwnHI8qM7uC&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&openid=oTOok0b1l7yJDvlS1VBVepbQrV0A&out_trade_no=1514002198557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
+appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=7AhruBCJviylEdVG&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&out_trade_no=1514002198557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
 
+
+appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=RqCmYzFjaJBNupDZ&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&openid=oTOok0b1l7yJDvlS1VBVepbQrV0A&out_trade_no=1514009486557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
+appid=wxb2e3e953b7f9c832&attach=商品附加数据测试&body=测试&mch_id=1481668232&nonce_str=0apJQoimcxfyk6bn&notify_url=http://s-prod-07.qunzhu666.com:9090/payment/notify_url&openid=oTOok0b1l7yJDvlS1VBVepbQrV0A&out_trade_no=1514009486557430097721&spbill_create_ip=172.17.0.1&total_fee=3960&trade_type=JSAPI&key=2739d39befe4064e6c8a8ee09d48102d
+
+"""
 
 
 # req_data = {
@@ -146,7 +176,6 @@ class SendAppTextMessage(View):
 #     # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
 #     "trade_type": "JSAPI",
 #     # 签名，详见签名生成算法
-#     "sign": get_sign_str(appid=appid, mch_id=mch_id, body=body),
 # }
 
 
