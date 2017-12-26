@@ -30,24 +30,25 @@ logger = logging.getLogger("django_views")
 1. 前端从何处传递session_key? headers, body, queryString?
     body，传递一个dict对象，多一个session_key字段即可
 2. 后端session表组成:
-    
-
-
-
-
+    session_key encryption_session_key expire_day app_user[id]
+那么，前端能够拿到的数据有什么？
 """
+
 
 class PrepayView(View):
     def post(self, request):
         req_dict = json.loads(request.body)
 
-        openid = req_dict["openid"]
-        goods_id = req_dict["goods_id"]
-        item_id = req_dict["item_id"]
+        openid = req_dict.get("openid", "")
+        goods_id = req_dict.get("goods_id", "")
+        item_id = req_dict.get("item_id", "")
         # 商品数量
-        goods_num = req_dict["goods_num"]
+        goods_num = req_dict.get("goods_num", "")
         # 商品名称
-        goods_title = req_dict["goods_title"]
+        goods_title = req_dict.get("goods_title", "")
+
+        if not (openid or goods_id or item_id or goods_num or goods_title):
+            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
 
         # 订单总金额，单位为分，详见支付金额
         try:
@@ -67,23 +68,19 @@ class PrepayView(View):
 
         param_data = {
             "appid": AppID,
-            # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
-            # 微信支付分配的商户号
             "mch_id": MCH_ID,
             # 随机字符串，不长于32位。推荐随机数生成算法
             "nonce_str": nonce_str,
+            # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
             "body": body,
             # 商户系统内部的订单号,32个字符内、可包含字母, 其他说明见商户订单号,必须唯一
             "out_trade_no": out_trade_no,
             "total_fee": total_fee,
-            # APP和网页支付提交用户端ip，Native支付填调用微信支付API的机器IP。
             "spbill_create_ip": IP,
-            # 接收微信支付异步通知回调地址，通知url必须为直接可访问的url，不能携带参数。
             "notify_url": notify_url,
+            # 附加数据，在查询API和支付通知中原样返回，该字段主要用于商户携带订单的自定义数据
             "attach": attach,
-            # 商品简单描述，该字段须严格按照规范传递，具体请见参数规定， 最长128位， 即最长40个中文
             "trade_type": "JSAPI",
-            # 签名，详见签名生成算法
             "openid": openid
         }
         sorted_dict = sorted(param_data.iteritems(), key=lambda x: x[0])
@@ -92,28 +89,23 @@ class PrepayView(View):
 
         # 这里写XML是真的蠢，什么年代了还用这种鬼东西
         req_xml_data = trans_dict_to_xml(param_data)
-        print req_xml_data
-
         try:
             response = requests.post(prepay_url, data=req_xml_data, headers={'Content-Type': 'text/xml'})
             logger.info("统一下单接口返回状态码: {}".format(response.status_code))
             resp_dict = trans_xml_to_dict(response.content)
             if resp_dict["return_code"] == "SUCCESS" and resp_dict["result_code"] == "SUCCESS":
+                payment_db, created = Payment.objects.get_or_create(out_trade_no=out_trade_no, defaults=param_data)
+                if not created:
+                    return HttpResponse(json.dumps({"ret": 0, "data": "订单号{}已被创建，请勿重复提交".format(out_trade_no)}))
+                resp_dict.pop("mch_id")
                 return HttpResponse(json.dumps(resp_dict), status=200)
             else:
+                logger.error("统一下单接口返回出错, 原因：{}".format(json.dumps(resp_dict)))
                 beary_chat("统一下单接口返回出错，请排查")
                 return HttpResponse(json.dumps({"ret": 0, "data": "统一下单接口返回出错"}), status=500)
-            # a = {'trade_type': u'JSAPI',
-            #      'prepay_id': u'wx20171223152334f343581c200328355275',
-            #      'nonce_str': u'Sr0LAd3XasY0l8aC',
-            #      'return_code': u'SUCCESS',
-            #      'return_msg': u'OK',
-            #      'sign': u'2AC32D4662E7C2FC9984DCC224D54978',
-            #      'mch_id': u'1481668232',
-            #      'appid': u'wxb2e3e953b7f9c832',
-            #      'result_code': u'SUCCESS'}
         except Exception as e:
             logger.error(e)
+            return HttpResponse(json.dumps({"ret": 0, "data": "服务器错误"}), status=500)
 
 
 class SendAppTextMessage(View):

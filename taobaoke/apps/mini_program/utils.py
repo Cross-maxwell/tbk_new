@@ -25,9 +25,7 @@ def get_sign_str(sorted_dict):
     stringA = ""
     for key, value in sorted_dict:
         stringA += key + "=" + str(value) + "&"
-    print stringA
     string_sign_temp = stringA + "key=" + KEY
-    print string_sign_temp
     sign = hashlib.md5(string_sign_temp).hexdigest()
     return sign.upper()
 

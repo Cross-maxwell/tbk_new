@@ -11,7 +11,7 @@ class AppUser(models.Model):
     city = models.CharField(max_length=128)
     country = models.CharField(max_length=128)
     province = models.CharField(max_length=128)
-    openid = models.CharField(max_length=50, default="")
+    openid = models.CharField(max_length=50, default="", unique=True)
 
 
 class AppSession(models.Model):
@@ -52,10 +52,10 @@ class Payment(models.Model):
     trade_type = models.CharField(max_length=20)
     # 签名，详见签名生成算法
     sign = models.CharField(max_length=255)
-
+    openid = models.CharField(max_length=100, default="")
     # 单位为分
     total_fee = models.IntegerField()
 
-    app_user = models.OneToOneField(AppUser)
-
     created = models.DateTimeField(auto_now=True)
+
+
