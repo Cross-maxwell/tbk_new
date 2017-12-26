@@ -509,7 +509,7 @@ def get_handle_pushtime(request):
             return HttpResponse(json.dumps({'data': 'Login Required.'}), status=403)
         try:
             username = user.username
-            handle_push_interval = 5
+            handle_push_interval = 2
             cache_key = username + '_' + 'make_money_together' + '_last_handle_push'
             cache_time_format = "%Y-%m-%d %H:%M:%S"
             last_push_time = cache.get(cache_key)
