@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.db.models import Q
 from django.utils.encoding import iri_to_uri
 from django.contrib.auth.models import User, AnonymousUser
+from django.db import connection
 
 from broadcast.models.user_models import TkUser
 from broadcast.models.entry_models import Product, ProductDetail
@@ -140,6 +141,8 @@ def send_product(user, user_object):
         }
         PushRecord.objects.create(entry=p, user_key=user)
         send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
+        # TODO: 若以不延时的方式开启线程，那么线程中的数据库连接必须自己管理，主动关闭。
+        connection.close()
 
 
 class PushCertainProduct(View):
@@ -187,14 +190,14 @@ class SelectProducts(View):
         root_cat_names = [] if root_cat_names is None else root_cat_names
         query_dict = {
             'available': True,
-            'last_update__gt' : timezone.now() - datetime.timedelta(hours=4),
-            'cupon_left__gte' : 10,
+            'last_update__gt': timezone.now() - datetime.timedelta(hours=4),
+            'cupon_left__gte': 10,
             'cupon_value__gte': 10,
         }
         if root_cat_names:
             query_dict['root_cat_name__in'] = root_cat_names
         qs = Product.objects.filter(**query_dict).order_by('-sold_qty')
-        qs = qs[int(page_num) * 20 : int(page_num) * 20 + 20]
+        qs = qs[int(page_num) * 20: int(page_num) * 20 + 20]
         ret_list = []
         for q in qs:
             q_dict = {
@@ -216,7 +219,7 @@ class SelectProducts(View):
             except ProductDetail.DoesNotExist:
                 pass
             ret_list.append(q_dict)
-        return  HttpResponse(json.dumps({'data':ret_list}))
+        return HttpResponse(json.dumps({'data': ret_list}))
 
 
 class AcceptSearchView(View):
@@ -471,6 +474,7 @@ def is_push(md_username, wx_id):
             cache.set(cache_key, datetime.datetime.strftime(cur_time, cache_time_format), 3600 * 10)
         else:
             ret_code = 0
+        connection.close()
 
         return ret_code
     except Exception as e:
