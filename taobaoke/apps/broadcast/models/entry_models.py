@@ -108,17 +108,27 @@ class Product(Entry):
             recommend = self.productdetail.recommend
         except Exception as e:
             logger.error(e.message)
-        template = "折扣商品：{title}\n" \
-                    "销售数量：{sold_qty}\n" \
-                    "剩余券数：{cupon_left}\n"
+        key_title = random.choice(['折扣商品', '秒杀单品', '热门爆款'])
+        key_sold = random.choice(['销售数量', '已售出', '已抢购', '已疯抢'])
+        key_cupon = random.choice(['剩余券数', '优惠券还剩', '优惠券数量'])
+        key_recommend = random.choice(['推荐理由' ,'优质推荐'])
+        template = "【{key_title}】：{title}\n" \
+                    "【{key_sold}】：{sold_qty}\n" \
+                    "【{key_cupon}】：{cupon_left}\n"
         if recommend:
-            template = template + "【推荐理由】：{recommend}\n"
+            template = template + "【{key_recommend}】：{recommend}\n"
         if random.randrange(1, 5) == 1:
             template = template + "===============\n" \
                                       "下单方式：点开任意图片，长按识别图中小程序码\n" \
                                       "===============\n" \
                                       "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
-        return template.format(**dict(self.__dict__, **{'recommend': recommend}))
+        return template.format(**dict(self.__dict__, **{
+            'key_title' : key_title,
+            'key_sold' : key_sold,
+            'key_cupon' : key_cupon,
+            'key_recommend' : key_recommend,
+            'recommend': recommend
+        }))
 
     def get_img_msg_wxapp(self, pid=None, tkuser_id=None):
         # 使用pid 更新淘口令
