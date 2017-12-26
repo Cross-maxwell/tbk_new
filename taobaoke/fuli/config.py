@@ -26,6 +26,8 @@ def getDB(mode='prod'):
             'NAME': 'new_taobaoke_sys',
             'USER': 'root',
             'PASSWORD': 'keyerror',
+            "PORT": "3306",
+            "HOST": "localhost"
         }
     }
 
