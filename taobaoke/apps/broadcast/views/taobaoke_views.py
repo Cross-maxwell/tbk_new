@@ -688,36 +688,31 @@ class SendArtificialMsg(View):
         return HttpResponse(json.dumps({"ret": 1}))
 
 
+
 def get_tkl(p, pid):
-    """
-    根据商品实例以及Pid生成对应的淘口令
-    """
-    title = p.title
-    img_url = p.img_url
-    cupon_url = p.cupon_url
+    tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
+    pattern = ".*activityId=(.*?)&.*"
+    result = re.match(pattern, p.cupon_url)
+    if result:
+        activityId = result.group(1)
+        data = {
+            "itemId": p.item_id,
+            "activityId": activityId,
+            "pid": pid,
+            "image": p.img_url,
+            "title": p.title,
+            "sellerId": p.productdetail.seller_id
+        }
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        tkl_response = requests.post(tkl_url, data=data, headers=headers)
+        res_dict = json.loads(tkl_response.content)
+        tkl = res_dict["status"]["msg"]
+        return tkl[1:-1]
+    else:
+        logger.error("匹配activityId失败")
 
-    if pid is not None:
-        if re.search('mm_\d+_\d+_\d+', p.cupon_url) is None:
-            cupon_url = p.cupon_url + '&pid=' + pid
-        else:
-            cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, p.cupon_url)
-
-    for _ in range(5):
-        try:
-            req = top.api.TbkTpwdCreateRequest()
-            req.set_app_info(top.appinfo(fuli.top_settings.app_key, fuli.top_settings.app_secret))
-
-            req.text = title.encode('utf-8')
-            req.logo = img_url
-            req.url = cupon_url
-
-            resp = req.getResponse()
-            tao_pwd = resp['tbk_tpwd_create_response']['data']['model']
-            return tao_pwd[1:-1]
-        except Exception as e:
-            print cupon_url, title
-            print e.message
-            continue
 
 
 # class SendSignNotice(View):
