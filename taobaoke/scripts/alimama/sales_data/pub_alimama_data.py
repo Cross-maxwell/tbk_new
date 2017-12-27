@@ -119,7 +119,7 @@ def push_data():
         else:
         # =================================== to be deleted on 2018.01.23
         # and unindent below block  --------------------    下面的if条件中， 最后一个判断时间的条件，到2018.01.23删除！
-            if (float(result_dict['commision_rate'][:-2])/100.0 < 0.05) and tmp_condition and (datetime(2017, 12, 19) < create_time < datetime(2018, 1, 1)) :
+            if (float(result_dict['commision_rate'][:-2])/100.0 < 0.05) and tmp_condition and (not datetime(2017, 12, 19) < create_time < datetime(2017, 12, 27,06,25,00)) :
                 result_dict['order_status'] = u'订单失效'
                 result_dict['pay_amount'] = 0
                 result_dict['show_commision_amount'] = 0.0
