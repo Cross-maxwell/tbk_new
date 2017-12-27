@@ -292,8 +292,6 @@ class AcceptSearchView(View):
                     text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，长按识别二维码查看商品～'.format(at_user_nickname)
 
                     product_url = dj_products[0]['coverImage']
-                    if not product_url.startswith("http"):
-                        product_url = "http:" + product_url
 
                     short_url = get_short_url(url_to_show.format(pid, to_search_title))
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
@@ -319,6 +317,9 @@ class AcceptSearchView(View):
                 else:
 
                     product_url = judge_dict['result']['items'][0]['coverImage']
+
+                    if not product_url.startswith("http"):
+                        product_url = "http:" + product_url
 
                     # short_url = get_short_url(template_url)
                     # qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
