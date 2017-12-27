@@ -72,41 +72,99 @@ class GetSessionKey(View):
         return HttpResponse(json.dumps({"openid": openid, "encryption_session_key": encryption_session_key}), status=200)
 
 
-# class AddUserAddress(View):
-#     def post(self, request):
-#         req_dict = json.loads(request.body)
-#         openid = req_dict.get("openid", "")
-#         phone_num = req_dict.get("phone_num", "")
-#         name = req_dict.get("name", "")
-#         address = req_dict.get("address", "")
-#         if not (openid or phone_num or name or address):
-#             return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
-#         try:
-#             app_user = AppUser.objects.get(openid=openid)
-#         except Exception as e:
-#             return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
-#         data_list = []
-#         user_address = UserAddress.objects.create(phone_num=phone_num, name=name,
-#                                                   address=address, app_user=app_user)
-#         data_list.append(user_address)
-#         # 这里只能序列化List
-#         json_data = serializers.serialize("json", user_address)
-#         return HttpResponse(json_data, content_type="application/json")
+class AddOrUpdateUserAddress(View):
 
-
-from mini_program.serializer import AppUserAddressSerializer
-from rest_framework.response import Response
-
-
-class AddUserAddress(APIView):
-    def get(self, request):
-        openid = request.GET.get("openid")
-        address_db = UserAddress.objects.filter(openid=openid)
-        products_serializer = AppUserAddressSerializer(address_db, many=True)
-        return Response(products_serializer.data)
     def post(self, request):
-        pass
-    def put(self, request):
-        pass
+        """
+        根据openid创建一个收货地址
+        """
+        req_dict = json.loads(request.body)
+        openid = req_dict.get("openid", "")
+        phone_num = req_dict.get("phone_num", "")
+        name = req_dict.get("name", "")
+        address = req_dict.get("address", "")
+        data_list = []
+
+        address_id = req_dict.get("address_id", "")
+        if not openid or not phone_num or not name or not address:
+            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
+
+        try:
+            app_user = AppUser.objects.get(openid=openid)
+        except Exception as e:
+            return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
+
+        if not address_id:
+            # 若address_id不存在，则为创建地址
+            user_address = UserAddress.objects.create(phone_num=phone_num, name=name,
+                                                      address=address, app_user=app_user)
+        if address_id:
+            # 若address_id存在，则为更新地址
+            data = {
+                "phone_num": phone_num,
+                "name": name,
+                "address": address
+            }
+            try:
+                user_address = UserAddress.objects.get(id=address_id, app_user=app_user)
+                user_address.update_from_dict(data)
+                user_address.save()
+            except UserAddress.DoesNotExist:
+                return HttpResponse(json.dumps({"ret": 0, "data": "address不存在"}), status=400)
+        data_list.append(user_address)
+        # 这里只能序列化List
+        json_data = serializers.serialize("json", data_list)
+        return HttpResponse(json_data, content_type="application/json")
+
+
+class GetUserAddress(View):
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        openid = req_dict.get("openid", "")
+        address_id = req_dict.get("address_id", "")
+        if not openid:
+            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
+        try:
+            app_user = AppUser.objects.get(openid=openid)
+        except Exception as e:
+            return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
+        if not address_id:
+            user_address = UserAddress.objects.filter(app_user=app_user)
+            json_data = serializers.serialize("json", user_address)
+            return HttpResponse(json_data, content_type="application/json")
+        if address_id:
+            user_address = UserAddress.objects.filter(app_user=app_user, id=address_id)
+            json_data = serializers.serialize("json", user_address)
+            return HttpResponse(json_data, content_type="application/json")
+
+
+
+
+
+
+
+
+
+
+# from mini_program.serializer import AppUserAddressSerializer
+# from rest_framework.response import Response
+# from rest_framework import status
+#
+#
+# class AddUserAddress(APIView):
+#     def get(self, request):
+#         app_user_id = request.GET.get("app_user_id")
+#         address_id = request.GET.get("address_id")
+#         address_db = UserAddress.objects.filter(app_user_id=app_user_id, id=address_id)
+#         products_serializer = AppUserAddressSerializer(address_db, many=True)
+#         return Response(products_serializer.data)
+#
+#     def post(self, request):
+#         serializer = AppUserAddressSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 

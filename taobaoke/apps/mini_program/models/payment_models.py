@@ -32,6 +32,11 @@ class UserAddress(models.Model):
 
     created = models.DateTimeField(auto_now=True)
 
+    def update_from_dict(self, msg_dict):
+        self.phone_num = msg_dict["phone_num"]
+        self.name = msg_dict["name"]
+        self.address = msg_dict["address"]
+
 
 class Payment(models.Model):
     appid = models.CharField(max_length=100)
