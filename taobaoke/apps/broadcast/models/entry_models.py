@@ -123,10 +123,10 @@ class Product(Entry):
                                       "===============\n" \
                                       "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
         return template.format(**dict(self.__dict__, **{
-            'key_title' : key_title,
-            'key_sold' : key_sold,
-            'key_cupon' : key_cupon,
-            'key_recommend' : key_recommend,
+            'key_title': key_title,
+            'key_sold': key_sold,
+            'key_cupon': key_cupon,
+            'key_recommend': key_recommend,
             'recommend': recommend
         }))
 
@@ -137,8 +137,8 @@ class Product(Entry):
                 self.cupon_url = self.cupon_url + '&pid=' + pid
             else:
                 self.cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, self.cupon_url)
-            self.update_tokens()
-        self.tao_pwd = self.tao_pwd[1:-1]
+            # self.update_tokens()
+        self.tao_pwd = self.get_tkl(pid)[1:-1]
 
         # 使用id, 淘口令, 图片链接 获取小程序二维码及商品的拼接图片
         # 便于复用，首先调用生成wxapp二维码
@@ -164,6 +164,30 @@ class Product(Entry):
             logger.error(e)
         return generate_image(product_url_list, qrcode_flow, price_list)
 
+    def get_tkl(self, pid):
+        tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
+        pattern = ".*activityId=(.*?)&.*"
+        result = re.match(pattern, self.cupon_url)
+        if result:
+            activityId = result.group(1)
+            data = {
+                "itemId": self.item_id,
+                "activityId": activityId,
+                "pid": pid,
+                "image": self.img_url,
+                "title": self.title,
+                "sellerId": self.productdetail.seller_id
+            }
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+            tkl_response = requests.post(tkl_url, data=data, headers=headers)
+            res_dict = json.loads(tkl_response.content)
+            tkl = res_dict["status"]["msg"]
+            return tkl
+        else:
+            logger.error("匹配activityId失败")
+
 
     template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
     template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 高额优惠，下单立减，你要的优惠都在这里～"
@@ -174,8 +198,9 @@ class Product(Entry):
                 self.cupon_url = self.cupon_url + '&pid=' + pid
             else:
                 self.cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, self.cupon_url)
-            self.update_tokens()
-        self.tao_pwd = self.tao_pwd[1:-1]
+            # self.update_tokens()
+        self.tao_pwd = self.get_tkl(pid)[1:-1]
+        # self.tao_pwd = self.tao_pwd[1:-1]
 
         """
         http://solesschong.gitee.io/yiqizhuan/index.html?tkl=2342

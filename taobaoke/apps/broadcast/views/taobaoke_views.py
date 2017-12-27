@@ -74,7 +74,7 @@ class PushProduct(View):
             username = user_object["user"]
             try:
                 user = User.objects.get(username=username)
-                if user.tkuser.autopush :
+                if user.tkuser.autopush:
                     thread.start_new_thread(send_product, (username, user_object))
             except User.DoesNotExist:
                 continue
