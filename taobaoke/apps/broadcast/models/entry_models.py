@@ -248,7 +248,8 @@ class Product(Entry):
         if self.cupon_left <= 0:
             self.available = False
             print 'Trim item due to cupon left.'
-        if self.sold_qty < 100 or (self.cupon_value / self.price) < 0.2:
+        # 2017.12.27 19:41 王培钦: 折扣力度小于0.1时判不可用（原为0.2）
+        if self.sold_qty < 100 or (self.cupon_value / self.price) < 0.1:
             self.available = False
             print 'Trim item due to cupon value.'
         # elif self.cupon_left < 5:
