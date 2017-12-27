@@ -13,4 +13,9 @@ class WishWall(models.Model):
     wish_content = models.TextField()
     font_img = models.CharField(max_length=500, default='', null=True, blank=True)
     created = models.DateTimeField(auto_now=True)
+    # fav_num = models.IntegerField(default=0)
+
+
+
+
 

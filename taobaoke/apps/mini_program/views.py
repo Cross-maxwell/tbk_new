@@ -3,6 +3,7 @@ import json
 from rest_framework.generics import ListCreateAPIView
 from django.views.generic.base import View
 from django.http import HttpResponse
+from django.core import serializers
 
 from mini_program.serializer import WishWallModelSerializer
 from mini_program.models import WishWall
@@ -20,6 +21,19 @@ class WishWallView(ListCreateAPIView):
 
     def get_queryset(self):
         return WishWall.objects.all().order_by('-created')
+
+
+class AddFavoriteWish(View):
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        wish_id = req_dict.get("wish_id", "")
+        if not wish_id:
+            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
+        wish_wall = WishWall.objects.get(id=wish_id)
+        wish_wall.fav_num += 1
+        wish_wall.save()
+        json_data = serializers.serialize("json", [].append(wish_wall))
+        return HttpResponse(json_data, status=200)
 
 
 class TestPaymentNotifyView(View):
