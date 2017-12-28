@@ -278,6 +278,8 @@ class AcceptSearchView(View):
                             'cupon_left': 20,
                             'cupon_url': cupon_url
                             }
+                        if not "http" in p_dict["img_url"] or not "https" in p_dict["img_url"]:
+                            p_dict["img_url"] = "http:" + p_dict["img_url"]
                         from broadcast.models.entry_models import Product
                         target, created = Product.objects.update_or_create(item_id=dj_p['itemId'], defaults=p_dict)
                         img_url = target.get_img_msg_wxapp(pid)
@@ -325,7 +327,7 @@ class AcceptSearchView(View):
                         product_url = "http:" + product_url
 
                     # short_url = get_short_url(template_url)
-                    # qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
+                    # qrcod添加许愿墙点赞接口,需要makemigrationse_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
                     # img_url = generate_image([product_url], qrcode_flow,[])
 
                     # TODO: 待前端完成
