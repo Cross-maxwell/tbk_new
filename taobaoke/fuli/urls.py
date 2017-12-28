@@ -17,7 +17,7 @@ from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassw
 
 from mini_program.views.wishwall_views import WishWallView
 from mini_program.views.appuser_views import GetSessionKey, AddOrUpdateUserAddress, GetUserAddress
-from mini_program.views.payment_views import PrepayView
+from mini_program.views.payment_views import PrepayView, AcceptNotifyURLView
 
 
 user_urls = [
@@ -96,6 +96,7 @@ wish_urls = [
 payment_urls = [
 
     url(r'prepay', PrepayView.as_view()),
+    url(r'notify_url', AcceptNotifyURLView.as_view())
 
 ]
 

@@ -14,7 +14,8 @@ KEY = "2739d39befe4064e6c8a8ee09d48102d"
 """
 stringA="appid=wxd930ea5d5a258f4f&body=test&device_info=1000&mch_id=10000100&nonce_str=ibuaiVcKdpRxkhJA";
 
-         appid=wxb2e3e953b7f9c832&body=测试&device_info=1000&mch_id=1481668232&nonce_str=juIQicwzH9Ot3EBD&key=2739d39befe4064e6c8a8ee09d48102d
+appId=&nonceStr&package=prepay_id=wx2017033010242291fcfe0db70013231072&signType=MD5&timeStamp=1490840662&key=qazwsxedcrfvtgbyhnujmikolp111111
+appId=&nonceStr&package=prepay_id=wx201712281528146c38287b210933847072&signType=MD5&timeStamp=1514446096&key=2739d39befe4064e6c8a8ee09d48102d
 """
 
 

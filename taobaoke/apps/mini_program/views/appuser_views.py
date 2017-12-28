@@ -49,7 +49,7 @@ class GetSessionKey(View):
         except KeyError:
             logger.error("GetSessionKey异常")
             return HttpResponse(json.dumps({"ret": 0, "data": "Error"}), status=500)
-        encryption_session_key = hashlib.sha512(session_key).hexdigest()
+        encryption_session_key = hashlib.sha512(session_key + session_key[:6]).hexdigest()
 
         app_user_dict = {
             "nickname": nickname,
@@ -69,7 +69,7 @@ class GetSessionKey(View):
         }
         app_session, created = AppSession.objects.update_or_create(app_user=app_user, defaults=session_dict)
 
-        return HttpResponse(json.dumps({"openid": openid, "encryption_session_key": encryption_session_key}), status=200)
+        return HttpResponse(json.dumps({"encryption_session_key": encryption_session_key}), status=200)
 
 
 class AddOrUpdateUserAddress(View):
