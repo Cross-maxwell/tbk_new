@@ -15,7 +15,7 @@ from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, Produc
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg, SelectCate
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
-from mini_program.views import WishWallView, TestPaymentNotifyView
+from mini_program.views import WishWallView, TestPaymentNotifyView, AddFavoriteWish
 from rest_framework.documentation import include_docs_urls
 
 
@@ -91,7 +91,8 @@ operate_urls = [
 ]
 
 wish_urls = [
-    url(r'index', WishWallView.as_view())
+    url(r'index', WishWallView.as_view()),
+    url(r'add_fav', AddFavoriteWish.as_view())
 ]
 
 test_urls = [
