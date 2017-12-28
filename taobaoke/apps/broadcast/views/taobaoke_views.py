@@ -293,6 +293,9 @@ class AcceptSearchView(View):
 
                     product_url = dj_products[0]['coverImage']
 
+                    if not product_url.startswith("http"):
+                        product_url = "http:" + product_url
+
                     short_url = get_short_url(url_to_show.format(pid, to_search_title))
                     qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
                     img_url = generate_image([product_url], qrcode_flow,[])
@@ -386,7 +389,12 @@ class AppSearchListView(View):
                     wp=wp, sort=sort, pid=pid, keyword=keyword
                 )
             response = requests.get(search_url)
-            return HttpResponse(response.content)
+            resq_dict = json.loads(response.content)
+            items = resq_dict["result"]["items"]
+            for item in items:
+                if not "http" in item["coverImage"] or "https" in item["coverImage"]:
+                    item["coverImage"] = "http:" + item["coverImage"]
+            return HttpResponse(json.dumps(resq_dict))
         except Exception as e:
             logger.error(e)
             return HttpResponse(json.dumps({"ret": 0, "data": "发生未知错误"}))
@@ -418,6 +426,25 @@ class AppSearchDetailView(View):
             response = requests.get(detail_url)
             detail_dict = json.loads(response.content)
             item = detail_dict["result"]["item"]
+
+            if not "http" in item["image"] or not "https" in item["image"]:
+                detail_dict["result"]["item"]["image"] = "http:" + item["image"]
+
+            auctionImage_list = []
+            for auctionImage in item["auctionImages"]:
+                if not "http" in auctionImage or not "https" in auctionImage:
+                    auctionImage = "http:" + auctionImage
+                    auctionImage_list.append(auctionImage)
+            detail_dict["result"]["item"]["auctionImages"] = auctionImage_list
+
+            detailImage_list = []
+            for detailImage in item["detailImages"]:
+                if not "http" in detailImage or not "https" in detailImage:
+                    detailImage = "http:" + detailImage
+                    detailImage_list.append(detailImage)
+            detail_dict["result"]["item"]["detailImages"] = detailImage_list
+
+            print detail_dict
 
             # 根据itemId等生成tkl
             tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
