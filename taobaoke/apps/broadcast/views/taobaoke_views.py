@@ -571,8 +571,6 @@ class ProductDetail_(View):
     def get(self, request):
         id = request.GET.get('id')
 
-        tkuser_id = request.GET.get("tkuser_id", "")
-
         if id is None:
             return HttpResponse(json.dumps({'data': 'losing param \'id\'.'}), status=400)
         try:
@@ -600,10 +598,14 @@ class ProductDetail_(View):
             # 子类别
             'cat_leaf': p_detail.cate.cat_leaf_name
         }
-        if tkuser_id:
-            pid = TkUser.objects.get(id=tkuser_id).adzone.pid
-            tkl = get_tkl(p, pid)
-            resp_dict["tkl"] = tkl
+
+        detailImage_list = []
+        for detailImage in resp_dict["detailImages"]:
+            if not "http" in detailImage or not "https" in detailImage:
+                detailImage = "http:" + detailImage
+                detailImage_list.append(detailImage)
+        resp_dict["detailImages"] = detailImage_list
+
         return HttpResponse(json.dumps({'data': resp_dict}), status=200)
 
 
