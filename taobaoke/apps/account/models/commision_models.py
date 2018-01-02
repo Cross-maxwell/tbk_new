@@ -66,8 +66,7 @@ class Commision(models.Model):
     # 账户有效性
     is_valid = models.BooleanField(default=True, null=False)
     # 每个人特有的佣金比例
-    # 2017年11月期间返佣比例为0.2
-    commision_rate = models.FloatField(default=0.2)
+    commision_rate = models.FloatField(default=0.15)
 
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
