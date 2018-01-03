@@ -12,7 +12,7 @@ from account.models.order_models import Order
 from account.serializers.order_serializers import OrderSerializer
 from account.utils.order_utils import get_all_order
 from account.utils.common_utils import cut_decimal
-from account.utils.user_utils import get_ad_zone, get_ad_id
+from account.utils.user_utils import get_ad_zone
 from broadcast.models.user_models import TkUser
 
 class OrderList(View):
@@ -27,32 +27,14 @@ class OrderList(View):
         return HttpResponse(json.dumps({'data': OrderSerializer(order_list, many=True).data}),status=200)
 
 
-"""
-订单的跟踪改为使用user_id，此方法已在下方改写。 
-"""
-def getOrderListByUserName(username):
-    """
-    根据手机号获取相应的订单列表
-    :param username:
-    :return:
-    """
-    ad_id = get_ad_id(username)
-    order_list = Order.objects.filter(ad_id=ad_id)
-    return order_list
-
-
-"""
-两处应用，OrderList和 InviterOrderListView.
-"""
 def get_order_list_by_username(username):
     """
     根据手机号获取相应的订单列表
     :param username:
     :return:
     """
-    # ad_id = get_ad_id(username)
     try:
-        user_id = User.objects.get(username=username)
+        user_id = User.objects.get(username=username).id
         order_list = Order.objects.filter(user_id=user_id)
         return order_list
     except User.DoesNotExist:
@@ -141,8 +123,6 @@ class InviterOrderListView(View):
     """
     def get(self, request):
         user_id = request.user.id
-        # sort_key = request.GET.get('order-sortKey')
-        # desc = request.GET.get('order-desc')
         try:
             agent_user = User.objects.get(id=user_id)
         except User.DoesNotExist:
@@ -348,3 +328,16 @@ class OrderCommisionView(View):
 #                 i = i + 1
 #         print i
 #         return Response({i})
+
+"""
+订单的跟踪改为使用user_id，此方法已改写。 
+"""
+# def getOrderListByUserName(username):
+#     """
+#     根据手机号获取相应的订单列表
+#     :param username:
+#     :return:
+#     """
+#     ad_id = get_ad_id(username)
+#     order_list = Order.objects.filter(ad_id=ad_id)
+#     return order_list
