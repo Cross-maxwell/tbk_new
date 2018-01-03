@@ -2,26 +2,28 @@
 
 
 """
-    每隔60秒发送一次请求
+    每隔45秒发送一次请求
 """
 import time
 import requests
 
-import logging
-logger = logging.getLogger('post_taobaoke')
+time_format = "%Y-%m-%d %H:%M:%S"
+headers = {"Connection": "close"}
 
 # 路径 /home/new_taobaoke/taobaoke/request_scripts/send_request.py
 
 while True:
+    localtime = time.localtime(time.time())
+    now_hour = int(time.strftime('%H', localtime))
+    now_time = time.strftime(time_format, localtime)
     try:
-        now_hour = int(time.strftime('%H', time.localtime(time.time())))
         if 7 <= now_hour <= 22:
-            requests.get("http://s-prod-07.qunzhu666.com:9090/tk/push_product")
+            response = requests.get("http://s-prod-07.qunzhu666.com:9090/tk/push_product", headers=headers)
+            print("{}: 请求/tk/push_product状态--{}".format(now_time, response.status_code))
         else:
             # 如果不在这个时间段 休眠长一点
             time.sleep(20 * 60)
     except Exception as e:
-        logging.error(e)
-        print(e)
+        print("{}: 请求/tk/push_product出现异常--{}".format(now_time, e))
 
-    time.sleep(60)
+    time.sleep(45)
