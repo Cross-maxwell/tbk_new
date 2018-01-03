@@ -37,7 +37,9 @@ def getDB(mode='prod'):
             'OPTIONS': {'charset': 'utf8mb4'},
             'NAME': 'adam_test',
             'USER': 'root',
-            'PASSWORD': 'qazwsx102938'
+            'PASSWORD': 'qazwsx102938',
+            "PORT": "3306",
+            "HOST": "localhost"
         }
     }
 

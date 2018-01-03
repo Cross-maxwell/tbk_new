@@ -2,9 +2,9 @@
 
 
 from django.db import transaction
-from account.utils import user_utils, order_utils, account_utils
+from account.utils import user_utils, account_utils
 from account.models.commision_models import Commision, AgentCommision
-from account.models.order_models import AgentOrderStatus
+from account.models.order_models import AgentOrderStatus, Order
 from django.contrib.auth.models import User
 from broadcast.models.user_models import TkUser
 from common_utils import cut_decimal
@@ -23,13 +23,12 @@ def cal_agent_commision():
     user_list = User.objects.filter(is_staff=False, last_login__isnull=False)
     for user in user_list:
         sub_agent_list = user_utils.get_next_level_user(user.username)
-        # print("{}共有{}名下级淘宝客代理".format(user.username, len(sub_agent_list)))
-
         for sub_agent in sub_agent_list:
 
             # 通过下线的user，去拿到所有结算订单
-            order_list = order_utils.get_order_list_by_user(sub_agent, u'订单结算', True)
-            # print("代理{}已经成了{}单".format(sub_agent.username, len(order_list)))
+            # 2018.01.03 订单筛选修改为使用user_id
+            # order_list = order_utils.get_order_list_by_user(sub_agent, u'订单结算', True)
+            order_list = Order.objects.filter(user_id=sub_agent.id, order_status=u'订单结算', enter_account=True)
 
             # 拿到代理的账户
             agent_commision = get_agent_commision_account(sub_agent)
@@ -40,6 +39,7 @@ def cal_agent_commision():
                     # 如果这笔订单的状态是True，说明不需要再入账
                     if not get_or_update_AgentOrderStatus(order.id):
                         share_rate = float(order.share_rate.split(' ')[0]) / 100.0
+                        # 分成比例， 低于60%的第三方推广订单不计二级佣金
                         if share_rate <= 0.6:
                             pass
                         else:
@@ -98,11 +98,12 @@ def cal_commision():
             commision = Commision.objects.get(user_id=user_id)
         except Commision.DoesNotExist:
             commision = Commision.objects.create(user_id=user_id)
-        ad_id = order_utils.get_ad_id(user.username)
-        if ad_id is None:
-            continue
+        # ad_id = order_utils.get_ad_id(user.username)
+        # if ad_id is None:
+        #     continue
         # 结算上个月的订单- -
-        order_list = Order.objects.filter(ad_id=ad_id, order_status=u'订单结算',  earning_time__lt= datetime( year, month, 1), enter_account=False)
+        # 2018.01.03 订单由通过ad_id跟踪改为user_id跟踪
+        order_list = Order.objects.filter(user_id=user_id, order_status=u'订单结算',  earning_time__lt= datetime( year, month, 1), enter_account=False)
         new_earning_amount = 0
 
         with transaction.atomic():

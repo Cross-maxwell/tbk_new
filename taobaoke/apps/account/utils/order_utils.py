@@ -1,24 +1,11 @@
 # coding=utf-8
-from math import floor
+# from math import floor
 
 from django.contrib.auth.models import User
-from account.utils.user_utils import get_ad_id
-from broadcast.models.user_models import  Adzone
+# from account.utils.user_utils import get_ad_id
+# from broadcast.models.user_models import  Adzone
 
 __author__ = 'mingv'
-
-'''
-根据用户,获取该用户的所有订单
-'''
-def get_order_list_by_user(user, order_status, enter_account):
-    from account.models.order_models import Order
-    adzone_set = Adzone.objects.filter(tkuser__user_id=str(user.id))
-    if adzone_set.count() == 0 :
-        return []
-    ad_id = adzone_set.first().pid.split("_")[3]
-    order_list = Order.objects.filter(ad_id=ad_id, order_status=order_status, enter_account=enter_account)
-    return order_list
-
 
 '''
 被接口OrderCommisionView调用,
@@ -32,8 +19,8 @@ def get_all_order():
     for user in user_list:
         user_id = str(user.id)
 
-        ad_id = get_ad_id(user.username)
-        order_list = Order.objects.filter(ad_id=ad_id, order_status=u'订单结算', enter_account=False)
+        # ad_id = get_ad_id(user.username)
+        order_list = Order.objects.filter(user_id=user_id, order_status=u'订单结算', enter_account=False)
         user_order = {'id':user_id,'username':user.username,'order_list':OrderSerializer(order_list,many=True).data}
         user_order_data.append(user_order)
     return user_order_data
@@ -216,3 +203,16 @@ def get_all_order():
 #     c = 10**keep_length
 #     num_to_cut *= c
 #     return floor(num_to_cut)/c
+
+'''
+根据用户,获取该用户的所有订单
+2018.01.03 弃用此方法，使用此法的cal_agent_commision直接使用数据库查询
+'''
+# def get_order_list_by_user(user, order_status, enter_account):
+#     from account.models.order_models import Order
+#     adzone_set = Adzone.objects.filter(tkuser__user_id=str(user.id))
+#     if adzone_set.count() == 0 :
+#         return []
+#     ad_id = adzone_set.first().pid.split("_")[3]
+#     order_list = Order.objects.filter(ad_id=ad_id, order_status=order_status, enter_account=enter_account)
+#     return order_list
