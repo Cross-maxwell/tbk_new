@@ -15,21 +15,21 @@ from account.utils.common_utils import cut_decimal
 from account.utils.user_utils import get_ad_zone, get_ad_id
 from broadcast.models.user_models import TkUser
 
-
 class OrderList(View):
     """
     获取订单列表
     """
     def get(self, request):
         try:
-            # sortKey = request.GET.get('sortKey')
-            # desc = request.GET.get('desc')
-            order_list = getOrderListByUserName(request.user.username)
+            order_list = get_order_list_by_username(request.user.username)
         except Exception as e:
             return HttpResponse(json.dumps({'data':'Query error:'+e.message}),status=400)
         return HttpResponse(json.dumps({'data': OrderSerializer(order_list, many=True).data}),status=200)
 
 
+"""
+订单的跟踪改为使用user_id，此方法已在下方改写。 
+"""
 def getOrderListByUserName(username):
     """
     根据手机号获取相应的订单列表
@@ -40,6 +40,23 @@ def getOrderListByUserName(username):
     order_list = Order.objects.filter(ad_id=ad_id)
     return order_list
 
+
+"""
+两处应用，OrderList和 InviterOrderListView.
+"""
+def get_order_list_by_username(username):
+    """
+    根据手机号获取相应的订单列表
+    :param username:
+    :return:
+    """
+    # ad_id = get_ad_id(username)
+    try:
+        user_id = User.objects.get(username=username)
+        order_list = Order.objects.filter(user_id=user_id)
+        return order_list
+    except User.DoesNotExist:
+        return None
 
 class GetGoodPv(View):
     """
@@ -141,7 +158,7 @@ class InviterOrderListView(View):
             agent_id = sub_agent.user_id
 
             # 下级代理的订单列表
-            order_list = getOrderListByUserName(sub_agent_username)
+            order_list = get_order_list_by_username(sub_agent_username)
 
             # 下级代理产生的二级佣金
             try:
