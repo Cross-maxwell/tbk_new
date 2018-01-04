@@ -5,7 +5,7 @@
     每隔45秒发送一次请求
 """
 import os
-rpath = os.path.abspath('../apps')
+rpath = os.path.abspath('..')
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 
 import sys
