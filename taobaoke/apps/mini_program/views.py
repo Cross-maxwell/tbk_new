@@ -17,10 +17,12 @@ class WishWallView(ListCreateAPIView):
     """
     Create or List wish_wall
     """
-    queryset = WishWall.objects.all()
     serializer_class = WishWallModelSerializer
 
     def get_queryset(self):
+        id = self.request.query_params.get("id", "")
+        if id:
+            return WishWall.objects.filter(id=id)
         return WishWall.objects.all().order_by('-created')
 
 
@@ -33,10 +35,8 @@ class AddFavoriteWish(View):
         wish_wall = WishWall.objects.get(id=wish_id)
         wish_wall.fav_num += 1
         wish_wall.save()
-        wish_wall_list = []
-        wish_wall_list.append(wish_wall)
-        json_data = serializers.serialize("json", wish_wall_list)
-        return HttpResponse(json_data, status=200)
+        serializer = WishWallModelSerializer(wish_wall)
+        return HttpResponse(json.dumps(serializer.data), status=200)
 
 
 class TestPaymentNotifyView(View):
