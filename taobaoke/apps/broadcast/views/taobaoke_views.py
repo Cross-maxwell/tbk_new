@@ -26,6 +26,9 @@ from user_auth.models import PushTime
 from broadcast.models.user_models import Adzone
 from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
+from broadcast.utils.entry_utils import HandlePushFIFO, FIFOTooLongException
+import fuli.top_settings
+
 from fuli.top_settings import platform_list_url, send_msg_url
 from fuli.oss_utils import beary_chat
 import top.api
@@ -144,36 +147,63 @@ def send_product(user, user_object):
 class PushCertainProduct(View):
     def post(self, request):
         username = request.user.username
-        platform_id = 'make_money_together'
         req_dict = json.loads(request.body)
         item_id = req_dict.get('item_id')
         try:
             p = Product.objects.get(item_id = item_id)
         except Product.DoesNotExist :
             return HttpResponse(json.dumps({'data': '商品不存在！'}))
-        if is_handle_push(username, platform_id):
-            thread.start_new_thread(send_certain_product, (username, p))
+        tkuser = TkUser.get_user(username)
+        text = p.get_text_msg_wxapp()
+        img_url = p.get_img_msg_wxapp(pid=tkuser.adzone.pid, tkuser_id=tkuser.id)
+        hpf = HandlePushFIFO(username)
+        try:
+            hpf.push([img_url, text])
+            PushRecord.objects.create(entry=p, user_key=username)
             return HttpResponse(json.dumps({'data': '推送成功！'}))
-        else:
-            return HttpResponse(json.dumps({'data': '发送太频繁啦！请稍后再试！（手动推单间隔2分钟噢～）'}))
+        except FIFOTooLongException:
+            return HttpResponse(json.dumps({'data': '当前待推送队列已满（待推送商品最多10个）'}))
 
 
-def send_certain_product(username, p_object):
+def send_msg(username, msg_data_list):
     """
-    process : 传入username和指定的商品实例，向该用户所有生产群推送该商品。
-    :param username: mmt平台用户名（手机号）
-    :param p_object: 一个Product实例
-    :return:
+    :process: This func would be used to send msg.
+    :param username: With whom to send wx msg,
+    :param msg_data_list:  Datas to be sent,
+    :return: None
     """
-    tkuser = TkUser.get_user(username)
-    text = p_object.get_text_msg_wxapp()
-    img_url = p_object.get_img_msg_wxapp(pid=tkuser.adzone.pid, tkuser_id=tkuser.id)
+    send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
     request_data = {
         "md_username": username,
-        "data": [img_url, text]
+        "data": msg_data_list
     }
-    PushRecord.objects.create(entry=p_object, user_key=username)
-    send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
+    requests.post(send_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
+
+
+def global_push_from_fifo(test_user=None):
+    platform_id = 'make_money_together'
+    if test_user:
+        hpf = HandlePushFIFO(test_user)
+        data = hpf.fetch()
+        if not data:
+            return
+        if is_handle_push(test_user, platform_id):
+            send_msg(test_user, data)
+        else:
+            hpf.undofetch(data)
+            return
+    login_user_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id=make_money_together'
+    login_user_list = requests.get(login_user_url, headers={'Connection': 'close'}).json()['login_user_list']
+    for u in login_user_list:
+        username = u['user']
+        hpf = HandlePushFIFO(username)
+        data = hpf.fetch()
+        if not data:
+            continue
+        if is_handle_push(username, platform_id):
+            send_msg(username, data)
+        else:
+            hpf.undofetch(data)
 
 
 class SelectProducts(View):
@@ -546,11 +576,11 @@ def get_handle_pushtime(request):
                 dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
             can_push =(last_push_time is None) or (dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval)) <= datetime.datetime.now())
             if can_push:
-                return HttpResponse(json.dumps({'data': 'ok'}))
+                return HttpResponse(json.dumps({'data':'ok', 'count': HandlePushFIFO(username).length}))
             else:
                 dt_next_push_time = dt_last_push_time + datetime.timedelta(minutes=int(handle_push_interval))
                 next_push_time = dt_next_push_time.strftime(cache_time_format)
-                return HttpResponse(json.dumps({'data': next_push_time}))
+                return HttpResponse(json.dumps({'data':next_push_time, 'count': HandlePushFIFO(username).length}))
         except Exception, e:
             logger.error('{0} : {1}'.format(str(e), e.message))
 
