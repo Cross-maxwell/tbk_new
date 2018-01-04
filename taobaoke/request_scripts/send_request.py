@@ -35,11 +35,11 @@ while True:
         now_hour = int(time.strftime('%H', time.localtime(time.time())))
         if 7 <= now_hour <= 22:
             response = requests.get("http://s-prod-07.qunzhu666.com:9090/tk/push_product", headers=headers)
-            logger.info("{}: 请求/tk/push_product状态--{}".format(now_time, response.status_code))
+            logger.info("请求/tk/push_product状态--{}".format(response.status_code))
         else:
             # 如果不在这个时间段 休眠长一点
             time.sleep(20 * 60)
     except Exception as e:
-        logger.error("{}: 请求/tk/push_product出现异常--{}".format(now_time, e))
+        logger.error("请求/tk/push_product出现异常--{}".format(e))
 
     time.sleep(45)
