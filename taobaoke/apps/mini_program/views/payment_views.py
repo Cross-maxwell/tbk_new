@@ -64,7 +64,8 @@ class PrepayView(View):
                 "goods_title": goods_title,
                 "goods_price": product.price,
                 "should_pay": total_fee,
-                "app_user": app_user
+                "app_user": app_user,
+                "is_paid": False
             }
             payment_order = PaymentOrder.objects.create(**payment_order_dict)
         except Exception as e:
@@ -213,13 +214,18 @@ class AcceptNotifyURLView(View):
             "time_end": req_dict["time_end"],
             "total_fee": req_dict["total_fee"],
             "transaction_id": req_dict["transaction_id"],
-            "payment": payment
+            "payment": payment,
         }
 
         if req_dict["result_code"] == "SUCCESS":
             new_dict["is_paid"] = True
             try:
                 notify_payment, created = NotifyPayment.objects.get_or_create(payment=payment, defaults=new_dict)
+                payment_order = PaymentOrder.objects.get(payment=payment)
+                if payment:
+                    payment_order.is_paid = True
+                    payment.save()
+
                 resp_dict = {
                     "return_code": "SUCCESS",
                     "return_msg": ""
@@ -229,6 +235,7 @@ class AcceptNotifyURLView(View):
 
             except Exception as e:
                 logger.error(e)
+                beary_chat("创建notify_payment失败, 原因: {}".format(e))
                 resp_dict = {
                     "return_code": "FAIL",
                     "return_msg": "创建notify_payment失败"

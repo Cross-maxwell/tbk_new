@@ -54,7 +54,12 @@ class PaymentOrder(models.Model):
     goods_title = models.TextField()
 
     app_user = models.ForeignKey(AppUser)
+
+    # 是否已付款
+    is_paid = models.BooleanField(default=0)
+
     created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
 
 class Payment(models.Model):
@@ -98,7 +103,6 @@ class NotifyPayment(models.Model):
     # 微信支付id
     transaction_id = models.CharField(max_length=100, unique=True)
     created = models.DateTimeField(auto_now_add=True)
-    is_paid = models.BooleanField()
 
     payment = models.OneToOneField(Payment)
 

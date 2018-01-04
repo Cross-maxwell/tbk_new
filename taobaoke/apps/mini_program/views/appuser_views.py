@@ -76,21 +76,21 @@ class AddOrUpdateUserAddress(View):
 
     def post(self, request):
         """
-        根据openid创建一个收货地址
+        根据encrption_session_key创建一个收货地址
         """
         req_dict = json.loads(request.body)
-        openid = req_dict.get("openid", "")
+        encryption_session_key = req_dict.get("encryption_session_key", "")
         phone_num = req_dict.get("phone_num", "")
         name = req_dict.get("name", "")
         address = req_dict.get("address", "")
         data_list = []
 
         address_id = req_dict.get("address_id", "")
-        if not openid or not phone_num or not name or not address:
+        if not encryption_session_key or not phone_num or not name or not address:
             return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
 
         try:
-            app_user = AppUser.objects.get(openid=openid)
+            app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
         except Exception as e:
             return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
 
@@ -106,9 +106,7 @@ class AddOrUpdateUserAddress(View):
                 "address": address
             }
             try:
-                user_address = UserAddress.objects.get(id=address_id, app_user=app_user)
-                user_address.update_from_dict(data)
-                user_address.save()
+                user_address = UserAddress.objects.filter(id=address_id, app_user=app_user).update(**data)
             except UserAddress.DoesNotExist:
                 return HttpResponse(json.dumps({"ret": 0, "data": "address不存在"}), status=400)
         data_list.append(user_address)
@@ -120,19 +118,21 @@ class AddOrUpdateUserAddress(View):
 class GetUserAddress(View):
     def post(self, request):
         req_dict = json.loads(request.body)
-        openid = req_dict.get("openid", "")
+        encryption_session_key = req_dict.get("encryption_session_key", "")
         address_id = req_dict.get("address_id", "")
-        if not openid:
+        if not encryption_session_key:
             return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
         try:
-            app_user = AppUser.objects.get(openid=openid)
+            app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
         except Exception as e:
             return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
         if not address_id:
+            # 获取所有地址
             user_address = UserAddress.objects.filter(app_user=app_user)
             json_data = serializers.serialize("json", user_address)
             return HttpResponse(json_data, content_type="application/json")
         if address_id:
+            # 获取单个地址
             user_address = UserAddress.objects.filter(app_user=app_user, id=address_id)
             json_data = serializers.serialize("json", user_address)
             return HttpResponse(json_data, content_type="application/json")
