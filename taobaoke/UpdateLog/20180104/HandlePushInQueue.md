@@ -10,4 +10,3 @@
     taobaoke_views.py
     更改PushCertainProduct视图，参数为username和item_id, 将商品消息组成列表后推入fifo, 且此时不受handle_pushtime限制 **测试通过**
     get_handle_pushtime方法中增加一个返回数据， 是目前队列中带推送的商品数量 **测试通过**
-
