@@ -29,6 +29,7 @@ from broadcast.utils.image_connect import generate_image, generate_qrcode
 from broadcast.utils.entry_utils import HandlePushFIFO, FIFOTooLongException
 import fuli.top_settings
 
+from fuli.top_settings import platform_list_url, send_msg_url
 from fuli.oss_utils import beary_chat
 import top.api
 
@@ -44,33 +45,31 @@ logger = logging.getLogger('django_views')
 
 
 class PushProduct(View):
+    """
+    接口: /tk/push_product
+    {
+        "login_user_list":[
+                {"user": "smart", "wxuser_list": ["樂阳", "渺渺的"]},
+                {"user": "keyerror", ......}
+        ]
+    }
+    """
     def get(self, request):
-        # 随机筛选商品
         # TODO: 为了解决推送记录的记录，则先筛选user，而非先筛选商品
-
         platform_id = 'make_money_together'
         # 本地测试
         # 获取登录了一起赚平台的所有user列表
         # url = "http://localhost:10024/robot/platform_user_list?platform_id={}".format(platform_id)
-        # send_msg_url = 'http://localhost:10024/robot/send_msg/'
-
-        url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
-
         # send_msg_url = 'http://127.0.0.1:10024/api/robot/send_msg/'
-        response = requests.get(url)
+
+        platform_url = platform_list_url + platform_id
+
+        response = requests.get(platform_url)
         response_dict = json.loads(response.content)
         if response_dict["ret"] != 1:
             logger.error("筛选{}平台User为空".format(platform_id))
         login_user_list = response_dict["login_user_list"]
 
-        """
-        {
-            "login_user_list":[
-                    {"user": "smart", "wxuser_list": ["樂阳", "渺渺的"]}，
-                    {"user": "keyerror", ......}
-            ]
-        }
-        """
         for user_object in login_user_list:
             username = user_object["user"]
             try:
@@ -86,7 +85,6 @@ def send_product(user, user_object):
     # 找到该user所对应的pid
     random_seed = random.randint(0, 5)
     time.sleep(random_seed)
-    send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
     platform_id = 'make_money_together'
     try:
         tk_user = TkUser.get_user(user)
@@ -513,6 +511,8 @@ def is_push(md_username, wx_id):
         user_pt = pushtime.get_pushtime(md_username)
         push_interval = user_pt.interval_time
 
+        random_seed = random.randint(8, 15)
+
         cache_key = md_username + '_' + wx_id + '_last_push'
         cache_time_format = "%Y-%m-%d %H:%M:%S"
 
@@ -523,7 +523,7 @@ def is_push(md_username, wx_id):
             is_within_interval = True
         else:
             dt_last_push_time = datetime.datetime.strptime(last_push_time, cache_time_format)
-            is_within_interval = dt_last_push_time + datetime.timedelta(minutes=int(push_interval)) <= cur_time
+            is_within_interval = dt_last_push_time + datetime.timedelta(seconds=int(push_interval) * 60 + random_seed) <= cur_time
 
         dt_begin_pt = datetime.datetime.strptime(user_pt.begin_time.replace('24:00', '23:59'), '%H:%M')
         dt_end_pt = datetime.datetime.strptime(user_pt.end_time.replace('24:00', '23:59'), '%H:%M')
@@ -684,13 +684,11 @@ class SendArtificialMsg(View):
             return HttpResponse(json.dumps({"ret": 0, "reason": "商品已失效"}))
 
         platform_id = 'make_money_together'
-
-        url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id={}".format(platform_id)
+        platform_url = platform_list_url + platform_id
 
         localhost_send_msg_url = 'http://localhost:10024/api/robot/send_msg/'
-        send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
 
-        response = requests.get(url)
+        response = requests.get(platform_url)
         response_dict = json.loads(response.content)
         if response_dict["ret"] != 1:
             logger.error("筛选{}平台User为空".format(platform_id))
