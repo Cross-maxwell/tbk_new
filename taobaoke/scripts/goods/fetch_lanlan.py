@@ -37,7 +37,7 @@ def update_products():
     for i in range(50):
         resp = requests.get(
             # 已发送
-            'http://www.lanlanlife.com/product/itemList?apiKey={0}&sort=1&pageSize=10&page={1}'.format(lanlan_apikey,
+            'http://www.lanlanlife.com/product/itemList?apiKey={0}&sort=1&pageSize=50&page={1}'.format(lanlan_apikey,
                                                                                                        i),
             headers={'Connection': 'close'}
         )
@@ -61,7 +61,7 @@ def update_products():
                     }
                     item_id = item['itemId']
 
-                    if item['tkRates'] >= 30:
+                    if item['tkRates'] >= 20:
                         p, created = Product.objects.update_or_create(item_id=item_id, defaults=product_dict)
                     else:
                         continue

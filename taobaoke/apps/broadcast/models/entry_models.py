@@ -290,11 +290,11 @@ class ProductDetail(models.Model):
     # 卖家昵称，从详情接口取得
     seller_nick = models.CharField(max_length=256)
     # 小图，从详情接口取得
-    small_imgs = models.CharField(max_length=4096)
+    small_imgs = models.TextField(max_length=16383, default='[]')
     # 类别，外键关联到ProductCategory模型
     # cate = models.ForeignKey('ProductCategory')
     # 商品描述图片
-    describe_imgs = models.CharField(max_length=4096, default='[]')
+    describe_imgs = models.TextField(max_length=16383, default='[]')
     # 商品描述/推荐理由
     recommend = models.CharField(max_length=4096, default='')
 
