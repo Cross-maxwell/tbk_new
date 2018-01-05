@@ -6,10 +6,8 @@
 import sys
 sys.path.append('/home/new_taobaoke/taobaoke')
 import time
-# sys.path.append('/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke')
-# print(sys.path)
-
 import requests
+import json
 import re
 from fuli.oss_utils import beary_chat
 import os
@@ -17,80 +15,88 @@ import django
 os.environ.update({"DJANGO_SETTINGS_MODULE": "fuli.settings"})
 django.setup()
 
-from broadcast.models.entry_models import Product
+from broadcast.models.entry_models import Product, ProductDetail
 from django.db import connection
+from datetime import datetime
+from fuli.top_settings import lanlan_apikey
 
 import logging
 logger = logging.getLogger('fetch_lanlan')
 
-# f = open('/home/new_taobaoke/taobaoke/scripts/goods/lanlan_cookie.txt')
-
-# 本地测试
-f = open('lanlan_cookie.txt')
-cookie_str = f.read()
-f.close()
-
 
 def main():
-    for i in range(60):
+    start_time = datetime.now()
+    logger.info('Start Fetch Lanlan at : {0} : {1} : {2} '.format(start_time.hour, start_time.minute, start_time.second))
+    update_products()
+    passed_time = datetime.now()-start_time
+    logger.info('Totally Spent Time: {} Seconds.'.format(passed_time.total_seconds()))
+
+
+def update_products():
+    # 懒懒接口最多返回5000条， 此处每5分钟更新500条
+    for i in range(50):
         resp = requests.get(
             # 已发送
-            'http://www.lanlanlife.com/taoke/sendlist/fetchList?uuid=803cef07c9c80627cd75d1bf8c97683a&type=1&page=%d' % (i+1),
-            # 待发送
-            #'http://www.lanlanlife.com/taoke/sendlist/gatherList?uuid=803cef07c9c80627cd75d1bf8c97683a&page=%d' % (i+1),
-            headers={'Cookie': cookie_str.strip()}
+            'http://www.lanlanlife.com/product/itemList?apiKey={0}&sort=1&pageSize=10&page={1}'.format(lanlan_apikey,
+                                                                                                       i),
+            headers={'Connection': 'close'}
         )
+        # 正常状态code为1001
         if resp.json()['status']['code'] == 1001:
             try:
-                for item in resp.json()['result']['items']:
-                    if item['status'] != '1':
-                        continue
-                    data_dict = {
-                        'title': item['itemTitle'],
-                        'desc': item['recommend'],
-                        'img_url': item['coverImage'].split('@')[0] + '?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80',
-                        'cupon_value': item['amount'],
-                        'price': item['price'][1:],
-                        'cupon_url': item['link'],
-                        'sold_qty': item['monthSales'],
-                        'cupon_left': item['surplus'],
-                        'is_finished': item['isFinished'],
-                        'commision_rate': item['tkRate'],
-                        'commision_amount': float(item['tkPrice'].strip(u'\xa5'))
+                for item in resp.json()['result']:
+                    product_dict = {
+                        'title': item['title'],
+                        'desc': '',
+                        'img_url': item['coverImage'].split('@')[
+                                       0] + '?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80',
+                        'cupon_value': float(item['couponMoney'].strip()),
+                        'price': float(item['nowPrice'].strip()),
+                        'cupon_url': item['couponUrl'],
+                        'sold_qty': int(item['monthSales']),
+                        'cupon_left': item['couponRemainCount'],
+                        'commision_rate': str(item['tkRates']) + '%',
+                        'commision_amount': item['tkRates'] * float(item['nowPrice']),
+                        'cate': item['category']
                     }
+                    item_id = item['itemId']
 
-                    key_list = [
-                        'title', 'desc', 'img_url',
-                        'cupon_value', 'price', 'cupon_url',
-                        'sold_qty', 'cupon_left', 'commision_rate', 'commision_amount',
-                    ]
-                    item_id = re.search('itemId=(\d+)', data_dict['cupon_url']).groups()[0]
-
-                    if Product.objects.filter(item_id=item_id).exists():
-                        p = Product.objects.get(item_id=item_id)
-                        for key in key_list:
-                            setattr(p, key, data_dict[key])
-                        if data_dict['is_finished'] == 'true' or data_dict['cupon_left'] == 0:
-                            p.available = False
-                        else:
-                            p.available = True
-                        p.save()
-                        logger.info('Product updated')
+                    if item['tkRates'] >= 30:
+                        p, created = Product.objects.update_or_create(item_id=item_id, defaults=product_dict)
                     else:
-                        p = Product.objects.create(**{key: data_dict[key] for key in key_list})
-
+                        continue
+                    if not datetime.fromtimestamp(
+                            float(item['couponStartTime'])) < datetime.now() < datetime.fromtimestamp(
+                        float(item['couponEndTime'])):
+                        p.available = False
                     p.refresh_from_db()
                     p.assert_available()
-
+                    update_productdetails(p, item)
+                    logger.info('Product Updated!')
                     connection.close()
-
             except Exception as e:
                 logger.error(e)
-                beary_chat("懒懒cookie已失效，请更新")
-                print Exception.message
         else:
-            # beary_chat('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
             logger.error('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
+
+
+def update_productdetails(p_object, item):
+    detail_dict = {}
+    detail_dict['product'] = p_object
+    detail_dict['seller_id'] = item['sellerId']
+    detail_dict['seller_nick'] = item['sellerName']
+    for i in range(len(item['auctionImages'])):
+        if item['auctionImages'][i] and not item['auctionImages'][i].startswith('http'):
+            item['auctionImages'][i] = 'http:' + item['auctionImages'][i]
+    detail_dict['small_imgs'] = json.dumps(item['auctionImages'])
+    for i in range(len(item['detailImages'])):
+        if item['detailImages'][i] and not item['detailImages'][i].startswith('http'):
+            item['detailImages'][i] = 'http:' + item['detailImages'][i]
+    detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
+    detail_dict['recommend'] = item['recommend']
+    ProductDetail.objects.update_or_create(product=p_object, defaults=detail_dict)
+    connection.close()
+
 
 if __name__ == "__main__":
     while True:
