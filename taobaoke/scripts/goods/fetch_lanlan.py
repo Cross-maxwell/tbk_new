@@ -86,7 +86,6 @@ def main():
 
             except Exception as e:
                 logger.error(e)
-                beary_chat("懒懒cookie已失效，请更新")
                 print Exception.message
         else:
             # beary_chat('懒懒返回错误，msg : {}'.format(resp.json()['status']['msg']))
