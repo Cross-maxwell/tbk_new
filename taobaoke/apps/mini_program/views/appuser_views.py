@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
+from django.http import Http404, HttpResponseServerError
 
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
@@ -17,6 +18,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateMo
 
 from mini_program.settings import AppID, AppSecret, MCH_ID, IP, notify_url
 from mini_program.models.payment_models import Payment, AppUser, UserAddress, AppSession
+from mini_program.serializer import AppUserAddressSerializer
 
 import logging
 logger = logging.getLogger("django_views")
@@ -73,46 +75,54 @@ class GetSessionKey(View):
 
 
 class AddOrUpdateUserAddress(View):
+    def get_user(self, req_dict):
+        session_key = req_dict.get("encription_session_key", "")
+        try:
+            if session_key:
+                return AppUser.objects.get(appsession__encryption_session_key=session_key)
+            else:
+                raise Http404
+        except Exception as e:
+            logger.error(e)
+            raise Http404
 
     def post(self, request):
         """
         根据encrption_session_key创建一个收货地址
         """
-        req_dict = json.loads(request.body)
-        encryption_session_key = req_dict.get("encryption_session_key", "")
-        phone_num = req_dict.get("phone_num", "")
-        name = req_dict.get("name", "")
-        address = req_dict.get("address", "")
-        data_list = []
-
-        address_id = req_dict.get("address_id", "")
-        if not encryption_session_key or not phone_num or not name or not address:
-            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
-
         try:
-            app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
-        except Exception as e:
-            return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
+            req_dict = json.loads(request.body)
+            phone_num = req_dict.get("phone_num", "")
+            name = req_dict.get("name", "")
+            address = req_dict.get("address", "")
+            address_id = req_dict.get("address_id", "")
+            if not phone_num or not name or not address:
+                return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
 
-        if not address_id:
-            # 若address_id不存在，则为创建地址
-            user_address = UserAddress.objects.create(phone_num=phone_num, name=name,
-                                                      address=address, app_user=app_user)
-        if address_id:
-            # 若address_id存在，则为更新地址
-            data = {
-                "phone_num": phone_num,
-                "name": name,
-                "address": address
-            }
-            try:
-                user_address = UserAddress.objects.filter(id=address_id, app_user=app_user).update(**data)
-            except UserAddress.DoesNotExist:
-                return HttpResponse(json.dumps({"ret": 0, "data": "address不存在"}), status=400)
-        data_list.append(user_address)
-        # 这里只能序列化List
-        json_data = serializers.serialize("json", data_list)
-        return HttpResponse(json_data, content_type="application/json")
+            app_user = self.get_user(req_dict)
+
+            if not address_id:
+                # 若address_id不存在，则为创建地址
+                user_address = UserAddress.objects.create(phone_num=phone_num, name=name,
+                                                          address=address, app_user=app_user)
+            if address_id:
+                # 若address_id存在，则为更新地址
+                data = {
+                    "phone_num": phone_num,
+                    "name": name,
+                    "address": address
+                }
+                try:
+                    user_address_id = UserAddress.objects.filter(id=address_id, app_user=app_user).update(**data)
+                    user_address = UserAddress.objects.filter(id=address_id, app_user=app_user)
+                except UserAddress.DoesNotExist:
+                    return HttpResponse(json.dumps({"ret": 0, "data": "address不存在"}), status=400)
+
+            serializer = AppUserAddressSerializer(user_address, many=True)
+            return HttpResponse(json.dumps({"result": serializer.data}))
+        except Exception as e:
+            logger.error(e)
+            return HttpResponse(json.dumps({"ret": 0, "data": "未知错误"}), status=500)
 
 
 class GetUserAddress(View):
@@ -136,35 +146,6 @@ class GetUserAddress(View):
             user_address = UserAddress.objects.filter(app_user=app_user, id=address_id)
             json_data = serializers.serialize("json", user_address)
             return HttpResponse(json_data, content_type="application/json")
-
-
-
-
-
-
-
-
-
-
-# from mini_program.serializer import AppUserAddressSerializer
-# from rest_framework.response import Response
-# from rest_framework import status
-#
-#
-# class AddUserAddress(APIView):
-#     def get(self, request):
-#         app_user_id = request.GET.get("app_user_id")
-#         address_id = request.GET.get("address_id")
-#         address_db = UserAddress.objects.filter(app_user_id=app_user_id, id=address_id)
-#         products_serializer = AppUserAddressSerializer(address_db, many=True)
-#         return Response(products_serializer.data)
-#
-#     def post(self, request):
-#         serializer = AppUserAddressSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

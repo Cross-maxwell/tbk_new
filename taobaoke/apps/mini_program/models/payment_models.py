@@ -57,6 +57,10 @@ class PaymentOrder(models.Model):
 
     # 是否已付款
     is_paid = models.BooleanField(default=0)
+    # 是否已发货
+    is_send = models.BooleanField(default=0)
+    # 是否完成该订单
+    is_finish = models.BooleanField(default=0)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
