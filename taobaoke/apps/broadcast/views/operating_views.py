@@ -116,8 +116,9 @@ class SelectCate(View):
         if cur_cate is None:
             cur_cate = []
             cache.set('mmt_select_cate', cur_cate, 60*60*24*3)
-        sql_sentence = "SELECT DISTINCT root_cat_name from broadcast_productcategory"
+        sql_sentence = "SELECT DISTINCT cate FROM broadcast_product"
         all_cate = [cate[0] for cate in SQLHandler.execute(sql_sentence)]
+        all_cate.remove(None)
         ret_dict = {
             'cur_cate':cur_cate,
             'all_cate': all_cate
