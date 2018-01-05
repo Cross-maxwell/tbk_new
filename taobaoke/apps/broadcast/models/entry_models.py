@@ -85,6 +85,9 @@ class Product(Entry):
     commision_amount = models.FloatField(default=0)
     # 商品id
     item_id = models.CharField(max_length=64, unique=True, db_index=True, null=False)
+    # 商品分类
+    cate = models.CharField(max_length=128, null=True, db_index=True)
+
     # 商品推广文案
     broadcast_text = models.CharField(max_length=4096, default="")
     # 商品推广图片
@@ -188,63 +191,67 @@ class Product(Entry):
         else:
             logger.error("匹配activityId失败")
 
+    """旧的获取文字及图片的方法，不用了"""
+    # template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
+    # template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 高额优惠，下单立减，你要的优惠都在这里～"
+    #
+    # def get_text_msg(self, pid=None):
+    #     if pid is not None:
+    #         if re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
+    #             self.cupon_url = self.cupon_url + '&pid=' + pid
+    #         else:
+    #             self.cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, self.cupon_url)
+    #         # self.update_tokens()
+    #     self.tao_pwd = self.get_tkl(pid)[1:-1]
+    #     # self.tao_pwd = self.tao_pwd[1:-1]
+    #
+    #     """
+    #     http://solesschong.gitee.io/yiqizhuan/index.html?tkl=2342
+    #     """
+    #     long_url = 'http://solesschong.gitee.io/yiqizhuan/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
+    #     # 微博short_url平台
+    #     # source为ipad微博AppKey
+    #     short_url_respose = requests.get(
+    #         'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
+    #     self.short_url = short_url_respose.json()['urls'][0]['url_short']
+    #
+    #     msg = self.template.format(**self.__dict__)
+    #     if self.cupon_left < 15:
+    #         msg += u'\n该商品仅剩%s张券，抓紧下单吧！' % self.cupon_left
+    #     msg += self.template_end
+    #     if random.random() < 0.5:
+    #         msg += u'\n本群招代理，如果你也想把优惠带给你身边的朋友，那就赶快加我私聊吧！'
+    #     return msg
+    #
+    # def get_img_msg(self):
+    #     return self.img_url
 
-    template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"
-    template_end ="\n===============\n在群里直接发送“找XXX（你想要找的宝贝）”，我就会告诉你噢～\n「MMT一起赚」 高额优惠，下单立减，你要的优惠都在这里～"
-
-    def get_text_msg(self, pid=None):
-        if pid is not None:
-            if re.search('mm_\d+_\d+_\d+', self.cupon_url) is None:
-                self.cupon_url = self.cupon_url + '&pid=' + pid
-            else:
-                self.cupon_url = re.sub(r'mm_\d+_\d+_\d+', pid, self.cupon_url)
-            # self.update_tokens()
-        self.tao_pwd = self.get_tkl(pid)[1:-1]
-        # self.tao_pwd = self.tao_pwd[1:-1]
-
-        """
-        http://solesschong.gitee.io/yiqizhuan/index.html?tkl=2342
-        """
-        long_url = 'http://solesschong.gitee.io/yiqizhuan/index.html?tkl=%EF%BF%A5{0}%EF%BF%A5'.format(self.tao_pwd)
-        # 微博short_url平台
-        # source为ipad微博AppKey
-        short_url_respose = requests.get(
-            'http://api.weibo.com/2/short_url/shorten.json?source=2849184197&url_long=' + long_url)
-        self.short_url = short_url_respose.json()['urls'][0]['url_short']
-
-        msg = self.template.format(**self.__dict__)
-        if self.cupon_left < 15:
-            msg += u'\n该商品仅剩%s张券，抓紧下单吧！' % self.cupon_left
-        msg += self.template_end
-        if random.random() < 0.5:
-            msg += u'\n本群招代理，如果你也想把优惠带给你身边的朋友，那就赶快加我私聊吧！'
-        return msg
-
-    def get_img_msg(self):
-        return self.img_url
-
-    def update_tokens(self):
-        for _ in range(5):
-            try:
-                req = top.api.TbkTpwdCreateRequest()
-                req.set_app_info(top.appinfo(fuli.top_settings.app_key, fuli.top_settings.app_secret))
-
-                req.text = self.title.encode('utf-8')
-                req.logo = self.img_url
-                req.url = self.cupon_url
-
-                resp = req.getResponse()
-                self.tao_pwd = resp['tbk_tpwd_create_response']['data']['model']
-                self.cupon_short_url = self.cupon_url
-                break
-            except Exception as e:
-                print self.cupon_url, self.title
-                print e.message
-                continue
+    """update_token不用了"""
+    # def update_tokens(self):
+    #     for _ in range(5):
+    #         try:
+    #             req = top.api.TbkTpwdCreateRequest()
+    #             req.set_app_info(top.appinfo(fuli.top_settings.app_key, fuli.top_settings.app_secret))
+    #
+    #             req.text = self.title.encode('utf-8')
+    #             req.logo = self.img_url
+    #             req.url = self.cupon_url
+    #
+    #             resp = req.getResponse()
+    #             self.tao_pwd = resp['tbk_tpwd_create_response']['data']['model']
+    #             self.cupon_short_url = self.cupon_url
+    #             break
+    #         except Exception as e:
+    #             print self.cupon_url, self.title
+    #             print e.message
+    #             continue
 
     def assert_available(self):
         if not self.available:
             return False
+        # 2018.01.05 改用懒懒的API后，其返回的剩余券数似乎有问题， 即使显示0也可正常领取，
+        # 因调用API时排序规则为按更新时间排序， 没有优惠券的可能性较小。
+        # 经测试，即使第50页剩余券数为0的商品依旧可以正常领券。。。
         if self.cupon_left <= 0:
             self.available = False
             print 'Trim item due to cupon left.'
@@ -261,23 +268,23 @@ class Product(Entry):
         self.save()
         return self.available
 
-    def save(self, *args, **kwargs):
-        if self.last_update is None or \
-                    timezone.now() - self.last_update > datetime.timedelta(days=5):
-            self.update_tokens()
-        try:
-            self.item_id = re.search('itemId=(\d+)', self.cupon_url).groups()[0]
-        except Exception:
-            self.item_id = ''
-        super(Product, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # if self.last_update is None or \
+    #     #             timezone.now() - self.last_update > datetime.timedelta(days=5):
+    #     #     # self.update_tokens()
+    #     # try:
+    #     #     self.item_id = re.search('itemId=(\d+)', self.cupon_url).groups()[0]
+    #     # except Exception:
+    #     #     self.item_id = ''
+    #     super(Product, self).save(*args, **kwargs)
 
 
 class ProductDetail(models.Model):
     product = models.OneToOneField(Product, on_delete=models.CASCADE)
     # 卖家地址， 从详情接口取得
-    provcity = models.CharField(max_length=64)
+    provcity = models.CharField(max_length=64, null=True)
     # 商品链接，从详情接口取得
-    item_url = models.CharField(max_length=128)
+    item_url = models.CharField(max_length=128, null=True)
     # 卖家ID ，从详情接口取得
     seller_id = models.CharField(max_length=128)
     # 卖家昵称，从详情接口取得
@@ -285,49 +292,49 @@ class ProductDetail(models.Model):
     # 小图，从详情接口取得
     small_imgs = models.CharField(max_length=4096)
     # 类别，外键关联到ProductCategory模型
-    cate = models.ForeignKey('ProductCategory')
-    # 商品描述图片，从商品页面用BS获取, todo
+    # cate = models.ForeignKey('ProductCategory')
+    # 商品描述图片
     describe_imgs = models.CharField(max_length=4096, default='[]')
     # 商品描述/推荐理由
     recommend = models.CharField(max_length=4096, default='')
 
 
-class ProductCategory(models.Model):
-    root_cat_name = models.CharField(max_length=128, null=True)
-    cat_name = models.CharField(max_length=128, null=True)
-    cat_leaf_name = models.CharField(max_length=128, null=True)
+# class ProductCategory(models.Model):
+#     # root_cat_name = models.CharField(max_length=128, null=True)
+#     cat_name = models.CharField(max_length=128, null=True)
+    # cat_leaf_name = models.CharField(max_length=128, null=True)
 
 
-@receiver(post_save, sender=Product)
-def create_detail_and_cate(sender, instance, created, **kwargs):
-    product = instance
-    detail_dict = {}
-    item_info = get_item_info(product.item_id)
-    cate, cate_created = ProductCategory.objects.get_or_create(cat_name=item_info['cat_name'], cat_leaf_name=item_info['cat_leaf_name'])
-    detail_dict['product'] = product
-    detail_dict['provcity'] = item_info['provcity']
-    detail_dict['item_url'] = item_info['item_url']
-    detail_dict['seller_id'] = item_info['seller_id']
-    detail_dict['seller_nick'] = item_info['nick']
-    try:
-        detail_dict['small_imgs'] = json.dumps(map(lambda x: x.encode('utf-8'), item_info['small_images']['string']))
-    except KeyError:
-        detail_dict['small_imgs'] = json.dumps([])
-    detail_dict['cate'] = cate
-    activity_id = re.findall('activityId=([\w\d]+)', product.cupon_url)[0]
-    try:
-        detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid=" \
-                     "&_path=9001.SE.0.i.{path}&src=".format(
-            itemId=product.item_id, activityId=activity_id, path=product.item_id
-        )
-        response = requests.get(detail_url)
-        resp_dict = json.loads(response.content)
-        item = resp_dict["result"]["item"]
-        detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
-        detail_dict['recommend'] = item['recommend']
-    except Exception, e:
-        logger.info("itemId: {}, 商品已失效".format(product.item_id))
-    ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
+# @receiver(post_save, sender=Product)
+# def create_detail_and_cate(sender, instance, created, **kwargs):
+#     product = instance
+#     detail_dict = {}
+#     item_info = get_item_info(product.item_id)
+#     cate, cate_created = ProductCategory.objects.get_or_create(cat_name=item_info['cat_name'], cat_leaf_name=item_info['cat_leaf_name'])
+#     detail_dict['product'] = product
+#     detail_dict['provcity'] = item_info['provcity']
+#     detail_dict['item_url'] = item_info['item_url']
+#     detail_dict['seller_id'] = item_info['seller_id']
+#     detail_dict['seller_nick'] = item_info['nick']
+#     try:
+#         detail_dict['small_imgs'] = json.dumps(map(lambda x: x.encode('utf-8'), item_info['small_images']['string']))
+#     except KeyError:
+#         detail_dict['small_imgs'] = json.dumps([])
+#     detail_dict['cate'] = cate
+#     activity_id = re.findall('activityId=([\w\d]+)', product.cupon_url)[0]
+#     try:
+#         detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid=" \
+#                      "&_path=9001.SE.0.i.{path}&src=".format(
+#             itemId=product.item_id, activityId=activity_id, path=product.item_id
+#         )
+#         response = requests.get(detail_url)
+#         resp_dict = json.loads(response.content)
+#         item = resp_dict["result"]["item"]
+#         detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
+#         detail_dict['recommend'] = item['recommend']
+#     except Exception, e:
+#         logger.info("itemId: {}, 商品已失效".format(product.item_id))
+#     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
 
 
 class SearchKeywordMapping(models.Model):

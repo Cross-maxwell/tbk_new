@@ -220,7 +220,7 @@ class SelectProducts(View):
             'cupon_value__gte': 10,
         }
         if root_cat_names:
-            query_dict['productdetail__cate__root_cat_name__in'] = root_cat_names
+            query_dict['cate__in'] = root_cat_names
         qs = Product.objects.filter(**query_dict).order_by('-sold_qty')
         qs = qs[int(page_num) * 20: int(page_num) * 20 + 20]
         ret_list = []
@@ -471,7 +471,7 @@ class AppSearchDetailView(View):
                     detailImage_list.append(detailImage)
             detail_dict["result"]["item"]["detailImages"] = detailImage_list
 
-            print detail_dict
+            # print detail_dict
 
             # 根据itemId等生成tkl
             tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
@@ -613,25 +613,18 @@ class ProductDetail_(View):
             'cupon_value': p.cupon_value,
             'price': p.price,
             'org_price': p.org_price,
-            'provcity': p_detail.provcity,
+            # 'provcity': p_detail.provcity,
             'seller_nick': p_detail.seller_nick,
             'small_imgs': json.loads(p_detail.small_imgs),
             'detailImages': json.loads(p_detail.describe_imgs),
             'recommend': p_detail.recommend,
             # 最根类
-            'root_cat': p_detail.cate.root_cat_name,
+            # 'root_cat': p_detail.cate.root_cat_name,
             # 类别
-            'cat': p_detail.cate.cat_name,
+            'cat': p.cate,
             # 子类别
-            'cat_leaf': p_detail.cate.cat_leaf_name
+            # 'cat_leaf': p_detail.cate.cat_leaf_name
         }
-
-        detailImage_list = []
-        for detailImage in resp_dict["detailImages"]:
-            if not "http" in detailImage or not "https" in detailImage:
-                detailImage = "http:" + detailImage
-                detailImage_list.append(detailImage)
-        resp_dict["detailImages"] = detailImage_list
 
         return HttpResponse(json.dumps({'data': resp_dict}), status=200)
 

@@ -6,3 +6,5 @@ APPSECRET = "96c99795528c07059d7f17cf73441b37"
 
 platform_list_url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id="
 send_msg_url = "http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/"
+
+lanlan_apikey = "c757660fdaedd561e279116773edddc8"
