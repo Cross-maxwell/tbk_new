@@ -593,7 +593,7 @@ class AppProductJsonView(View):
 
 class ProductDetail_(View):
     """
-    给小程序用的商品详情请求接口
+    给小程序用的商品详情请求接口.
     """
     def get(self, request):
         id = request.GET.get('id')
