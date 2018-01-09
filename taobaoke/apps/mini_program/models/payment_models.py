@@ -48,10 +48,17 @@ class PaymentOrder(models.Model):
     goods_num = models.IntegerField()
     # 商品价格
     goods_price = models.FloatField()
+
+    # 商品图片
+    goods_img = models.URLField(max_length=500)
+    # 用户备注
+    remark = models.TextField(null=True, blank=True)
     # 应付金额
     should_pay = models.FloatField()
     # 商品标题
     goods_title = models.TextField()
+    # 商户内部订单号
+    out_trade_no = models.CharField(max_length=32, unique=True)
 
     app_user = models.ForeignKey(AppUser)
 
@@ -61,6 +68,8 @@ class PaymentOrder(models.Model):
     is_send = models.BooleanField(default=0)
     # 是否完成该订单
     is_finish = models.BooleanField(default=0)
+    # 是否退货
+    is_returned = models.BooleanField(default=0)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

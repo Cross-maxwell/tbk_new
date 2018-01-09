@@ -16,8 +16,8 @@ from broadcast.views.operating_views import GetProducts, EditProduct, ChangePush
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
 from mini_program.views.wishwall_views import WishWallView
-from mini_program.views.appuser_views import GetSessionKey, AddOrUpdateUserAddress, GetUserAddress
-from mini_program.views.payment_views import PrepayView, AcceptNotifyURLView
+from mini_program.views.appuser_views import GetSessionKey, AddOrUpdateUserAddress, GetUserAddress, GetUserPaymentOrder
+from mini_program.views.payment_views import PrepayView, AcceptNotifyURLView, PaymentRefund
 
 
 user_urls = [
@@ -96,15 +96,16 @@ wish_urls = [
 payment_urls = [
 
     url(r'prepay', PrepayView.as_view()),
-    url(r'notify_url', AcceptNotifyURLView.as_view())
+    url(r'notify_url', AcceptNotifyURLView.as_view()),
+    url(r'refund', PaymentRefund.as_view())
 
 ]
 
 app_user_urls = [
     url(r'get_session_key', GetSessionKey.as_view()),
     url(r'add_or_update_address', AddOrUpdateUserAddress.as_view()),
-    url(r'get_address', GetUserAddress.as_view())
-
+    url(r'get_address', GetUserAddress.as_view()),
+    url(r'order', GetUserPaymentOrder.as_view())
 ]
 
 urlpatterns = [

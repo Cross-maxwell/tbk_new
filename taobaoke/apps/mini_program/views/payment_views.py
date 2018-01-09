@@ -12,8 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 
 
-from mini_program.settings import AppID, AppSecret, MCH_ID, IP, notify_url, prepay_url
-from mini_program.utils import get_sign_str, get_random_str, get_trade_num
+from mini_program.settings import AppID, AppSecret, MCH_ID, IP, notify_url, prepay_url, refund_url
+from mini_program.utils import get_sign_str, get_random_str, get_trade_num, get_64_random_number_string
 from mini_program.utils import trans_dict_to_xml, trans_xml_to_dict, beary_chat
 from broadcast.models.entry_models import Product
 from mini_program.models.payment_models import Payment, AppUser, UserAddress, AppSession, PaymentOrder, NotifyPayment
@@ -42,19 +42,27 @@ class PrepayView(View):
 
         encryption_session_key = req_dict.get("encryption_session_key", "")
         goods_id = req_dict.get("goods_id", "")
-        # TODO： 若要支持后台添加商品，则需要为该商品生成一个itemid
+        # TODO： 若要支持后台添加商品，则需要为该商品生成一个itemid，且该item_id必须在10位数以内
         item_id = req_dict.get("item_id", "")
         # 商品数量
         goods_num = req_dict.get("goods_num", "")
         # 商品名称
         goods_title = req_dict.get("goods_title", "")
+        # 商品主图
+        goods_img = req_dict.get("goods_img", "")
 
-        if not encryption_session_key or not goods_id or not item_id or not goods_num or not goods_title:
+        # 用户备注
+        remark = req_dict.get("remark", "")
+
+        if not encryption_session_key or not goods_id or not item_id or not goods_num or not goods_title or not goods_img:
             return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
 
         try:
             app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
             product = Product.objects.get(item_id=item_id, id=goods_id)
+
+            out_trade_no = get_trade_num(item_id=item_id)
+
             # 订单总金额，单位为分，详见支付金额
             total_fee = int((product.price * int(goods_num)) * 100)
             payment_order_dict = {
@@ -62,10 +70,13 @@ class PrepayView(View):
                 "item_id": item_id,
                 "goods_num": goods_num,
                 "goods_title": goods_title,
+                "goods_img": goods_img,
                 "goods_price": product.price,
                 "should_pay": total_fee,
                 "app_user": app_user,
-                "is_paid": False
+                "is_paid": False,
+                "remark": remark,
+                "out_trade_no": out_trade_no
             }
             payment_order = PaymentOrder.objects.create(**payment_order_dict)
         except Exception as e:
@@ -78,7 +89,6 @@ class PrepayView(View):
 
         attach = "商品附加数据测试"
         nonce_str = get_random_str()
-        out_trade_no = get_trade_num(item_id=item_id)
 
         param_data = {
             "appid": AppID,
@@ -166,38 +176,46 @@ class AcceptNotifyURLView(View):
         req_data = request.body
         req_data = """
             <xml><appid><![CDATA[wxb2e3e953b7f9c832]]></appid>
-                <attach><![CDATA[商品附加数据测试]]></attach>
-                <bank_type><![CDATA[CFT]]></bank_type>
-                <cash_fee><![CDATA[1]]></cash_fee>
-                <fee_type><![CDATA[CNY]]></fee_type>
-                <is_subscribe><![CDATA[N]]></is_subscribe>
-                <mch_id><![CDATA[1481668232]]></mch_id>
-                <nonce_str><![CDATA[M4A517oIlszZRCrK]]></nonce_str>
-                <openid><![CDATA[oTOok0b1l7yJDvlS1VBVepbQrV0A]]></openid>
-                <out_trade_no><![CDATA[1514460853557430097721]]></out_trade_no>
-                <result_code><![CDATA[SUCCESS]]></result_code>
-                <return_code><![CDATA[SUCCESS]]></return_code>
-                <sign><![CDATA[C7BABF9D481602922E3F6DE466688985]]></sign>
-                <time_end><![CDATA[20171228154126]]></time_end>
-                <total_fee>1</total_fee>
-                <trade_type><![CDATA[JSAPI]]></trade_type>
-                <transaction_id><![CDATA[4200000048201712283112601475]]></transaction_id>
+            <attach><![CDATA[商品附加数据测试]]></attach>
+            <bank_type><![CDATA[CFT]]></bank_type>
+            <cash_fee><![CDATA[1]]></cash_fee>
+            <fee_type><![CDATA[CNY]]></fee_type>
+            <is_subscribe><![CDATA[N]]></is_subscribe>
+            <mch_id><![CDATA[1481668232]]></mch_id>
+            <nonce_str><![CDATA[9QzGHIMRYKOdWZu1]]></nonce_str>
+            <openid><![CDATA[oTOok0b1l7yJDvlS1VBVepbQrV0A]]></openid>
+            <out_trade_no><![CDATA[1515228178531835587564wOjnu12J]]></out_trade_no>
+            <result_code><![CDATA[SUCCESS]]></result_code>
+            <return_code><!total_fee[CDATA[SUCCESS]]></return_code>
+            <sign><![CDATA[FAA787E56264DEA58973641DA0FC2EAE]]></sign>
+            <time_end><![CDATA[20180106164636]]></time_end>
+            <total_fee>1</total_fee>
+            <trade_type><![CDATA[JSAPI]]></trade_type>
+            <transaction_id><![CDATA[4200000085201801069317628907]]></transaction_id>
             </xml>
         """
         req_dict = trans_xml_to_dict(req_data)
 
         out_trade_no = req_dict["out_trade_no"]
-        notify_sign = req_dict["sign"]
         notify_total_fee = req_dict["total_fee"]
         payment = Payment.objects.get(out_trade_no=out_trade_no)
+        notify_sign = req_dict["sign"]
 
-        if notify_sign is not payment.sign:
+        req_dict.pop("sign")
+        new_sorted_dict = sorted(req_dict.iteritems(), key=lambda x: x[0])
+
+        check_sign = get_sign_str(new_sorted_dict)
+
+        # 签名校验
+        if notify_sign != check_sign:
             resp_dict = {
                 "return_code": "FAIL",
                 "return_msg": "签名校验失败"
             }
             resp_xml = trans_dict_to_xml(resp_dict)
             return HttpResponse(resp_xml)
+
+        # 总金额校验
         if int(notify_total_fee) != payment.total_fee:
             resp_dict = {
                 "return_code": "FAIL",
@@ -205,6 +223,25 @@ class AcceptNotifyURLView(View):
             }
             resp_xml = trans_dict_to_xml(resp_dict)
             return HttpResponse(resp_xml)
+
+        # 内部订单号校验
+        if payment.out_trade_no != out_trade_no:
+            resp_dict = {
+                "return_code": "FAIL",
+                "return_msg": "内部订单号校验失败"
+            }
+            resp_xml = trans_dict_to_xml(resp_dict)
+            return HttpResponse(resp_xml)
+
+        # 随机字符串校验
+        if payment.nonce_str != req_dict["nonce_str"]:
+            resp_dict = {
+                "return_code": "FAIL",
+                "return_msg": "随机字符串校验失败"
+            }
+            resp_xml = trans_dict_to_xml(resp_dict)
+            return HttpResponse(resp_xml)
+
 
         new_dict = {
             "bank_type": req_dict["bank_type"],
@@ -218,13 +255,12 @@ class AcceptNotifyURLView(View):
         }
 
         if req_dict["result_code"] == "SUCCESS":
-            new_dict["is_paid"] = True
             try:
                 notify_payment, created = NotifyPayment.objects.get_or_create(payment=payment, defaults=new_dict)
                 payment_order = PaymentOrder.objects.get(payment=payment)
-                if payment:
+                if payment_order:
                     payment_order.is_paid = True
-                    payment.save()
+                    payment_order.save()
 
                 resp_dict = {
                     "return_code": "SUCCESS",
@@ -244,66 +280,86 @@ class AcceptNotifyURLView(View):
                 return HttpResponse(resp_xml)
 
 
+class PaymentRefund(View):
+    def post(self, request):
+        req_dict = json.loads(request.body)
+
+        encryption_session_key = req_dict.get("encryption_session_key", "")
+        payment_order_id = req_dict.get("payment_order_id", "")
+        app_user_id = req_dict.get("app_user_id", "")
+
+        if not encryption_session_key or not payment_order_id or not app_user_id:
+            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
+        try:
+            app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
+        except Exception as e:
+            return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
+
+        # 只有is_paid的订单才能够退款
+        try:
+            payment_order = PaymentOrder.objects.get(id=payment_order_id, app_user__id=app_user_id)
+            if not payment_order.is_paid:
+                return HttpResponse(json.dumps({"ret": 0, "data": "订单不存在"}), status=400)
+        except PaymentOrder.DoesNotExist:
+            return HttpResponse(json.dumps({"ret": 0, "data": "订单不存在"}), status=400)
+        except PaymentOrder.MultipleObjectsReturned:
+            beary_chat("PaymentOrder表出现严重问题，请排查")
+            return HttpResponse(json.dumps({"ret": 0, "data": "订单不存在"}), status=400)
+
+        try:
+            # 微信返回的交易id
+            transaction_id = NotifyPayment.objects.get(payment__payment_order=payment_order).transaction_id
+        except PaymentOrder.DoesNotExist:
+            return HttpResponse(json.dumps({"ret": 0, "data": "订单不存在"}), status=400)
+        except PaymentOrder.MultipleObjectsReturned:
+            beary_chat("NotifyPayment表出现严重问题，请排查")
+            return HttpResponse(json.dumps({"ret": 0, "data": "订单不存在"}), status=400)
+
+        nonce_str = get_random_str()
+
+        # 商户系统内部的退款单号，商户系统内部唯一，同一退款单号多次请求只退一笔
+        out_refund_no = get_64_random_number_string()
+
+        # 订单总金额，单位为分，只能为整数，详见支付金额
+        total_fee = payment_order.should_pay
+
+        # 退款总金额，订单总金额，单位为分，只能为整数，详见支付金额
+        refund_fee = total_fee
+
+        # 操作员帐号, 默认为商户号
+        op_user_id = MCH_ID
+
+        param_data = {
+            "appid": AppID,
+            "mch_id": MCH_ID,
+            # 随机字符串，不长于32位。推荐随机数生成算法
+            "nonce_str": nonce_str,
+            "transaction_id": transaction_id,
+            # 商户系统内部的退款单号，商户系统内部唯一，同一退款单号多次请求只退一笔
+            "out_refund_no": out_refund_no,
+            "total_fee": total_fee,
+            # 退款总金额，订单总金额，单位为分，只能为整数，详见支付金额
+            "refund_fee": total_fee,
+            # 操作员，默认为商户号
+            "op_user_id": op_user_id
+        }
+
+        sorted_dict = sorted(param_data.iteritems(), key=lambda x: x[0])
+        sign = get_sign_str(sorted_dict)
+        param_data["sign"] = sign
+
+        # 这里写XML是真的蠢，什么年代了还用这种鬼东西
+        req_xml_data = trans_dict_to_xml(param_data)
+        try:
+            response = requests.post(refund_url, data=req_xml_data, headers={'Content-Type': 'text/xml'})
+            logger.info("退款接口返回状态码: {}".format(response.status_code))
+            resp_dict = trans_xml_to_dict(response.content)
+        except Exception as e:
+            logger.error(e)
 
 
 
-        """
-            # 银行类型
-    bank_type = models.CharField(max_length=20)
-    # 支付现金
-    cash_fee = models.IntegerField()
-    # 现金类型
-    fee_type = models.CharField(max_length=20)
-    # 处理结果
-    result_code = models.CharField(max_length=20)
-    time_end = models.CharField(max_length=36)
-    # 订单金额
-    total_fee = models.IntegerField()
-    # 微信支付id
-    transaction_id = models.CharField(max_length=100, unique=True)
-    created = models.DateTimeField(auto_now_add=True)
-    is_paid = models.BooleanField()
 
-    payment = models.OneToOneField(Payment)
-        
-        """
-
-
-
-
-
-
-
-        print req_dict
-
-"""
-微信支付notify_url Post请求数据
-<xml><appid><![CDATA[wxb2e3e953b7f9c832]]></appid>
-<attach><![CDATA[商品附加数据测试]]></attach>
-<bank_type><![CDATA[CFT]]></bank_type>
-现金支付金额
-<cash_fee><![CDATA[1]]></cash_fee>
-人民币币种
-<fee_type><![CDATA[CNY]]></fee_type>
-是否关注公众号
-<is_subscribe><![CDATA[N]]></is_subscribe>
-<mch_id><![CDATA[1481668232]]></mch_id>
-<nonce_str><![CDATA[M4A517oIlszZRCrK]]></nonce_str>
-<openid><![CDATA[oTOok0b1l7yJDvlS1VBVepbQrV0A]]></openid>
-商户订单号
-<out_trade_no><![CDATA[1514446757557430097721]]></out_trade_no>
-<result_code><![CDATA[SUCCESS]]></result_code>
-<return_code><![CDATA[SUCCESS]]></return_code>
-
-<sign><![CDATA[C7BABF9D481602922E3F6DE466688985]]></sign>
-<time_end><![CDATA[20171228154126]]></time_end>
-订单金额
-<total_fee>1</total_fee>f3zkCCV0Yw6yTAepKxuFZKg2CgLRQI
-<trade_type><![CDATA[JSAPI]]></trade_type>
-微信支付订单号
-<transaction_id><![CDATA[4200000048201712283112601475]]></transaction_id>
-</xml>
-"""
 
 
 
@@ -384,7 +440,12 @@ class AcceptNotifyView(View):
 
 
 
+"""
+'1', '某某某', 'http://', 'string', 'China', 'string', 'oTOok0b1l7yJDvlS1VBVepbQrV0A', '2018-01-06 03:04:59.540533'
+'1', 'YXD+IgoU93abZz/6IqHM6w==', 'dccf6e5eb5e92692dc44a5e7bd729a765ce9063ca5df92724192fdd7f60abfd36368436f8a3b6076dae094a5db6867188811996e6c28cb441def731289479f5e', '2018-02-05 03:05:02.058583', '1'
 
+
+"""
 
 
 

@@ -16,6 +16,8 @@ stringA="appid=wxd930ea5d5a258f4f&body=test&device_info=1000&mch_id=10000100&non
 
 appId=&nonceStr&package=prepay_id=wx2017033010242291fcfe0db70013231072&signType=MD5&timeStamp=1490840662&key=qazwsxedcrfvtgbyhnujmikolp111111
 appId=&nonceStr&package=prepay_id=wx201712281528146c38287b210933847072&signType=MD5&timeStamp=1514446096&key=2739d39befe4064e6c8a8ee09d48102d
+
+appId=&nonceStr&package=prepay_id=wx20180106115440fa23973aaf0716631912&signType=MD5&timeStamp=1515210893&'
 """
 
 
@@ -28,6 +30,7 @@ def get_sign_str(sorted_dict):
         stringA += key + "=" + str(value) + "&"
     string_sign_temp = stringA + "key=" + KEY
     sign = hashlib.md5(string_sign_temp).hexdigest()
+    print string_sign_temp
     return sign.upper()
 
 
@@ -36,13 +39,27 @@ def get_random_str():
     return random_string
 
 
+def get_8_random_str():
+    random_string = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+    return random_string
+
+
+def get_64_random_number_string():
+    random_seeds = "123456789"
+    random_list = []
+    for i in range(64):
+        random_list.append(random.choice(random_seeds))
+    return "".join(random_list)
+
+
 def get_trade_num(item_id):
     """
     获取商户内部商品订单号
     """
     # 10位时间戳
     timestamp = str(int(time.time()))
-    trade_num = timestamp + item_id
+    random_str = get_8_random_str()
+    trade_num = timestamp + item_id + random_str
     return trade_num
 
 

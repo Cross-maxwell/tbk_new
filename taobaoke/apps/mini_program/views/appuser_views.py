@@ -5,11 +5,11 @@ import json
 import requests
 import hashlib
 import datetime
+
 from django.http import HttpResponse
 from django.views.generic.base import View
 from django.views.decorators.csrf import csrf_exempt
-from django.core import serializers
-from django.http import Http404, HttpResponseServerError
+from django.http import Http404
 
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
@@ -17,8 +17,8 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateMo
 
 
 from mini_program.settings import AppID, AppSecret, MCH_ID, IP, notify_url
-from mini_program.models.payment_models import Payment, AppUser, UserAddress, AppSession
-from mini_program.serializer import AppUserAddressSerializer
+from mini_program.models.payment_models import Payment, AppUser, UserAddress, AppSession, PaymentOrder
+from mini_program.serializer import AppUserAddressSerializer, PaymentOrderSerializer
 
 import logging
 logger = logging.getLogger("django_views")
@@ -75,23 +75,13 @@ class GetSessionKey(View):
 
 
 class AddOrUpdateUserAddress(View):
-    def get_user(self, req_dict):
-        session_key = req_dict.get("encription_session_key", "")
-        try:
-            if session_key:
-                return AppUser.objects.get(appsession__encryption_session_key=session_key)
-            else:
-                raise Http404
-        except Exception as e:
-            logger.error(e)
-            raise Http404
-
     def post(self, request):
         """
         根据encrption_session_key创建一个收货地址
         """
         try:
             req_dict = json.loads(request.body)
+            session_key = req_dict.get("encryption_session_key", "")
             phone_num = req_dict.get("phone_num", "")
             name = req_dict.get("name", "")
             address = req_dict.get("address", "")
@@ -99,7 +89,14 @@ class AddOrUpdateUserAddress(View):
             if not phone_num or not name or not address:
                 return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
 
-            app_user = self.get_user(req_dict)
+            try:
+                if session_key:
+                    app_user = AppUser.objects.get(appsession__encryption_session_key=session_key)
+                else:
+                    raise Http404
+            except Exception as e:
+                logger.error(e)
+                return HttpResponse(json.dumps({"ret": 0, "data": "错误的session_key"}))
 
             if not address_id:
                 # 若address_id不存在，则为创建地址
@@ -114,11 +111,11 @@ class AddOrUpdateUserAddress(View):
                 }
                 try:
                     user_address_id = UserAddress.objects.filter(id=address_id, app_user=app_user).update(**data)
-                    user_address = UserAddress.objects.filter(id=address_id, app_user=app_user)
+                    user_address = UserAddress.objects.get(id=address_id, app_user=app_user)
                 except UserAddress.DoesNotExist:
                     return HttpResponse(json.dumps({"ret": 0, "data": "address不存在"}), status=400)
 
-            serializer = AppUserAddressSerializer(user_address, many=True)
+            serializer = AppUserAddressSerializer(user_address)
             return HttpResponse(json.dumps({"result": serializer.data}))
         except Exception as e:
             logger.error(e)
@@ -139,13 +136,28 @@ class GetUserAddress(View):
         if not address_id:
             # 获取所有地址
             user_address = UserAddress.objects.filter(app_user=app_user)
-            json_data = serializers.serialize("json", user_address)
-            return HttpResponse(json_data, content_type="application/json")
         if address_id:
             # 获取单个地址
             user_address = UserAddress.objects.filter(app_user=app_user, id=address_id)
-            json_data = serializers.serialize("json", user_address)
-            return HttpResponse(json_data, content_type="application/json")
+
+        serializer = AppUserAddressSerializer(user_address, many=True)
+        return HttpResponse(json.dumps({"result": serializer.data}))
 
 
+class GetUserPaymentOrder(View):
+    """
+    获取用户订单
+    """
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        encryption_session_key = req_dict.get("encryption_session_key", "")
+        if not encryption_session_key:
+            return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
+        try:
+            app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
+        except Exception as e:
+            return HttpResponse(json.dumps({"ret": 0, "data": "用户不存在"}), status=400)
+        payment_order = PaymentOrder.objects.filter(app_user=app_user)
+        serializer = PaymentOrderSerializer(payment_order, many=True)
+        return HttpResponse(json.dumps({"result": serializer.data}))
 

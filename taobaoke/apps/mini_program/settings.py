@@ -15,5 +15,7 @@ notify_url = "https://s-prod-07.qunzhu666.com/test/test_notify"
 
 prepay_url = "https://api.mch.weixin.qq.com/pay/unifiedorder"
 
+refund_url = "https://api.mch.weixin.qq.com/secapi/pay/refund"
+
 
 
