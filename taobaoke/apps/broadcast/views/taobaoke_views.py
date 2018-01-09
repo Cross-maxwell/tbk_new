@@ -593,40 +593,44 @@ class AppProductJsonView(View):
 
 class ProductDetail_(View):
     """
-    给小程序用的商品详情请求接口
+    给小程序用的商品详情请求接口.
     """
     def get(self, request):
         id = request.GET.get('id')
+        tkuser_id = request.GET.get('tkuser_id')
+        pid = TkUser.objects.get(id=tkuser_id).adzone.pid
+        source='tb'
+        short_url = None
 
         if id is None:
             return HttpResponse(json.dumps({'data': 'losing param \'id\'.'}), status=400)
         try:
             p = Product.objects.get(id=id)
-
+            tkl = p.get_tkl(pid)
         except Product.DoesNotExist:
             return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist'}), status=400)
         p_detail = p.productdetail
-        resp_dict = {
+        detail_dict = {
             'title': p.title,
             'desc': p.desc,
             'img': p.img_url,
             'cupon_value': p.cupon_value,
             'price': p.price,
             'org_price': p.org_price,
-            # 'provcity': p_detail.provcity,
             'seller_nick': p_detail.seller_nick,
             'small_imgs': json.loads(p_detail.small_imgs),
             'detailImages': json.loads(p_detail.describe_imgs),
             'recommend': p_detail.recommend,
-            # 最根类
-            # 'root_cat': p_detail.cate.root_cat_name,
-            # 类别
             'cat': p.cate,
-            # 子类别
-            # 'cat_leaf': p_detail.cate.cat_leaf_name
+        }
+        resp_dict = {
+            'data' : detail_dict,
+            'source' : source,
+            'tkl' : tkl,
+            'short_url' : short_url
         }
 
-        return HttpResponse(json.dumps({'data': resp_dict}), status=200)
+        return HttpResponse(json.dumps(resp_dict), status=200)
 
 
 class RecommendProduct(View):
