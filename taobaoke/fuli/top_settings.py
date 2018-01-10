@@ -1,3 +1,4 @@
+# coding: utf-8
 app_key = '23783625'
 app_secret = 'e9b343c489077ee3b54d21fee2115339'
 
@@ -8,3 +9,8 @@ platform_list_url = "http://s-prod-04.qunzhu666.com:10024/api/robot/platform_use
 send_msg_url = "http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/"
 
 lanlan_apikey = "c757660fdaedd561e279116773edddc8"
+
+
+# 好京客 http://jd.91fyt.com/index.php/index/api
+hjk_apikey = "924ee8f6aa094624"
+union_id = "1000512693"

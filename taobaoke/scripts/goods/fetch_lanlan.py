@@ -33,11 +33,11 @@ def main():
 
 
 def update_products():
-    # 懒懒接口最多返回5000条， 此处每5分钟更新500条
+    # 懒懒接口最多返回5000条， 此处每5分钟更新1000条
     for i in range(50):
         resp = requests.get(
             # 已发送
-            'http://www.lanlanlife.com/product/itemList?apiKey={0}&sort=1&pageSize=50&page={1}'.format(lanlan_apikey,
+            'http://www.lanlanlife.com/product/itemList?apiKey={0}&sort=1&pageSize=20&page={1}'.format(lanlan_apikey,
                                                                                                        i),
             headers={'Connection': 'close'}
         )
