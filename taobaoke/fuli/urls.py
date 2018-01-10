@@ -15,8 +15,9 @@ from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, Produc
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg, SelectCate
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
-from mini_program.views import WishWallView, TestPaymentNotifyView, AddFavoriteWish
-from rest_framework.documentation import include_docs_urls
+from mini_program.views.wishwall_views import WishWallView
+from mini_program.views.appuser_views import GetSessionKey, AddOrUpdateUserAddress, GetUserAddress, GetUserPaymentOrder
+from mini_program.views.payment_views import PrepayView, AcceptNotifyURLView, PaymentRefund
 
 
 user_urls = [
@@ -99,6 +100,21 @@ test_urls = [
     url(r'test_notify', TestPaymentNotifyView.as_view())
 ]
 
+payment_urls = [
+
+    url(r'prepay', PrepayView.as_view()),
+    url(r'notify_url', AcceptNotifyURLView.as_view()),
+    url(r'refund', PaymentRefund.as_view())
+
+]
+
+app_user_urls = [
+    url(r'get_session_key', GetSessionKey.as_view()),
+    url(r'add_or_update_address', AddOrUpdateUserAddress.as_view()),
+    url(r'get_address', GetUserAddress.as_view()),
+    url(r'order', GetUserPaymentOrder.as_view())
+]
+
 urlpatterns = [
     url(r'product/', include(product_urls)),
     url(r'user/', include(user_urls)),
@@ -109,6 +125,7 @@ urlpatterns = [
     url(r'operate/', include(operate_urls)),
 
     url(r'wish', include(wish_urls)),
-    url(r'test', include(test_urls))
+    url(r'payment', include(payment_urls)),
+    url(r'app_user', include(app_user_urls))
 ]
 

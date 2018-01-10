@@ -19,3 +19,4 @@ class WishWall(models.Model):
 
 
 
+

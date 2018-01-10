@@ -5,20 +5,28 @@ from PIL import Image
 import os
 import uuid
 
+from io import BytesIO
 
 all_path = []
 dirName = os.getcwd()
 
 
-# for root, dirs, files in os.walk(dirName):
-#     for file in files:
-#         if "jpeg" in file:
-#             image = Image.open(file)
-#             new_image = image.convert("RGBA").tobytes("jpeg", "RGBA")
-#             filename = '{}.jpeg'.format(uuid.uuid1())
-#             oss = OSSMgr()
-#             oss.bucket.put_object(filename, new_image)
-#             print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,Q_80'.format(filename)
-
-
+for root, dirs, files in os.walk(dirName):
+    for file in files:
+        if "jpeg" in file:
+            image = Image.open(file)
+            new_image = image.convert("RGBA").tobytes("jpeg", "RGBA")
+            filename = '{}.jpeg'.format(uuid.uuid1())
+            oss = OSSMgr()
+            oss.bucket.put_object(filename, new_image)
+            print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,Q_80'.format(filename)
+        # if "png" in file:
+        #     image = Image.open(file)
+        #     b = BytesIO()
+        #     image.save(b, "PNG")
+        #     new_image = b.getvalue()
+        #     filename = '{}.png'.format(uuid.uuid1())
+        #     oss = OSSMgr()
+        #     oss.bucket.put_object(filename, new_image)
+        #     print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,Q_80'.format(filename)
 

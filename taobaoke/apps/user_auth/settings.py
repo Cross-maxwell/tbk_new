@@ -10,3 +10,4 @@ mg_luosimao_register = '。 您正在申请注册木果管家账号，需要进�
 luosimao_host_logout = '您的群秘管家已离线，如不是您的主动行为，请重新扫码登录。【群秘】'
 mg_luosimao_host_logout = '。 您的木果管家已离线，如不是您的主动行为，请重新扫码登录。【木果管家】'
 password_reset_sms_msg = u"您正在重置密码，请勿泄露您的验证信息。【群秘】"
+
