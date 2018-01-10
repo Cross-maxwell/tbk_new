@@ -54,11 +54,20 @@ class PrepayView(View):
         # 用户备注
         remark = req_dict.get("remark", "")
 
-        if not encryption_session_key or not goods_id or not item_id or not goods_num or not goods_title or not goods_img:
+        # 用户收货地址id
+        address_id = req_dict.get("address_id", "")
+
+        if not encryption_session_key or not goods_id or not item_id or not goods_num or \
+                not goods_title or not goods_img or not address_id:
             return HttpResponse(json.dumps({"ret": 0, "data": "参数缺失"}), status=400)
 
         try:
             app_user = AppUser.objects.get(appsession__encryption_session_key=encryption_session_key)
+
+            try:
+                address = UserAddress.objects.get(app_user=app_user, id=address_id)
+            except Exception as e:
+                return HttpResponse(json.dumps({"ret": 0, "data": "地址不匹配或不存在"}, status=404))
             product = Product.objects.get(item_id=item_id, id=goods_id)
 
             out_trade_no = get_trade_num(item_id=item_id)
@@ -76,7 +85,8 @@ class PrepayView(View):
                 "app_user": app_user,
                 "is_paid": False,
                 "remark": remark,
-                "out_trade_no": out_trade_no
+                "out_trade_no": out_trade_no,
+                "address_id": address_id
             }
             payment_order = PaymentOrder.objects.create(**payment_order_dict)
         except Exception as e:

@@ -61,6 +61,8 @@ class PaymentOrder(models.Model):
     out_trade_no = models.CharField(max_length=32, unique=True)
 
     app_user = models.ForeignKey(AppUser)
+    # 当前订单的收货地址id
+    address_id = models.IntegerField()
 
     # 是否已付款
     is_paid = models.BooleanField(default=0)
