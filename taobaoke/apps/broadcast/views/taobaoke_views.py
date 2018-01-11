@@ -658,6 +658,8 @@ class ProductDetail_(View):
             source='jd'
             short_url = p.get_short_url(pid)
             detail_dict.update({
+                'small_imgs': [],
+                'detailimages': [],
                 'recommend': p.desc,
             })
         resp_dict = {
