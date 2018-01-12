@@ -17,6 +17,7 @@ logger = logging.getLogger('django_models')
 class TkUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     adzone = models.ForeignKey('Adzone', db_column='adzone_key', null=True)
+    jdadzone = models.ForeignKey('JDAdzone', db_column='jdadzone_key', null=True)
     search_url_template = models.CharField(max_length=128, null=True)
     avatar_url = models.CharField(max_length=256, null=True, blank=True)
     invite_code = models.CharField(max_length=16, null=True, blank=True)
@@ -44,8 +45,19 @@ class TkUser(models.Model):
                 json={'text': '分配PID出现异常. %s, username=%s' % (exc.message, self.user.username)}
             )
 
+    def assign_jid(self):
+        try:
+            available_jdadzone = JDAdzone.objects.filter(tkuser=None)[0]
+            self.jdadzone = available_jdadzone
+        except Exception as exc:
+            requests.post(
+                'https://hook.bearychat.com/=bw8NI/incoming/ab2346561ad4c593ea5b9a439ceddcfc',
+                json={'text': '分配JID出现异常. %s, username=%s' % (exc.message, self.user.username)}
+            )
+
+
     def save(self, *args, **kwargs):
-        # if self.adzone is None:
+        # if self.jdadzone is None:
         #     self.assign_pid()
         if self.invite_code is None:
             self.invite_code=random_str(8)
@@ -90,4 +102,18 @@ class Adzone(models.Model):
             self.create_time = timezone.now()
         self.last_update = timezone.now()
         super(Adzone, self).save(*args, **kwargs)
+
+class JDAdzone(models.Model):
+    pid = models.CharField(max_length=64, db_index=True, unique=True)
+    jdadzone_name = models.CharField(max_length=64)
+
+    last_update = models.DateTimeField()
+    create_time = models.DateTimeField()
+
+    def save(self, *args, **kwargs):
+        if self.id is None:
+            self.create_time = timezone.now()
+        self.last_update = timezone.now()
+        super(JDAdzone, self).save(*args, **kwargs)
+
 
