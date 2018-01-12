@@ -5,7 +5,7 @@
 # smart : zero
 
 def getDB(mode='prod'):
-    assert mode in ['test', 'prod', 'smart'], "DB choosing mode can only be 'test' or 'prod'"
+    assert mode in ['test', 'prod', 'smart','adam_test'], "DB choosing mode can only be 'test' or 'prod'"
 
     db_prod = {
         'default': {
@@ -53,6 +53,8 @@ def getDB(mode='prod'):
 
     if mode=='prod':
         return hostname_mapping.get('default')
+    elif mode=='adam_test':
+        return hostname_mapping.get('adam-B250M-D3H')
     else:
         import socket
         hostname= socket.gethostname()

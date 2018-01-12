@@ -18,6 +18,7 @@ django.setup()
 
 from fetch_cookie import detect_cookie, COOKIES_PATH
 from fuli.oss_utils import beary_chat
+from update_jd_orders import update_jd_orders
 import logging
 logger = logging.getLogger('sales_data')
 
@@ -28,6 +29,10 @@ def __main__():
     :return: True for Success, False for Fail
     """
     logger.info("===========Starting Updating Sales Data===========")
+
+    # 率先更新京东的订单
+    update_jd_orders()
+
     now_time = datetime.datetime.now()
     yes_time = (now_time + datetime.timedelta(days=-7)).strftime('%Y-%m-%d')
     now_time = now_time.strftime('%Y-%m-%d')
