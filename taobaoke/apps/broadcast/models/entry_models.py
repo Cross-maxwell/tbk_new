@@ -356,6 +356,7 @@ class JDProduct(Entry):
             'key_title': key_title,
             'key_sold': key_sold,
             'key_recommend': key_recommend,
+            'sold_qty': random.randint(100,2000)
         }))
 
 
@@ -384,6 +385,10 @@ class JDProduct(Entry):
         resp = requests.get(short_url_api, headers={'Connection':'close'})
         return resp.json()['data']
 
+    def save(self, *args, **kwargs):
+        if self.cupon_value/self.org_price < 0.1:
+            self.available = False
+        super(JDProduct, self).save(*args, **kwargs)
 
 class SearchKeywordMapping(models.Model):
     username = models.CharField(max_length=200)
