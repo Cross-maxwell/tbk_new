@@ -21,7 +21,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.db import connection
 
 from broadcast.models.user_models import TkUser
-from broadcast.models.entry_models import Product, ProductDetail
+from broadcast.models.entry_models import Product, ProductDetail, Entry, JDProduct
 from user_auth.models import PushTime
 from broadcast.models.user_models import Adzone
 from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
@@ -84,18 +84,8 @@ class PushProduct(View):
 def send_product(user, user_object):
     # 找到该user所对应的pid
     platform_id = 'make_money_together'
-    try:
-        tk_user = TkUser.get_user(user)
-        tkuser_id = tk_user.id
-    except Exception as e:
-        logger.error(e)
-    try:
-        pid = tk_user.adzone.pid
-    except Exception as e:
-        logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
 
     wxuser_list = user_object["wxuser_list"]
-
     # 根据phone_num判定是否到达发单时间
     ret = is_push(user, platform_id)
     if ret == 0:
@@ -104,30 +94,23 @@ def send_product(user, user_object):
     if ret == 1:
         for wxuser in wxuser_list:
             logger.info("%s 开始本单发送" % wxuser)
-        qs = Product.objects.filter(
-            ~Q(pushrecord__user_key__icontains=user,
-               pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
-            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-        )
+        try:
+            tk_user = TkUser.get_user(user)
+            tkuser_id = tk_user.id
+        except Exception as e:
+            logger.error(e)
 
-        # 用发送过的随机商品替代
-        if qs.count() == 0:
-            qs = Product.objects.filter(
-                available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
-            )
-            beary_chat('点金推送商品失败：%s:%s 无可用商品' % (user, user_object["wxuser_list"]))
+        p = choose_a_product(user, user_object)
 
-        for _ in range(50):
-            try:
-                r = random.randint(0, qs.count() - 1)
-                p = qs.all()[r]
-                break
-            except Exception as exc:
-                print "Get entry exception. Count=%d." % qs.count()
-                logger.error(exc)
+        if isinstance(p, Product):
+            if not tk_user.adzone:
+                tk_user.assign_pid()
+            pid = tk_user.adzone.pid
+        elif isinstance(p, JDProduct):
+            if not tk_user.jdadzone:
+                tk_user.assign_jid()
+            pid = tk_user.jdadzone.pid
 
-        # text = p.get_text_msg(pid=pid)
-        # img_url = p.get_img_msg()
         text = p.get_text_msg_wxapp()
         img_url = p.get_img_msg_wxapp(pid=pid, tkuser_id=tkuser_id)
 
@@ -140,6 +123,40 @@ def send_product(user, user_object):
         send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
         # TODO: 若以不延时的方式开启线程，那么线程中的数据库连接必须自己管理，主动关闭。
         connection.close()
+
+
+def choose_a_product(user, user_object):
+    """
+    Randomly choose an usable Entry and return it's product(maybe tb or jd)
+    :param user: To filter with pushrecord.
+    :param user_object: To enhance log.
+    :return:
+    """
+    qs = Entry.objects.filter(
+        ~Q(pushrecord__user_key__icontains=user,
+           pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
+        available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+    )
+
+    # 用发送过的随机商品替代
+    if qs.count() == 0:
+        qs = Entry.objects.filter(
+            available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
+        )
+        beary_chat('推送商品失败：%s:%s 无可用商品' % (user, user_object["wxuser_list"]))
+
+    for _ in range(50):
+        try:
+            r = random.randint(0, qs.count() - 1)
+            p = qs.all()[r]
+            break
+        except Exception as exc:
+            print "Get entry exception. Count=%d." % qs.count()
+            logger.error(exc)
+    try:
+        return p.p
+    except NameError:
+        return Entry.objects.all().order_by('-id')[0].p
 
 
 class PushCertainProduct(View):
@@ -596,18 +613,16 @@ class ProductDetail_(View):
     def get(self, request):
         id = request.GET.get('id')
         tkuser_id = request.GET.get('tkuser_id')
-        pid = TkUser.objects.get(id=tkuser_id).adzone.pid
-        source='tb'
-        short_url = None
-
         if id is None:
             return HttpResponse(json.dumps({'data': 'losing param \'id\'.'}), status=400)
         try:
-            p = Product.objects.get(id=id)
-            tkl = p.get_tkl(pid)
-        except Product.DoesNotExist:
+            p = Entry.objects.get(id=id).p
+            tku = TkUser.objects.get(id=tkuser_id)
+        except Entry.DoesNotExist:
             return HttpResponse(json.dumps({'data': 'Bad param \'id\' or product does not exist'}), status=400)
-        p_detail = p.productdetail
+        except TkUser.DoesNotExist:
+            return HttpResponse(json.dumps({'data': 'Bad param \'tkuser_id\' or TkUser does not exist'}), status=400)
+
         detail_dict = {
             'title': p.title,
             'desc': p.desc,
@@ -615,19 +630,42 @@ class ProductDetail_(View):
             'cupon_value': p.cupon_value,
             'price': p.price,
             'org_price': p.org_price,
-            'seller_nick': p_detail.seller_nick,
-            'small_imgs': json.loads(p_detail.small_imgs),
-            'detailImages': json.loads(p_detail.describe_imgs),
-            'recommend': p_detail.recommend,
             'cat': p.cate,
         }
+
+        tkl = short_url = None
+        if isinstance(p, Product):
+            if not tku.adzone:
+                tku.assign_pid()
+            pid = tku.adzone.pid
+            source='tb'
+            tkl = p.get_tkl(pid)
+            if hasattr(p, 'productdetail'):
+                p_detail = p.productdetail
+                detail_dict.update({
+                    'seller_nick': p_detail.seller_nick,
+                    'small_imgs': json.loads(p_detail.small_imgs),
+                    'detailImages': json.loads(p_detail.describe_imgs),
+                    'recommend': p_detail.recommend,
+                })
+
+        if isinstance(p, JDProduct):
+            if not tku.jdadzone:
+                tku.assign_jid()
+            pid = tku.jdadzone.pid
+            source='jd'
+            short_url = p.get_short_url(pid)
+            detail_dict.update({
+                'small_imgs': [],
+                'detailimages': [],
+                'recommend': p.desc,
+            })
         resp_dict = {
             'data' : detail_dict,
             'source' : source,
             'tkl' : tkl,
             'short_url' : short_url
         }
-
         return HttpResponse(json.dumps(resp_dict), status=200)
 
 

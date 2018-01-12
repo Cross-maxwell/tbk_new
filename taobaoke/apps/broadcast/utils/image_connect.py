@@ -25,6 +25,7 @@ import logging
 logger = logging.getLogger("weixin_bot")
 
 base_path = '/home/new_taobaoke/taobaoke/'
+# base_path = '/home/adam/mydev/projects/new_sys/taobaoke/'
 # base_path = '/home/smartkeyerror/PycharmProjects/new_taobaoke/taobaoke'
 font_path = os.path.join(base_path, 'apps/broadcast/statics/poster/fonts/')
 

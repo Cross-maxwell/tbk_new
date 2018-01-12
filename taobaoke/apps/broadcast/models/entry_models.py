@@ -48,6 +48,13 @@ class Entry(models.Model):
     def get_img_msg(self):
         raise NotImplementedError('Should override get_img_msg().')
 
+    @property
+    def p(self):
+        try:
+            return self.product
+        except AttributeError:
+            return self.jdproduct
+
 
 class PushRecord(models.Model):
     create_time = models.DateTimeField(auto_now=True)
@@ -299,42 +306,83 @@ class ProductDetail(models.Model):
     recommend = models.CharField(max_length=4096, default='')
 
 
-# class ProductCategory(models.Model):
-#     # root_cat_name = models.CharField(max_length=128, null=True)
-#     cat_name = models.CharField(max_length=128, null=True)
-    # cat_leaf_name = models.CharField(max_length=128, null=True)
+class JDProduct(Entry):
+    """
+    京东商品，与淘宝商品字段名尽量保持一致。
+    """
+    # 商品id
+    item_id = models.CharField(max_length=64, unique=True, db_index=True)
+    # 商品标题
+    title = models.CharField(max_length=128)
+    # 商品描述
+    desc = models.CharField(max_length=1024)
+    # 商品链接
+    item_url = models.CharField(max_length=1024)
+    # 主图
+    img_url = models.CharField(max_length=1024)
+    # 券后价
+    price = models.FloatField()
+    # 券面值
+    cupon_value = models.FloatField()
+    # 总销量
+    sold_qty = models.IntegerField()
+    # 佣金比例
+    commision_rate = models.FloatField()
+    # 佣金金额
+    commision_amount = models.FloatField()
+    # 优惠券链接
+    cupon_url = models.CharField(max_length=1024)
+    # 分类
+    cate = models.CharField(max_length=128)
+
+    #原价
+    @property
+    def org_price(self):
+        return self.price + self.cupon_value
+
+    def get_text_msg_wxapp(self):
+        key_title = random.choice(['折扣商品', '秒杀单品', '热门爆款'])
+        key_sold = random.choice(['销售数量', '已售出', '已抢购', '已疯抢'])
+        key_recommend = random.choice(['推荐理由' ,'优质推荐'])
+        template = "【{key_title}】：{title}\n" \
+                    "【{key_sold}】：{sold_qty}\n" \
+                   "【{key_recommend}】：{desc}\n"
+        if random.randrange(1, 5) == 1:
+            template = template + "===============\n" \
+                                      "下单方式：点开任意图片，长按识别图中小程序码\n" \
+                                      "===============\n" \
+                                      "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
+        return template.format(**dict(self.__dict__, **{
+            'key_title': key_title,
+            'key_sold': key_sold,
+            'key_recommend': key_recommend,
+        }))
 
 
-# @receiver(post_save, sender=Product)
-# def create_detail_and_cate(sender, instance, created, **kwargs):
-#     product = instance
-#     detail_dict = {}
-#     item_info = get_item_info(product.item_id)
-#     cate, cate_created = ProductCategory.objects.get_or_create(cat_name=item_info['cat_name'], cat_leaf_name=item_info['cat_leaf_name'])
-#     detail_dict['product'] = product
-#     detail_dict['provcity'] = item_info['provcity']
-#     detail_dict['item_url'] = item_info['item_url']
-#     detail_dict['seller_id'] = item_info['seller_id']
-#     detail_dict['seller_nick'] = item_info['nick']
-#     try:
-#         detail_dict['small_imgs'] = json.dumps(map(lambda x: x.encode('utf-8'), item_info['small_images']['string']))
-#     except KeyError:
-#         detail_dict['small_imgs'] = json.dumps([])
-#     detail_dict['cate'] = cate
-#     activity_id = re.findall('activityId=([\w\d]+)', product.cupon_url)[0]
-#     try:
-#         detail_url = "http://dianjin.dg15.cn/a_api/index/detailData?itemId={itemId}&activityId={activityId}&refId=&pid=" \
-#                      "&_path=9001.SE.0.i.{path}&src=".format(
-#             itemId=product.item_id, activityId=activity_id, path=product.item_id
-#         )
-#         response = requests.get(detail_url)
-#         resp_dict = json.loads(response.content)
-#         item = resp_dict["result"]["item"]
-#         detail_dict['describe_imgs'] = json.dumps(item['detailImages'])
-#         detail_dict['recommend'] = item['recommend']
-#     except Exception, e:
-#         logger.info("itemId: {}, 商品已失效".format(product.item_id))
-#     ProductDetail.objects.update_or_create(product=instance, defaults=detail_dict)
+    def get_img_msg_wxapp(self, pid=None, tkuser_id=None):
+        req_data = {
+            "page": "pages/goods/goods",
+            "scene": "{0}${1}${2}".format(self.id, 'f', tkuser_id)
+        }
+        qrcode_flow = generate_qrcode(req_data)
+        product_url_list = [self.img_url]
+        price_list = [round(self.org_price, 2), round(self.price, 2)]
+        return generate_image(product_url_list, qrcode_flow, price_list)
+
+
+    def get_short_url(self, pid='1133349744'):
+        short_url_api = 'http://www.haojingke.com/index.php/api/index/myapi?type=unionurl&' \
+                        'apikey={api_key}&' \
+                        'materialIds={item_id}&' \
+                        'couponUrl={cupon_url}&' \
+                        'positionId={pid}'.format(
+            api_key=fuli.top_settings.hjk_apikey,
+            item_id = self.item_id,
+            cupon_url = self.cupon_url,
+            pid = pid
+        )
+        resp = requests.get(short_url_api, headers={'Connection':'close'})
+        return resp.json()['data']
 
 
 class SearchKeywordMapping(models.Model):

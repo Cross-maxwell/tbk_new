@@ -265,6 +265,11 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True
         },
+        'fetch_hjk': {
+            'handlers': ['error', 'console'],
+            'level': 'INFO',
+            'propagate': True
+        },
 
     }
 }

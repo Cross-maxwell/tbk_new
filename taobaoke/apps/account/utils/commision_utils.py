@@ -98,9 +98,6 @@ def cal_commision():
             commision = Commision.objects.get(user_id=user_id)
         except Commision.DoesNotExist:
             commision = Commision.objects.create(user_id=user_id)
-        # ad_id = order_utils.get_ad_id(user.username)
-        # if ad_id is None:
-        #     continue
         # 结算上个月的订单- -
         # 2018.01.03 订单由通过ad_id跟踪改为user_id跟踪
         order_list = Order.objects.filter(user_id=user_id, order_status=u'订单结算',  earning_time__lt= datetime( year, month, 1), enter_account=False)
@@ -109,12 +106,6 @@ def cal_commision():
         with transaction.atomic():
             for order in order_list:
                 # 2017.12.18 没有第三方分成的说法了，所有第三方订单按照正常结算
-                # share_rate=float(order.share_rate.split(' ')[0])/100.0
-                # if share_rate <= 0.6:
-                #     order_commision = order.commision_amount
-                #     order.show_commision_amount = order_commision
-                #     order.show_commision_rate = str(round(float(order_commision)/order.pay_amount, 2)*100)+' %'
-                # else:
                 pay_amount = order.pay_amount
                 order_commision_rate = round(float(order.commision_amount)/order.pay_amount,2)
                 # 高价低佣状态，除入账时调整外，将订单显示也进行相应更改，以保证一致。

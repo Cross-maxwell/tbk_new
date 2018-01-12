@@ -15,6 +15,7 @@ sys.setdefaultencoding('utf-8')
 from account.models.order_models import Order
 from account.utils.commision_utils import cal_commision, cal_agent_commision
 from broadcast.models.entry_models import Product
+from broadcast.models.user_models import TkUser
 
 send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
 send_msg_url2 = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_mmt_msg'
@@ -123,6 +124,14 @@ def push_data():
                 result_dict['order_status'] = u'订单失效'
                 result_dict['pay_amount'] = 0
                 result_dict['show_commision_amount'] = 0.0
+        try:
+            tku = TkUser.objects.get(adzone__pid__contains=result_dict['ad_id'])
+            user_id = tku.user_id
+        except Exception, e:
+            logger.error('Error Occured When Updating TB Order {}.'.format(result_dict['order_id']))
+            logger.error(e)
+            user_id='NotFound'
+        result_dict.update({'user_id': user_id})
 
         try:
             result = Order.objects.update_or_create(order_id=result_dict['order_id'], defaults=result_dict)
