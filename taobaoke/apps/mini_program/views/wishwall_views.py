@@ -7,7 +7,7 @@ from django.core import serializers
 from rest_framework.views import APIView
 
 from mini_program.serializer import WishWallModelSerializer
-from mini_program.models import WishWall
+from mini_program.models.wishwall_models import WishWall
 
 import logging
 logger = logging.getLogger('django_views')
