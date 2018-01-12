@@ -3,21 +3,21 @@
 from django.conf.urls import url, include
 from django.contrib import admin
 
-from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, InviterLastLoginView, InviterOrderListView
+from account.views.order_views import GetGoodPv, OrderList, OrderCommisionView, PostingAccount, SetBackUpInfoView, \
+    InviterLastLoginView, InviterOrderListView
 from account.views.agent_views import GetCommision, AlipayAccountView, BindingAlipayAccountView, UserAvatarView
 
 from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
-    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid,get_update_qrcode, UserAutoPush
-
+    get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid, get_update_qrcode, UserAutoPush
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail_, AppSearchDetailView, \
     AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct, get_handle_pushtime
-from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, ParseImg, SelectCate
+from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, \
+    ParseImg, SelectCate
+
 from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
 
-from mini_program.views.wishwall_views import WishWallView
-from mini_program.views.appuser_views import GetSessionKey, AddOrUpdateUserAddress, GetUserAddress, GetUserPaymentOrder
-from mini_program.views.payment_views import PrepayView, AcceptNotifyURLView, PaymentRefund
+from mini_program.views.wishwall_views import WishWallView, AddFavoriteWish
 
 
 user_urls = [
@@ -31,9 +31,6 @@ user_urls = [
     url(r'^get-handle-pushtime/', get_handle_pushtime),
     url(r'^auto-push/', UserAutoPush.as_view()),
 ]
-
-## 新增了获取邀请码的接口,用于poster生成海报
-
 
 product_urls = [
     url(r'insert/', insert_product),
@@ -49,16 +46,16 @@ product_urls = [
 ]
 
 account_urls = [
-    url(r'^good-pv/$', GetGoodPv.as_view()),#ok
-    url(r'^order-list/$', OrderList.as_view()), #ok
-    url(r'^order-commision/$', OrderCommisionView.as_view()), #ok
-    url(r'^inviter-order-list/$', InviterOrderListView.as_view()), #ok
-    url(r'^get-commision/$',GetCommision.as_view()), #ok
-    url(r'^inviter-last-login/$', InviterLastLoginView.as_view()),#ok
-    url(r'^set-backup-info/$', SetBackUpInfoView.as_view()), #ok
-    url(r'^bind-alipay/$',BindingAlipayAccountView.as_view()), #ok
-    url(r'^user-alipay/$', AlipayAccountView.as_view()),#ok
-    url(r'^user-avatar/$', UserAvatarView.as_view()) #ok
+    url(r'^good-pv/$', GetGoodPv.as_view()),
+    url(r'^order-list/$', OrderList.as_view()),
+    url(r'^order-commision/$', OrderCommisionView.as_view()),
+    url(r'^inviter-order-list/$', InviterOrderListView.as_view()),
+    url(r'^get-commision/$',GetCommision.as_view()),
+    url(r'^inviter-last-login/$', InviterLastLoginView.as_view()),
+    url(r'^set-backup-info/$', SetBackUpInfoView.as_view()),
+    url(r'^bind-alipay/$',BindingAlipayAccountView.as_view()),
+    url(r'^user-alipay/$', AlipayAccountView.as_view()),
+    url(r'^user-avatar/$', UserAvatarView.as_view())
 ]
 
 
@@ -97,23 +94,9 @@ wish_urls = [
 ]
 
 test_urls = [
-    url(r'test_notify', TestPaymentNotifyView.as_view())
+    # url(r'test_notify', TestPaymentNotifyView.as_view())
 ]
 
-payment_urls = [
-
-    url(r'prepay', PrepayView.as_view()),
-    url(r'notify_url', AcceptNotifyURLView.as_view()),
-    url(r'refund', PaymentRefund.as_view())
-
-]
-
-app_user_urls = [
-    url(r'get_session_key', GetSessionKey.as_view()),
-    url(r'add_or_update_address', AddOrUpdateUserAddress.as_view()),
-    url(r'get_address', GetUserAddress.as_view()),
-    url(r'order', GetUserPaymentOrder.as_view())
-]
 
 urlpatterns = [
     url(r'product/', include(product_urls)),
@@ -125,7 +108,5 @@ urlpatterns = [
     url(r'operate/', include(operate_urls)),
 
     url(r'wish', include(wish_urls)),
-    url(r'payment', include(payment_urls)),
-    url(r'app_user', include(app_user_urls))
 ]
 

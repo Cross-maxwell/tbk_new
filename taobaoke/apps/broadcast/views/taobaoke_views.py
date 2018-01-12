@@ -83,8 +83,6 @@ class PushProduct(View):
 
 def send_product(user, user_object):
     # 找到该user所对应的pid
-    random_seed = random.randint(0, 5)
-    time.sleep(random_seed)
     platform_id = 'make_money_together'
     try:
         tk_user = TkUser.get_user(user)

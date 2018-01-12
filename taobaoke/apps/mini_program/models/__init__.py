@@ -1,0 +1,1 @@
+from .wishwall_models import *
