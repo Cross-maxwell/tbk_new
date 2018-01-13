@@ -132,7 +132,8 @@ def choose_a_product(user, user_object):
     :param user_object: To enhance log.
     :return:
     """
-    qs = Entry.objects.filter(
+    #E = random.choice([Product, JDProduct])
+    qs = Product.objects.filter(
         ~Q(pushrecord__user_key__icontains=user,
            pushrecord__create_time__gt=timezone.now() - datetime.timedelta(days=3)),
         available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
@@ -140,7 +141,7 @@ def choose_a_product(user, user_object):
 
     # 用发送过的随机商品替代
     if qs.count() == 0:
-        qs = Entry.objects.filter(
+        qs = Product.objects.filter(
             available=True, last_update__gt=timezone.now() - datetime.timedelta(hours=4),
         )
         beary_chat('推送商品失败：%s:%s 无可用商品' % (user, user_object["wxuser_list"]))
@@ -154,9 +155,9 @@ def choose_a_product(user, user_object):
             print "Get entry exception. Count=%d." % qs.count()
             logger.error(exc)
     try:
-        return p.p
+        return p
     except NameError:
-        return Entry.objects.all().order_by('-id')[0].p
+        return Product.objects.all().order_by('-id')[0]
 
 
 class PushCertainProduct(View):
@@ -657,7 +658,7 @@ class ProductDetail_(View):
             short_url = p.get_short_url(pid)
             detail_dict.update({
                 'small_imgs': [],
-                'detailimages': [],
+                'detailImages': [],
                 'recommend': p.desc,
             })
         resp_dict = {
