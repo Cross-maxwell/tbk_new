@@ -386,7 +386,7 @@ class JDProduct(Entry):
         return resp.json()['data']
 
     def save(self, *args, **kwargs):
-        if self.cupon_value/self.org_price < 0.1:
+        if self.cupon_value/self.org_price < 0.2:
             self.available = False
         super(JDProduct, self).save(*args, **kwargs)
 
