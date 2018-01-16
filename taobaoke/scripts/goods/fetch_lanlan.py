@@ -59,8 +59,18 @@ def update_products():
                         'commision_amount': item['tkRates'] * float(item['nowPrice']),
                         'cate': item['category']
                     }
-                    item_id = item['itemId']
+                    try:
+                        send_img = item['sendImage']
+                        img_size_str = re.findall('\_(\d+x\d+)\.', send_img)[0]
+                        img_size = img_size_str.split('x')
+                        img_scale = float(img_size[0])/float(img_size[1])
+                        # 按照尺寸判断，尺寸在此范围内的认定为是直播秀的图，存库并发送用。
+                        if 100.0/80 < img_scale < 100.0/60:
+                            product_dict.update({'send_img': send_img})
+                    except:
+                        pass
 
+                    item_id = item['itemId']
                     if item['tkRates'] >= 20:
                         p, created = Product.objects.update_or_create(item_id=item_id, defaults=product_dict)
                     else:
