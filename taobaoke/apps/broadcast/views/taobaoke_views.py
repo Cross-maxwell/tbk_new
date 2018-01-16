@@ -115,6 +115,8 @@ def send_product(user, user_object):
         img_url = p.get_img_msg_wxapp(pid=pid, tkuser_id=tkuser_id)
 
         data = [img_url, text]
+        if p.send_img is not None:
+            data.append(p.send_img)
         request_data = {
             "md_username": user,
             "data": data
