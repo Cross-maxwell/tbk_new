@@ -15,8 +15,11 @@ class SQLHandler(object):
     }
 
     @classmethod
-    def execute(cls, sql_sentence):
-        conn = pymysql.connect(**cls.conn_dict)
+    def execute(cls, sql_sentence, get_json=False):
+        if get_json:
+            conn = pymysql.connect(**dict(cls.conn_dict, cursorclass=pymysql.cursors.DictCursor))
+        else:
+            conn = pymysql.connect(**cls.conn_dict)
         cursor = conn.cursor()
         try:
             cursor.execute(sql_sentence)

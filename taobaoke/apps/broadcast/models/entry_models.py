@@ -70,6 +70,8 @@ class Product(Entry):
     desc = models.TextField(max_length=200)
     # 主图链接
     img_url = models.TextField(max_length=512)
+    # 推广图链接
+    send_img = models.TextField(max_length=512, null=True)
     # 券面值
     cupon_value = models.FloatField()
     # 券后价格
