@@ -147,26 +147,26 @@ class QueryOrder(View):
             r['last_update_time'] = r['last_update_time'].strftime(time_format)
             r['create_time'] = r['create_time'].strftime(time_format)
             r['click_time'] = r['click_time'].strftime(time_format)
-            resp_dict = {
-                '订单ID': r['order_id'],
-                '订单状态': r['order_status'],
-                '创建时间': r['create_time'],
-                '最近更新': r['last_update_time'],
-                '商品ID': r['good_id'],
-                '商品名称': r['good_info'],
-                '商品数量': r['good_num'],
-                '商品原价': r['good_price'],
-                '付款金额': r['pay_amount'],
-                '结算时间': r['earning_time'],
-                '确认金额': r['balance_amount'],
-                '佣金比例': r['commision_rate'],
-                '佣金金额': r['commision_amount'],
-                '代理佣金比例': r['show_commision_rate'],
-                '代理佣金金额': r['show_commision_amount'],
-                '代理用户': r['user_id'],
-                '代理帐号': r['username'],
-                '代理微信': r['nickname'],
-                '是否入账': bool(r['enter_account']),
-            }
-            resp_list.append(resp_dict)
-        return HttpResponse(json.dumps({'data': resp_list}))
+            # resp_dict = {
+            #     '订单ID': r['order_id'],
+            #     '订单状态': r['order_status'],
+            #     '创建时间': r['create_time'],
+            #     '最近更新': r['last_update_time'],
+            #     '商品ID': r['good_id'],
+            #     '商品名称': r['good_info'],
+            #     '商品数量': r['good_num'],
+            #     '商品原价': r['good_price'],
+            #     '付款金额': r['pay_amount'],
+            #     '结算时间': r['earning_time'],
+            #     '确认金额': r['balance_amount'],
+            #     '佣金比例': r['commision_rate'],
+            #     '佣金金额': r['commision_amount'],
+            #     '代理佣金比例': r['show_commision_rate'],
+            #     '代理佣金金额': r['show_commision_amount'],
+            #     '代理用户': r['user_id'],
+            #     '代理帐号': r['username'],
+            #     '代理微信': r['nickname'],
+            #     '是否入账': bool(r['enter_account']),
+            # }
+            # resp_list.append(resp_dict)
+        return HttpResponse(json.dumps({'data': result}))

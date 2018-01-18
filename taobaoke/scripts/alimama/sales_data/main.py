@@ -77,8 +77,9 @@ if __name__ == "__main__":
     while True:
         print('{} Time Runs'.format(N))
         # 文件已经被更改 或者 cookie上一次是有效的
-        if mtime_before != os.stat(COOKIES_PATH).st_mtime or cookie_effective:
-            mtime_before = os.stat(COOKIES_PATH).st_mtime
-            cookie_effective = __main__()
+        # if mtime_before != os.stat(COOKIES_PATH).st_mtime or cookie_effective:
+        #     mtime_before = os.stat(COOKIES_PATH).st_mtime
+        # cookie_effective = __main__()
+        __main__()
         time.sleep(5 * 60)
         N = N + 1
