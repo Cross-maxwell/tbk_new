@@ -167,8 +167,8 @@ def generate_image(product_url_list, qrcode_flow, price_list, title=''):
     oss.bucket.put_object(filename, new_image)
 
     # 压缩率为65
-    print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
-    return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
+    print 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_50'.format(filename)
+    return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_50'.format(filename)
 
 
 def image_update(price_list, title):
