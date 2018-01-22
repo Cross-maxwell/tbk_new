@@ -56,7 +56,7 @@ def update_products():
                         'sold_qty': int(item['monthSales']),
                         'cupon_left': item['couponRemainCount'],
                         'commision_rate': str(item['tkRates']) + '%',
-                        'commision_amount': item['tkRates'] * float(item['nowPrice']),
+                        'commision_amount': item['tkRates'] * float(item['nowPrice'])/100,
                         'cate': item['category']
                     }
                     try:
