@@ -174,7 +174,7 @@ class Product(Entry):
                 product_url_list.append(img_list[1])
         except Exception as e:
             logger.error(e)
-        return generate_image(product_url_list, qrcode_flow, price_list)
+        return generate_image(product_url_list, qrcode_flow, price_list, title=self.title)
 
     def get_tkl(self, pid):
         tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
