@@ -22,8 +22,9 @@ from account.models.commision_models import Commision, AgentCommision, AlipayAcc
 from account.utils.common_utils import cut_decimal
 from account.utils.commision_utils import withdraw_commision, withdraw_agent_commision
 from account.temp import tbk_alipay_transfer_url
+from math import floor
 from broadcast.models.user_models import TkUser
-
+import time
 
 admin_name_in_beary_chat = "fatphone777"
 
@@ -62,9 +63,10 @@ def beary_chat(text, url=None, user=None, channel=None):
                    失败返回False。
 '''
 def remote_transfer(alipay_account, alipay_name, amount):
-
+    out_biz_no = str(int(time.mktime(datetime.now().timetuple())))
+    amount = round(amount, 2)
     r = requests.get(
-        tbk_alipay_transfer_url.format(alipay_account, alipay_name, amount)
+        tbk_alipay_transfer_url.format(alipay_account, alipay_name, amount, out_biz_no)
     )
 
     if r.status_code != 200:
@@ -72,12 +74,21 @@ def remote_transfer(alipay_account, alipay_name, amount):
         return False
 
     try:
-        info = json.loads(r.text)
-        if info['ret_code'] == 1:
+        if r.text == '失败':
+            log("Transfer Failed: {0} - {1}".format(alipay_account, alipay_name))
+            return False
+        elif r.text == '成功':
+            log("Successful Transfering {0} Yuan to {1} - {2}.".format(amount, alipay_account, alipay_name))
             return True
         else:
-            log(info)
+            log("Unknown result: {}.".format(r.text))
             return False
+        # info = json.loads(r.text)
+        # if info['ret_code'] == 1:
+        #     return True
+        # else:
+        #     log(info)
+        #     return False
     except Exception as e:
         log("Exception ocourred:" + e.message)
         return False
@@ -176,5 +187,5 @@ if __name__ == "__main__":
         all:所有用户
     """
     mode = 'all'
-    transfer(user_id=609, mode=mode)
+    transfer(user_id=1765, mode=mode)
     pass

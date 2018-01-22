@@ -4,7 +4,8 @@
 # tbk_getusername_url = 'http://s-prod-04.qunzhu666.com:8000/user/get-tkuser-info/'
 # tbk_getpid_url = 'http://s-prod-04.qunzhu666.com:8000/user/get-adzone-info/'
 
-tbk_alipay_transfer_url = 'https://pin.guofenjie.cn/365/api/alipay/transfer?account={0}&name={1}&amount={2}'
+tbk_alipay_transfer_url_bak = 'https://pin.guofenjie.cn/365/api/alipay/transfer?account={0}&name={1}&amount={2}'
+tbk_alipay_transfer_url = 'http://localhost:9999?alipay_account={0}&alipay_name={1}&amount={2}&out_biz_no={3}'
 
 # required by order_views.py
 admin_phone = '15002086851'
