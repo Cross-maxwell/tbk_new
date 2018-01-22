@@ -96,7 +96,7 @@ def generate_qrcode(req_data):
         return qrcode_response.content
 
 
-def generate_image(product_url_list, qrcode_flow, price_list):
+def generate_image(product_url_list, qrcode_flow, price_list, title=''):
 
     # 首先调用二维码生成函数
     extra = 0
@@ -131,7 +131,7 @@ def generate_image(product_url_list, qrcode_flow, price_list):
 
         if len(price_list) == 2:
             # 填充券前券后价格
-            price_img = image_update(price_list)
+            price_img = image_update(price_list, title)
             price_location = (200, 600 + extra)
             toImage.paste(price_img, price_location)
 
@@ -171,20 +171,32 @@ def generate_image(product_url_list, qrcode_flow, price_list):
     return 'http://md-oss.di25.cn/{}?x-oss-process=image/quality,q_65'.format(filename)
 
 
-def image_update(price_list):
+def image_update(price_list, title):
     image = Image.new('RGB', (400, 200), (255, 255, 255))
     truetype = os.path.join(font_path, 'hei.ttf')
-    font1 = ImageFont.truetype(truetype, 32)
-    font2 = ImageFont.truetype(truetype, 64)
+    font = ImageFont.truetype(truetype, 20)
+    font1 = ImageFont.truetype(truetype, 20)
+    font2 = ImageFont.truetype(truetype, 40)
     redColor = "#ff0000"
     blackColor = "#000000"
     whiteColor = '#ffffff'
+    len_title = len(title)
+    title_wrap = ''
+    line_num = 19
+    title_wrap_len = len_title / line_num + 1
+    for i in range(title_wrap_len):
+        if i == title_wrap_len - 1:
+            title_wrap += (title[i * line_num: i * line_num + line_num])
+        else:
+            title_wrap += (title[i * line_num: i * line_num + line_num] + '\n')
+
     draw = ImageDraw.Draw(image)
-    draw.rectangle([(15, 98), (100, 150)], fill=redColor)
-    draw.text((20, 40), u'现价:￥' + str(price_list[0]), font=font1, fill=blackColor)
-    draw.text((20, 100), u'券后:', font=font1, fill=whiteColor)
-    draw.text((100, 80), u'￥' + str(price_list[1]), font=font2, fill=redColor)
-    draw.line([(100, 63), (180 + (len(str(price_list[0])) - 3) * 15, 63)], fill=blackColor, width=3)
+    draw.multiline_text((10, 5), title_wrap, font=font, fill=blackColor, align='left', spacing=5)
+    # draw.rectangle([(5, 118), (90, 170)], fill=redColor)
+    draw.text((10, 80), u'优选价:￥', font=font2, fill=redColor)
+    draw.text((180, 80), str(price_list[1]), font=font2, fill=redColor)
+    draw.text((10, 140), u'市场价:￥' + str(price_list[0]), font=font1, fill=blackColor)
+    draw.line([(10, 155), (130 + (len(str(price_list[0])) - 3) * 15, 155)], fill=blackColor, width=3)
     return image
 
 
