@@ -19,12 +19,13 @@ sys.setdefaultencoding('utf8')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "fuli.settings")
 django.setup()
 from account.models.commision_models import Commision, AgentCommision, AlipayAccount
+from account.utils.transfer_utils import pay
 from account.utils.common_utils import cut_decimal
 from account.utils.commision_utils import withdraw_commision, withdraw_agent_commision
 from account.temp import tbk_alipay_transfer_url
-from math import floor
 from broadcast.models.user_models import TkUser
 import time
+
 
 admin_name_in_beary_chat = "fatphone777"
 
@@ -63,35 +64,44 @@ def beary_chat(text, url=None, user=None, channel=None):
                    失败返回False。
 '''
 def remote_transfer(alipay_account, alipay_name, amount):
-    out_biz_no = str(int(time.mktime(datetime.now().timetuple())))
     amount = round(amount, 2)
-    r = requests.get(
-        tbk_alipay_transfer_url.format(alipay_account, alipay_name, amount, out_biz_no)
-    )
-
-    if r.status_code != 200:
-        log("retcode is not 200")
-        return False
-
+    # r = requests.get(
+    #     tbk_alipay_transfer_url.format(alipay_account, alipay_name, amount, out_biz_no)
+    # )
     try:
-        if r.text == '失败':
-            log("Transfer Failed: {0} - {1}".format(alipay_account, alipay_name))
-            return False
-        elif r.text == '成功':
+        result = pay(
+            account=alipay_account,
+            name=alipay_name,
+            amount=amount
+        )
+        if result['code'] == '10000':
             log("Successful Transfering {0} Yuan to {1} - {2}.".format(amount, alipay_account, alipay_name))
             return True
         else:
-            log("Unknown result: {}.".format(r.text))
+            log("Transfer Failed: {0} - {1} Because of {2}  With out_biz_no As {3} ".format(alipay_account, alipay_name, result['msg'], result['out_biz_no']))
             return False
-        # info = json.loads(r.text)
-        # if info['ret_code'] == 1:
-        #     return True
-        # else:
-        #     log(info)
-        #     return False
     except Exception as e:
-        log("Exception ocourred:" + e.message)
+        log("Exception ocourred:{0} When Paying {1} Yuan To {2}".format(e.message, amount, alipay_account))
         return False
+
+
+    # if r.status_code != 200:
+    #     log("retcode is not 200")
+    #     return False
+    #
+    # try:
+    #     if r.text == '失败':
+    #         log("Transfer Failed: {0} - {1}".format(alipay_account, alipay_name))
+    #         return False
+    #     elif r.text == '成功':
+    #         log("Successful Transfering {0} Yuan to {1} - {2}.".format(amount, alipay_account, alipay_name))
+    #         return True
+    #     else:
+    #         log("Unknown result: {}.".format(r.text))
+    #         return False
+    # except Exception as e:
+    #     log("Exception ocourred:" + e.message)
+    #     return False
 
 # 根据user_id，从TkUser表中获取被其推荐的二级代理列表，
 # 并获取此些用户的balance总额
