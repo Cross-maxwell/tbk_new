@@ -14,3 +14,6 @@ lanlan_apikey = "c757660fdaedd561e279116773edddc8"
 # 好京客 http://jd.91fyt.com/index.php/index/api
 hjk_apikey = "924ee8f6aa094624"
 union_id = "1000512693"
+
+# 支付宝
+alipay_appid = '2017062607568768'

@@ -75,3 +75,4 @@ urllib3==1.22
 w3lib==1.18.0
 xlrd==1.1.0
 zope.interface==4.4.2
+python-alipay-sdk==1.6.0
