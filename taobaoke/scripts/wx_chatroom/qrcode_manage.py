@@ -19,8 +19,8 @@ from broadcast.models.chatroom_models import ChatRoomQrcode
 from fuli.oss_utils import beary_chat
 logger = logging.getLogger('utils')
 
-get_date_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/get_chatroom_qrcode/'
-# get_date_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/get_chatroom_qrcode/'
+from fuli.top_settings import get_chatroom_qrcode_url
+
 
 postdate = {
     "wx_id": "wxid_3drnq3ee20fg22",
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     update_time = None
     while True:
         try:
-            res = requests.post(get_date_url, json=postdate)
+            res = requests.post(get_chatroom_qrcode_url, json=postdate)
             if res.status_code == 200:
                 return_data = res.json()
                 print return_data

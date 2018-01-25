@@ -17,8 +17,8 @@ from account.utils.commision_utils import cal_commision, cal_agent_commision
 from broadcast.models.entry_models import Product
 from broadcast.models.user_models import TkUser
 
-send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
-send_msg_url2 = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_mmt_msg'
+from fuli.top_settings import send_msg_url, send_mmt_msg_url
+
 
 import requests
 from django.contrib.auth.models import User
@@ -163,11 +163,9 @@ def order_notice(order):
         beary_chat(notice_msg)
         logger.info(notice_msg)
 
-        #send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
         payload = {'md_username': md_username}
-        send_msg_response2 = requests.get(send_msg_url2, params=payload)
+        send_msg_response2 = requests.get(send_mmt_msg_url, params=payload)
 
-        #logger.info("request wxbot status code: {}".format(send_msg_response.status_code))
         logger.info("request wxbot status code2: {}".format(send_msg_response2.status_code))
 
 

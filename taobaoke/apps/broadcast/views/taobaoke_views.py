@@ -190,7 +190,8 @@ def send_msg(username, msg_data_list):
     :param msg_data_list:  Datas to be sent,
     :return: None
     """
-    send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+    # send_msg_url
+    # send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
     request_data = {
         "md_username": username,
         "data": msg_data_list
@@ -210,7 +211,7 @@ def global_push_from_fifo(test_user=None):
         else:
             hpf.undofetch(data)
             return
-    login_user_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id=make_money_together'
+    login_user_url = platform_list_url + platform_id
     login_user_list = requests.get(login_user_url, headers={'Connection': 'close'}).json()['login_user_list']
     for u in login_user_list:
         username = u['user']
