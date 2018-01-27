@@ -122,7 +122,7 @@ def send_product(user, user_object):
             "data": data
         }
         PushRecord.objects.create(entry=p, user_key=user)
-        send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data))
+        send_msg_response = requests.post(send_msg_url, data=json.dumps(request_data), headers={"Connection", "CLose"})
         # TODO: 若以不延时的方式开启线程，那么线程中的数据库连接必须自己管理，主动关闭。
         connection.close()
 
@@ -190,7 +190,8 @@ def send_msg(username, msg_data_list):
     :param msg_data_list:  Datas to be sent,
     :return: None
     """
-    send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
+    # send_msg_url
+    # send_msg_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/send_msg/'
     request_data = {
         "md_username": username,
         "data": msg_data_list
@@ -210,7 +211,7 @@ def global_push_from_fifo(test_user=None):
         else:
             hpf.undofetch(data)
             return
-    login_user_url = 'http://s-prod-04.qunzhu666.com:10024/api/robot/platform_user_list?platform_id=make_money_together'
+    login_user_url = platform_list_url + platform_id
     login_user_list = requests.get(login_user_url, headers={'Connection': 'close'}).json()['login_user_list']
     for u in login_user_list:
         username = u['user']
@@ -724,7 +725,7 @@ class SendArtificialMsg(View):
 
         localhost_send_msg_url = 'http://localhost:10024/api/robot/send_msg/'
 
-        response = requests.get(platform_url)
+        response = requests.get(platform_url, headers={"Connection", "CLose"})
         response_dict = json.loads(response.content)
         if response_dict["ret"] != 1:
             logger.error("筛选{}平台User为空".format(platform_id))
