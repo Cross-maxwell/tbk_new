@@ -256,8 +256,7 @@ class Product(Entry):
     #             continue
 
     def assert_available(self):
-        if not self.available:
-            return False
+        self.available = True
         # 2018.01.05 改用懒懒的API后，其返回的剩余券数似乎有问题， 即使显示0也可正常领取，
         # 因调用API时排序规则为按更新时间排序， 没有优惠券的可能性较小。
         # 经测试，即使第50页剩余券数为0的商品依旧可以正常领券。。。

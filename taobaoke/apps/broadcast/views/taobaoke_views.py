@@ -705,6 +705,8 @@ class RecommendProduct(View):
         return HttpResponse(json.dumps(resp_list))
 
 
+# 应该叫manual send，而不是artificial。中文都叫“人工”，但意义不一样的。
+# 另外下面的artifical拼错了。
 class SendArtificialMsg(View):
     """
     接口：  /tk/send_artifical_msg/
@@ -757,7 +759,7 @@ class SendArtificialMsg(View):
                 logger.error('{0} 获取Adzone.pid失败, reason: {1}'.format(user, e))
 
             try:
-                img_url = product.get_img_msg_wxapp(pid=pid)
+                img_url = product.get_img_msg_wxapp(pid=pid, tkuser_id=tk_user.id)
 
                 data.append(img_url)
                 data.append(text)

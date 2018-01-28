@@ -183,7 +183,7 @@ def image_update(price_list, title):
     len_title = len(title)
     title_wrap = ''
     line_num = 19
-    title_wrap_len = len_title / line_num + 1
+    title_wrap_len = len_title / line_num + 1 if len_title % line_num != 0 else len_title / line_num
     for i in range(title_wrap_len):
         if i == title_wrap_len - 1:
             title_wrap += (title[i * line_num: i * line_num + line_num])
