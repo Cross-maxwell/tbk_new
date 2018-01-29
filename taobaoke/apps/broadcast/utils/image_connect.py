@@ -2,6 +2,7 @@
 
 from PIL import Image
 from PIL import ImageFont, ImageDraw, ImageFile
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 import os
@@ -22,6 +23,7 @@ import json
 import time
 
 import logging
+
 logger = logging.getLogger("weixin_bot")
 
 base_path = '/home/new_taobaoke/taobaoke/'
@@ -31,7 +33,7 @@ font_path = os.path.join(base_path, 'apps/broadcast/statics/poster/fonts/')
 
 app_id = "wx82b7a0d64e85afd9"
 app_secret = "d38bed17f6b53122007c94fe8be1b5f5"
-token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}'\
+token_url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}' \
     .format(app_id, app_secret)
 
 cache_key = 'wx_access_token'
@@ -44,7 +46,7 @@ def get_access_token():
         token_response = requests.get(token_url, headers={'Connection': 'close'})
         access_token = json.loads(token_response.content).get("access_token", "")
         if access_token:
-            cache.set(cache_key, access_token, 60*60)
+            cache.set(cache_key, access_token, 60 * 60)
             return access_token
         else:
             logger.error("获取access_token失败， 原因： {0}".format(json.loads(token_response.content)))
@@ -97,14 +99,13 @@ def generate_qrcode(req_data):
 
 
 def generate_image(product_url_list, qrcode_flow, price_list, title=''):
-
     # 首先调用二维码生成函数
     extra = 0
     if len(product_url_list) == 3:
         extra = 300
 
     # 新建画布
-    toImage = Image.new('RGBA', (600, 800+extra))
+    toImage = Image.new('RGBA', (600, 800 + extra))
 
     # 获取商品主图
     try:
@@ -180,15 +181,8 @@ def image_update(price_list, title):
     redColor = "#ff0000"
     blackColor = "#000000"
     whiteColor = '#ffffff'
-    len_title = len(title)
-    title_wrap = ''
-    line_num = 19
-    title_wrap_len = len_title / line_num + 1 if len_title % line_num != 0 else len_title / line_num
-    for i in range(title_wrap_len):
-        if i == title_wrap_len - 1:
-            title_wrap += (title[i * line_num: i * line_num + line_num])
-        else:
-            title_wrap += (title[i * line_num: i * line_num + line_num] + '\n')
+
+    title_wrap = '\n'.join(title[i:i + 19] for i in range(0, len(title), 19))
 
     draw = ImageDraw.Draw(image)
     draw.multiline_text((10, 5), title_wrap, font=font, fill=blackColor, align='left', spacing=5)
@@ -208,7 +202,7 @@ def qrcode_wrap(qrcode_img):
     draw = ImageDraw.Draw(Im)
     truetype = os.path.join(font_path, 'hei.ttf')
     font = ImageFont.truetype(font=truetype, size=16)
-    draw.text((32, 173), u'长按识别小程序码',font=font,fill=blackColor)
+    draw.text((32, 173), u'长按识别小程序码', font=font, fill=blackColor)
     draw.line([(15, 10), (35, 10)], fill=redColor, width=2)
     draw.line([(15, 10), (15, 30)], fill=redColor, width=2)
 
@@ -221,6 +215,8 @@ def qrcode_wrap(qrcode_img):
     draw.line([(185, 170), (165, 170)], fill=redColor, width=2)
     draw.line([(185, 170), (185, 150)], fill=redColor, width=2)
     return Im
+
+
 if __name__ == '__main__':
     product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
     # product_url_list = [product_url, product_url, product_url]
