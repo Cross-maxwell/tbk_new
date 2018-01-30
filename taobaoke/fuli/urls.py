@@ -11,7 +11,7 @@ from broadcast.views.entry_views import insert_product
 from broadcast.views.user_views import update_adzone, get_adzone_info, get_tkuser_info, \
     get_login_qrcode, poster_url, get_invite_code, GetPushTIme, SetPushTime,get_openid, get_update_qrcode, UserAutoPush
 from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, ProductDetail_, AppSearchDetailView, \
-    AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct, get_handle_pushtime
+    AppSearchListView, SendArtificialMsg, RecommendProduct, SelectProducts, PushCertainProduct, get_handle_pushtime, SendCaiGameProduct
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, \
     ParseImg, SelectCate, QueryOrder
 
@@ -66,7 +66,8 @@ tk_urls = [
     url(r'set_pushtime', SetPushTime.as_view()),
     url(r'get_pushtime', GetPushTIme.as_view()),
 
-    url(r'send_artifical_msg', SendArtificialMsg.as_view())
+    url(r'send_artifical_msg', SendArtificialMsg.as_view()),
+    url(r'send_caigame_product', SendCaiGameProduct.as_view()),
 ]
 
 auth_urls = [
