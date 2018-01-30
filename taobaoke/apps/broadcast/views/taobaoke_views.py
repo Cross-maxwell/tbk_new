@@ -812,6 +812,30 @@ def get_tkl(p, pid):
         logger.error("匹配activityId失败")
 
 
+class SendCaiGameProduct(View):
+    @csrf_exempt
+    def post(self, request):
+        try:
+            req_dict = json.loads(request.body)
+            answer = req_dict['answer'].encode('utf-8')
+            product_list = Product.objects.filter(available=True, title__contains=answer)
+            if not product_list:
+                return HttpResponse(json.dumps({'ret': 2}))
+            product = product_list.order_by('-last_update')[0]
+            item_id = product.item_id
+            headers = {
+                "Connection": "close"
+            }
+            send_artifical_msg_url = 'http://s-prod-07.qunzhu666.com:9090/tk/send_artifical_msg/'
+            res_content = requests.post(send_artifical_msg_url, data=json.dumps({'item_id': item_id, 'data': []}),
+                                        headers=headers).content
+            if json.loads(res_content)['ret'] == 0:
+                return HttpResponse(json.dumps({'ret': 0}))
+            return HttpResponse(json.dumps({'ret': 1}))
+        except Exception as e:
+            logger.error('你画我猜推送全局商品异常,原因:{}'.format(e.message))
+            return HttpResponse(json.dumps({'ret': 0}))
+
 
 # class SendSignNotice(View):
 #     """
