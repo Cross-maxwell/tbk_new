@@ -147,7 +147,8 @@ class QueryOrder(View):
             r['last_update_time'] = r['last_update_time'].strftime(time_format)
             r['create_time'] = r['create_time'].strftime(time_format)
             r['click_time'] = r['click_time'].strftime(time_format)
-            r['earning_time'] = r['earning_time'].strftime(time_format)
+            if r['earning_time']:
+                r['earning_time'] = r['earning_time'].strftime(time_format)
             # resp_dict = {
             #     '订单ID': r['order_id'],
             #     '订单状态': r['order_status'],
