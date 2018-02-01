@@ -279,119 +279,119 @@ class AcceptSearchView(View):
         url_to_show = 'http://dianjin.dg15.cn/saber/index/search?pid={0}&search={1}'
         url_for_data = 'http://dianjin.dg15.cn/a_api/index/search?wp=&sort=3&pid={0}&search={1}&_path=9001.SE.0'
         try:
-            if 'http' in keyword:
-                # 直接从淘宝分享消息进行搜索
-                # 从分享的消息中拿到商品链接（短链）和商品标题title
-                link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
-                # 打开短链，从跳转后的url中获取到item_id, 用title去dianjin平台搜索，并比对搜索结果的item_id，如果一致则搜索到指定商品。如果有搜索结果，但不一致，
-                # 返回搜索链接，供用户浏览类似商品。
-                resp_html = requests.get(link).content
-                try:
-                    from broadcast.utils.entry_utils import get_item_info
-                    try:
-                        to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d', '='))[0]
-                    except IndexError:
-                        to_search_item_id = re.findall('\/i(\d+)', resp_html)[0]
-                    to_search_title = get_item_info(to_search_item_id)['title']
-                    resp_dj = requests.get(url_for_data.format(pid, to_search_title))
-                    resp_dict_dj = json.loads(resp_dj.content)
-                    dj_products = resp_dict_dj['result']['items']
-                except Exception as e:
-                    logger.error(e)
-                    return HttpResponse(json.dumps({"data": ["获取商品信息失败"], "ret": 0}))
-
-                found = False
-                other_found = False
-                for dj_p in dj_products:
-                    if dj_p['itemId'] == to_search_item_id:
-                        found = True
-                        cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
-                            dj_p['activityId'], dj_p['itemId'], pid)
-                        target_url = 'http://dianjin.dg15.cn/a_api/index/detailData?itemId={0}&activityId={1}&refId=&pid={2}&_path=9001.SE.0.i.539365221844&src='.format(
-                            dj_p['itemId'], dj_p['activityId'], pid
-                        )
-                        target_resp_dict = json.loads(requests.get(target_url).content)['result']['item']
-                        p_dict = {
-                            "title": target_resp_dict['title'],
-                            "desc": target_resp_dict['recommend'],
-                            "img_url": target_resp_dict['image'],
-                            "cupon_value": float(target_resp_dict['amount'].strip(u'\u5143')),
-                            "price": float(target_resp_dict['price'].strip(u'\xa5')),
-                            'sold_qty': target_resp_dict['monthSales'],
-                            # 因为没有这个字段，写死
-                            'cupon_left': 20,
-                            'cupon_url': cupon_url
-                            }
-                        if not "http" in p_dict["img_url"] or not "https" in p_dict["img_url"]:
-                            p_dict["img_url"] = "http:" + p_dict["img_url"]
-                        from broadcast.models.entry_models import Product
-                        target, created = Product.objects.update_or_create(item_id=dj_p['itemId'], defaults=p_dict)
-                        img_url = target.get_img_msg_wxapp(pid)
-                        text = '{0}，找到指定商品的优惠券，长按识别二维码领取'.format(at_user_nickname)
-                        break
-                    else:
-                        other_found = True
-
-                if found:
-                    data = [img_url, text]
-                elif (not found) and other_found:
-                    text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，长按识别二维码查看商品～'.format(at_user_nickname)
-
-                    product_url = dj_products[0]['coverImage']
-
-                    if not product_url.startswith("http"):
-                        product_url = "http:" + product_url
-
-                    short_url = get_short_url(url_to_show.format(pid, to_search_title))
-                    qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    img_url = generate_image([product_url], qrcode_flow,[])
-
-                    data = [img_url, text]
-                else:
-                    text = '{0}，很抱歉，您需要的商品商品没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]'.format(at_user_nickname)
-                    data = [text]
-                return HttpResponse(json.dumps({"data": data}))
-
-            else:
+            # if 'http' in keyword:
+            #     # 直接从淘宝分享消息进行搜索
+            #     # 从分享的消息中拿到商品链接（短链）和商品标题title
+            #     link = re.findall('(http:[\d\w/\.]+)', keyword)[0]
+            #     # 打开短链，从跳转后的url中获取到item_id, 用title去dianjin平台搜索，并比对搜索结果的item_id，如果一致则搜索到指定商品。如果有搜索结果，但不一致，
+            #     # 返回搜索链接，供用户浏览类似商品。
+            #     resp_html = requests.get(link).content
+            #     try:
+            #         from broadcast.utils.entry_utils import get_item_info
+            #         try:
+            #             to_search_item_id = re.findall('[_&\?]id=(\d+)', resp_html.replace('\\u033d', '='))[0]
+            #         except IndexError:
+            #             to_search_item_id = re.findall('\/i(\d+)', resp_html)[0]
+            #         to_search_title = get_item_info(to_search_item_id)['title']
+            #         resp_dj = requests.get(url_for_data.format(pid, to_search_title))
+            #         resp_dict_dj = json.loads(resp_dj.content)
+            #         dj_products = resp_dict_dj['result']['items']
+            #     except Exception as e:
+            #         logger.error(e)
+            #         return HttpResponse(json.dumps({"data": ["获取商品信息失败"], "ret": 0}))
+            #
+            #     found = False
+            #     other_found = False
+            #     for dj_p in dj_products:
+            #         if dj_p['itemId'] == to_search_item_id:
+            #             found = True
+            #             cupon_url = 'https://uland.taobao.com/coupon/edetail?activityId={0}&itemId={1}&pid={2}&src=xsj_lanlan'.format(
+            #                 dj_p['activityId'], dj_p['itemId'], pid)
+            #             target_url = 'http://dianjin.dg15.cn/a_api/index/detailData?itemId={0}&activityId={1}&refId=&pid={2}&_path=9001.SE.0.i.539365221844&src='.format(
+            #                 dj_p['itemId'], dj_p['activityId'], pid
+            #             )
+            #             target_resp_dict = json.loads(requests.get(target_url).content)['result']['item']
+            #             p_dict = {
+            #                 "title": target_resp_dict['title'],
+            #                 "desc": target_resp_dict['recommend'],
+            #                 "img_url": target_resp_dict['image'],
+            #                 "cupon_value": float(target_resp_dict['amount'].strip(u'\u5143')),
+            #                 "price": float(target_resp_dict['price'].strip(u'\xa5')),
+            #                 'sold_qty': target_resp_dict['monthSales'],
+            #                 # 因为没有这个字段，写死
+            #                 'cupon_left': 20,
+            #                 'cupon_url': cupon_url
+            #                 }
+            #             if not "http" in p_dict["img_url"] or not "https" in p_dict["img_url"]:
+            #                 p_dict["img_url"] = "http:" + p_dict["img_url"]
+            #             from broadcast.models.entry_models import Product
+            #             target, created = Product.objects.update_or_create(item_id=dj_p['itemId'], defaults=p_dict)
+            #             img_url = target.get_img_msg_wxapp(pid)
+            #             text = '{0}，找到指定商品的优惠券，长按识别二维码领取'.format(at_user_nickname)
+            #             break
+            #         else:
+            #             other_found = True
+            #
+            #     if found:
+            #         data = [img_url, text]
+            #     elif (not found) and other_found:
+            #         text = '{0} 抱歉，没有找到指定商品，但是找到了类似的商品，长按识别二维码查看商品～'.format(at_user_nickname)
+            #
+            #         product_url = dj_products[0]['coverImage']
+            #
+            #         if not product_url.startswith("http"):
+            #             product_url = "http:" + product_url
+            #
+            #         short_url = get_short_url(url_to_show.format(pid, to_search_title))
+            #         qrcode_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
+            #         img_url = generate_image([product_url], qrcode_flow,[])
+            #
+            #         data = [img_url, text]
+            #     else:
+            #         text = '{0}，很抱歉，您需要的商品商品没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]'.format(at_user_nickname)
+            #         data = [text]
+            #     return HttpResponse(json.dumps({"data": data}))
+            #
+            # else:
                 # 普通搜索，"找xx"、"买XX"
-                template_url = url_to_show.format(pid, keyword)
-                judge_url = url_for_data.format(pid, keyword)
-                judge_response = requests.get(judge_url)
-                judge_dict = json.loads(judge_response.content)
+            template_url = url_to_show.format(pid, keyword)
+            judge_url = url_for_data.format(pid, keyword)
+            judge_response = requests.get(judge_url)
+            judge_dict = json.loads(judge_response.content)
 
-                if not judge_dict['result']['items']:
-                    text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".\
-                        format(at_user_nickname, keyword)
-                    data = [text]
-                else:
+            if not judge_dict['result']['items']:
+                text = u"{0}，很抱歉，您需要的{1}没有找到哦～您可以搜索一下其他商品哦～[太阳][太阳]".\
+                    format(at_user_nickname, keyword)
+                data = [text]
+            else:
 
-                    product_url = judge_dict['result']['items'][0]['coverImage']
+                product_url = judge_dict['result']['items'][0]['coverImage']
 
-                    if not product_url.startswith("http"):
-                        product_url = "http:" + product_url
+                if not product_url.startswith("http"):
+                    product_url = "http:" + product_url
 
-                    # short_url = get_short_url(template_url)
-                    # qrcod添加许愿墙点赞接口,需要makemigrationse_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
-                    # img_url = generate_image([product_url], qrcode_flow,[])
+                # short_url = get_short_url(template_url)
+                # qrcod添加许愿墙点赞接口,需要makemigrationse_flow = qrcode.make(short_url).convert("RGBA").tobytes("jpeg", "RGBA")
+                # img_url = generate_image([product_url], qrcode_flow,[])
 
-                    # TODO: 待前端完成
-                    logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
-                    # 将用户的username以及keyword存起来，传递给小程序一个id值即可
-                    keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
-                    req_data = {
-                        "page": "pages/search/search",
-                        "scene": "{0}".format(keyword_mapping_id)
-                    }
-                    qrcode_flow = generate_qrcode(req_data)
-                    img_url = generate_image([product_url], qrcode_flow,[])
+                # TODO: 待前端完成
+                logger.info("生成搜索小程序二维码: username: {}, keyword: {}".format(username, keyword))
+                # 将用户的username以及keyword存起来，传递给小程序一个id值即可
+                keyword_mapping_id = SearchKeywordMapping.objects.create(username=username, keyword=keyword).id
+                req_data = {
+                    "page": "pages/search/search",
+                    "scene": "{0}".format(keyword_mapping_id)
+                }
+                qrcode_flow = generate_qrcode(req_data)
+                img_url = generate_image([product_url], qrcode_flow,[])
 
-                    random_seed = random.randint(1000, 2000)
-                    text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
-                           "================\n" \
-                           "图片仅供参考，详细信息请扫描二维码查看～".format(at_user_nickname, keyword, random_seed)
+                random_seed = random.randint(1000, 2000)
+                text = "{0}，搜索  {1}  成功！此次共搜索到相关产品{2}件，长按识别小程序码查看为您找到的高额优惠券。\n" \
+                       "================\n" \
+                       "图片仅供参考，详细信息请扫描二维码查看～".format(at_user_nickname, keyword, random_seed)
 
-                    data = [img_url, text]
-                return HttpResponse(json.dumps({"data": data}))
+                data = [img_url, text]
+            return HttpResponse(json.dumps({"data": data}))
         except Exception as e:
             logger.error(e)
             return HttpResponse(json.dumps({"data": ['搜索失败']}))
