@@ -10,9 +10,6 @@ from broadcast.models.user_models import TkUser
 from common_utils import cut_decimal
 from datetime import datetime
 
-dtnow = datetime.now()
-year = dtnow.year
-month = dtnow.month
 
 '''
 以下三个方法为链式调用, 用以维护agent_commision数据
@@ -89,6 +86,9 @@ def cal_commision():
     计算订单佣金增量
     :return:
     """
+    dtnow = datetime.now()
+    year = dtnow.year
+    month = dtnow.month
     user_list = User.objects.filter(is_staff=False, last_login__isnull=False)
     from account.models.commision_models import Commision
     from account.models.order_models import Order
