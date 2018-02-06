@@ -9,6 +9,7 @@ class Card(models.Model):
     username = models.CharField(max_length=64)
     head_url = models.URLField(max_length=500)
     bg_url = models.URLField(max_length=500)
+    text = models.TextField(default="")
 
     date = models.DateTimeField(auto_now_add=True)
 
