@@ -19,6 +19,12 @@ from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassw
 
 from mini_program.views.wishwall_views import WishWallView, AddFavoriteWish
 
+from mini_program.views.card_views import CardViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r"card", CardViewSet)
+
 
 user_urls = [
     url(r'^update-adzone/', update_adzone),
@@ -110,5 +116,6 @@ urlpatterns = [
     url(r'operate/', include(operate_urls)),
 
     url(r'wish', include(wish_urls)),
+    url(r'card/', include(router.urls))
 ]
 
