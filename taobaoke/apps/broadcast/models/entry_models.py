@@ -177,28 +177,65 @@ class Product(Entry):
         return generate_image(product_url_list, qrcode_flow, price_list, title=self.title)
 
     def get_tkl(self, pid):
-        tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
+        # tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
         pattern = ".*activityId=(.*?)&.*"
         result = re.match(pattern, self.cupon_url)
         if result:
             activityId = result.group(1)
-            data = {
-                "itemId": self.item_id,
-                "activityId": activityId,
-                "pid": pid,
-                "image": self.img_url,
-                "title": self.title,
-                "sellerId": self.productdetail.seller_id
-            }
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
-            tkl_response = requests.post(tkl_url, data=data, headers=headers)
-            res_dict = json.loads(tkl_response.content)
-            tkl = res_dict["status"]["msg"]
-            return tkl
+            # data = {
+            #     "itemId": self.item_id,
+            #     "activityId": activityId,
+            #     "pid": pid,
+            #     "image": self.img_url,
+            #     "title": self.title,
+            #     "sellerId": self.productdetail.seller_id
+            # }
+            # headers = {
+            #     "Content-Type": "application/x-www-form-urlencoded"
+            # }
+            # tkl_response = requests.post(tkl_url, data=data, headers=headers)
+            # res_dict = json.loads(tkl_response.content)
+            # tkl = res_dict["status"]["msg"]
+            return self.__get_tkl_from_dianjin(activityId, pid)
         else:
-            logger.error("匹配activityId失败")
+            # logger.error("匹配activityId失败")
+            return self.__get_tkl_from_sdk(pid)
+            # return tkl
+
+    def __get_tkl_from_dianjin(self, activityId, pid):
+        tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
+        data = {
+            "itemId": self.item_id,
+            "activityId": activityId,
+            "pid": pid,
+            "image": self.img_url,
+            "title": self.title,
+            "sellerId": self.productdetail.seller_id
+        }
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+        tkl_response = requests.post(tkl_url, data=data, headers=headers)
+        res_dict = json.loads(tkl_response.content)
+        tkl = res_dict["status"]["msg"]
+        return tkl
+
+    def __get_tkl_from_sdk(self, pid):
+        for _ in range(5):
+            try:
+                req = top.api.TbkTpwdCreateRequest()
+                req.set_app_info(top.appinfo(fuli.top_settings.app_key, fuli.top_settings.app_secret))
+
+                req.text = self.title.encode('utf-8')
+                req.logo = self.img_url
+                req.url = re.sub('pid=([\d\w_]+)', pid, self.cupon_url)
+
+                resp = req.getResponse()
+                tkl = resp['tbk_tpwd_create_response']['data']['model']
+                return tkl
+            except Exception as e:
+                logger.error(e.message)
+                continue
 
     """旧的获取文字及图片的方法，不用了"""
     # template = "{title}\n【原价】{org_price}元\n【券后】{price}元秒杀[闪电]!!\n【销售量】超过{sold_qty}件\n===============\n「打开链接，领取高额优惠券」\n{short_url}"

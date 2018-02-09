@@ -28,13 +28,10 @@ from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
 from broadcast.utils.entry_utils import HandlePushFIFO, FIFOTooLongException
 import fuli.top_settings
+from broadcast.utils.third_msg_utils import MsgManager
 
 from fuli.top_settings import platform_list_url, send_msg_url
 from fuli.oss_utils import beary_chat
-import top.api
-
-# 本地测试
-# phantomjs_path = '/home/smartkeyerror/PycharmProjects/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
 
 # 07服务器
 # phantomjs_path = '/home/phantomjs/phantomjs-2.1.1-linux-x86_64/bin/phantomjs'
@@ -835,6 +832,19 @@ class SendCaiGameProduct(View):
         except Exception as e:
             logger.error('你画我猜推送全局商品异常,原因:{}'.format(e.message))
             return HttpResponse(json.dumps({'ret': 0}))
+
+
+class AcceptThirdMsgView(View):
+    def post(self, request):
+        try:
+            msg = MsgManager(request.body)
+            item_id = msg.parse() # 完成消息解析及存库
+            if item_id is not None:
+                requests.post('http://localhost:9090/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
+            return HttpResponse('ok')
+        except Exception as e:
+            logger.error(e)
+            return  HttpResponse(json.dumps({"data":"{}".format(e)}))
 
 
 # class SendSignNotice(View):
