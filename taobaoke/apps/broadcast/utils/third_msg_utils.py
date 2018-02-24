@@ -205,9 +205,6 @@ class WQMsg(ThirdMsg):
             desc_imgs = []
         return desc_imgs
 
-
-
-
     def save_from_product_dict(self, item):
         product_dict = {
             'title': item['shortTitle'],
