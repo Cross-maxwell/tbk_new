@@ -22,10 +22,7 @@ from account.models.commision_models import Commision, AgentCommision, AlipayAcc
 from account.utils.transfer_utils import pay
 from account.utils.common_utils import cut_decimal
 from account.utils.commision_utils import withdraw_commision, withdraw_agent_commision
-from account.temp import tbk_alipay_transfer_url
 from broadcast.models.user_models import TkUser
-import time
-
 
 admin_name_in_beary_chat = "fatphone777"
 
@@ -57,17 +54,13 @@ def beary_chat(text, url=None, user=None, channel=None):
     )
 
 
-'''
- : process 本方法向tbk_alipay_transfer_url发送请求，即实际转账动作。
- : reference tbk_alipay_transfer_url 果粉街域名下的支付宝转账接口
- : return 成功返回True，
-                   失败返回False。
-'''
 def remote_transfer(alipay_account, alipay_name, amount):
-    amount = round(amount, 2)
-    # r = requests.get(
-    #     tbk_alipay_transfer_url.format(alipay_account, alipay_name, amount, out_biz_no)
-    # )
+    '''
+     : process 本方法使用支付宝SDK，发起转账。
+     : return 成功返回True，
+                       失败返回False。
+    '''
+    amount = cut_decimal(amount, 2)
     try:
         result = pay(
             account=alipay_account,
@@ -85,32 +78,12 @@ def remote_transfer(alipay_account, alipay_name, amount):
         return False
 
 
-    # if r.status_code != 200:
-    #     log("retcode is not 200")
-    #     return False
-    #
-    # try:
-    #     if r.text == '失败':
-    #         log("Transfer Failed: {0} - {1}".format(alipay_account, alipay_name))
-    #         return False
-    #     elif r.text == '成功':
-    #         log("Successful Transfering {0} Yuan to {1} - {2}.".format(amount, alipay_account, alipay_name))
-    #         return True
-    #     else:
-    #         log("Unknown result: {}.".format(r.text))
-    #         return False
-    # except Exception as e:
-    #     log("Exception ocourred:" + e.message)
-    #     return False
-
 # 根据user_id，从TkUser表中获取被其推荐的二级代理列表，
 # 并获取此些用户的balance总额
 def get_sub_agent_contribution(user_id):
-
     sub_agent_list = TkUser.objects.filter(inviter_id=user_id)
     amount = 0
     for sub_agent in sub_agent_list:
-        # print(sub_agent.user_id)
         try:
             # Generally, this object already created when calculate commision contributed by sub-agent
             sub_agent_commision = AgentCommision.objects.get(user_id=sub_agent.user_id)
@@ -122,80 +95,78 @@ def get_sub_agent_contribution(user_id):
 
 
 # 转账行为：
-def transfer(user_id=None, mode='weekly'):
-    if mode not in ['weekly', 'monthly', 'all']:
-        print("error mode:{}".format(mode))
-        return
-
+def transfer(user_id=None):
+    dt_start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log("Transfer Start at {}".format(dt_start))
     # 若未传入 user_id，则针对所有用户结帐。
     if user_id is None:
-        commision = Commision.objects.all()
+        commisions = Commision.objects.all()
     else:
-        mode = 'all'
-        commision = Commision.objects.filter(user_id=user_id)
+        commisions = Commision.objects.filter(user_id=user_id)
 
-    for commision in commision:
-        # 700以下的代理是周结
-        weekly_condition = mode == 'weekly' and int(commision.user_id) < 700
-        monthly_condition = mode == 'monthly' and int(commision.user_id) >= 700
-        all = mode == 'all'
+    for commision in commisions:
+        # get alipay account info
+        log('-----------------------')
+        log('transfer start user_id:' + str(commision.user_id))
+        try:
+            alipay_account = AlipayAccount.objects.get(user_id=commision.user_id)
+        except AlipayAccount.DoesNotExist:
+            log("user_id:{0} alipay_account doesn't exist".format(commision.user_id))
+            continue
 
-        if weekly_condition or monthly_condition or all:
-            # get alipay account info
-            log('-----------------------')
-            log('transfer start user_id:' + str(commision.user_id))
-            try:
-                alipay_account = AlipayAccount.objects.get(user_id=commision.user_id)
-            except Exception as e:
-                log("user_id:{0} alipay_account doesn't exist".format(commision.user_id))
+        if commision.balance > 0:
+            # access remote alipay-transfer api
+            # transfer commision
+            if not remote_transfer(
+                    alipay_account.alipay_id,
+                    alipay_account.alipay_name,
+                    commision.balance):
+                msg = "user_id:{0} aplipay_id:{1} commision_balance:{2}".format(
+                    commision.user_id,
+                    alipay_account.alipay_id,
+                    commision.balance
+                )
+                beary_chat(msg, user=admin_name_in_beary_chat)
+                log("commision remote transfer error:"+msg)
                 continue
+            else:
+                log("transfer commision:{0}".format(commision.balance))
 
-            if commision.balance > 0:
-                # access remote alipay-transfer api
-                # transfer commision
-                if not remote_transfer(alipay_account.alipay_id, alipay_account.alipay_name, commision.balance):
-                    msg = "user_id:{0} aplipay_id:{1} commision_balance:{2}".format(
-                        commision.user_id, alipay_account.alipay_id, commision.balance
-                    )
+                # update database
+                if not withdraw_commision(commision.user_id, commision.balance):
+                    msg = "user_id:{0} balance:{1} withdraw error".format(commision.user_id, commision.balance)
                     beary_chat(msg, user=admin_name_in_beary_chat)
-                    log("commision remote transfer error:"+msg)
                     continue
                 else:
-                    log("transfer commision:{0}".format(commision.balance))
+                    log("update commision success")
 
-                    # update database
-                    if not withdraw_commision(commision.user_id, commision.balance):
-                        msg = "user_id:{0} balance:{1} withdraw error".format(commision.user_id, commision.balance)
-                        beary_chat(msg, user=admin_name_in_beary_chat)
-                        continue
-                    else:
-                        log("update commision success")
+        # transfer sub-agent commision
+        commision_from_subagent = get_sub_agent_contribution(commision.user_id)
+        if commision_from_subagent > 0:
+            if not remote_transfer(
+                    alipay_account.alipay_id,
+                    alipay_account.alipay_name,
+                    commision_from_subagent):
+                msg = "user_id:{0} aplipay_id:{1} commision_from_subagent:{2}".format(
+                    commision.user_id,
+                    alipay_account.alipay_id,
+                    commision_from_subagent
+                )
+                beary_chat(msg, user=admin_name_in_beary_chat)
+                log("commision_from_subagent remote transfer error:" + msg)
+                continue
+            else:
+                log("transfer commision_from_subagent:{0}".format(commision_from_subagent))
+                # update database
+                withdraw_agent_commision(commision.user_id)
+                log("update AgentCommision success")
+        log("user_id:{0} tranfer finish".format(commision.user_id))
 
-            # transfer sub-agent commision
-            commision_from_subagent = get_sub_agent_contribution(commision.user_id)
-            if commision_from_subagent > 0:
-                if not remote_transfer(alipay_account.alipay_id, alipay_account.alipay_name, commision_from_subagent):
-                    msg = "user_id:{0} aplipay_id:{1} commision_from_subagent:{2}".format(
-                        commision.user_id, alipay_account.alipay_id, commision_from_subagent
-                    )
-                    beary_chat(msg, user=admin_name_in_beary_chat)
-                    log("commision_from_subagent remote transfer error:" + msg)
-                    continue
-                else:
-                    log("transfer commision_from_subagent:{0}".format(commision_from_subagent))
-                    # update database
-                    withdraw_agent_commision(commision.user_id)
-                    log("update AgentCommision success")
-
-            log("user_id:{0} tranfer finish".format(commision.user_id))
+    dt_done = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    log("Done at {}".format(dt_done))
 
 if __name__ == "__main__":
-    """
-    mode:
-        weekly:周结用户 id < 700
-        monthly:月结用户 id >= 700
-        all:所有用户
-    """
-    mode = 'all'
-    transfer(user_id=1765, mode=mode)
-    pass
+    transfer(user_id=None)
+
+
+
