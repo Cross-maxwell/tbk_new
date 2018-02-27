@@ -53,9 +53,39 @@ class WQMsg(ThirdMsg):
         self.item_source = None
         self.product_dict = None
 
+    def reorganize(self):
+        """
+        若未解析到商品，调用此方法，将消息重组并转发
+        :return: data, 由图片url和文字组合形成的消息列表
+        """
+        data = []
+        img_url = self.__get_img_and_remove()
+        if img_url:
+            data.append(img_url)
+        data.append(self.msg)
+        return data
+
+    def __get_img_and_remove(self):
+        """
+        仅用于消息转发， 获取图片链接并删除代表图片的文本
+        :return:
+        """
+        img_url_pattern = re.compile('\[CQ:image,file=(https?://[.\d\w\./\?=&;\\%~]+)\]')
+        try:
+            img_url = img_url_pattern.findall(self.msg)[0]
+        except IndexError:
+            img_url = None
+        except Exception as e:
+            logger.error(e)
+            img_url = None
+        finally:
+            img_file_pattern = re.compile('(\[CQ:image,file=https?://[.\d\w\./\?=&;\\%~]+\])')
+            self.msg = img_file_pattern.sub('', self.msg)
+            return img_url
+
     def parse(self):
         """
-        唯一可调用方法，解析商品并存库
+        解析商品并存库
         :return:
         """
         try:
@@ -142,7 +172,7 @@ class WQMsg(ThirdMsg):
         try:
             self.item_id = item_id_pattern.findall(self.item_url)[0]
         except IndexError:
-            raise ThirdMsgException('Unable To Catch Item Id')
+            raise NoItemException('Unable To Catch Item Id')
 
     def __fetch_detail(self):
         if self.item_source == WQMsg.item_sources.lanlan:
@@ -276,3 +306,7 @@ class ThirdMsgException(Exception):
     def __init__(self, msg):
         self.message = msg
         Exception.__init__(self, self.message)
+
+
+class NoItemException(ThirdMsgException):
+    pass
