@@ -70,7 +70,7 @@ class WQMsg(ThirdMsg):
         仅用于消息转发， 获取图片链接并删除代表图片的文本
         :return:
         """
-        img_url_pattern = re.compile('\[CQ:image,file=(https?://[.\d\w\./\?=&;\\%~]+)\]')
+        img_url_pattern = re.compile('\[CQ:image,file=(.*?)\]')
         try:
             img_url = img_url_pattern.findall(self.msg)[0]
         except IndexError:
@@ -79,8 +79,8 @@ class WQMsg(ThirdMsg):
             logger.error(e)
             img_url = None
         finally:
-            img_file_pattern = re.compile('(\[CQ:image,file=https?://[.\d\w\./\?=&;\\%~]+\])')
-            self.msg = img_file_pattern.sub('', self.msg)
+            CQ_pattern = re.compile('(\[CQ:.*?\])')
+            self.msg = CQ_pattern.sub('', self.msg)
             return img_url
 
     def parse(self):

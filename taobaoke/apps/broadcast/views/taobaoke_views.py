@@ -852,6 +852,7 @@ class AcceptThirdMsgView(View):
                     "priority": True,
                 }
                 requests.post(send_group_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
+            return HttpResponse('ok')
         except Exception as e:
             logger.error(e)
             return  HttpResponse(json.dumps({"data":"{}".format(e)}))
