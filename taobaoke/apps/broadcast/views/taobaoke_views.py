@@ -840,7 +840,7 @@ class AcceptThirdMsgView(View):
             msg = MsgManager(request.body)
             item_id = msg.parse() # 完成消息解析及存库
             if item_id is not None:
-                requests.post('http://localhost:9090/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
+                requests.post('http://s-prod-07.qunzhu666.com/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
             return HttpResponse('ok')
         except NoItemException:
             # Data here should be a list.
