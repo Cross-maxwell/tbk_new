@@ -70,7 +70,7 @@ class WQMsg(ThirdMsg):
         仅用于消息转发， 获取图片链接并删除代表图片的文本
         :return:
         """
-        img_url_pattern = re.compile('\[CQ:image,file=(https?://[.\d\w\./\?=&;\\%~]+)\]')
+        img_url_pattern = re.compile('\[CQ:image,file=(.*?)\]')
         try:
             img_url = img_url_pattern.findall(self.msg)[0]
         except IndexError:
@@ -79,8 +79,8 @@ class WQMsg(ThirdMsg):
             logger.error(e)
             img_url = None
         finally:
-            img_file_pattern = re.compile('(\[CQ:image,file=https?://[.\d\w\./\?=&;\\%~]+\])')
-            self.msg = img_file_pattern.sub('', self.msg)
+            CQ_pattern = re.compile('(\[CQ:.*?\])')
+            self.msg = CQ_pattern.sub('', self.msg)
             return img_url
 
     def parse(self):
@@ -95,6 +95,8 @@ class WQMsg(ThirdMsg):
             self.__fetch_detail()
             self.save_from_product_dict(self.product_dict)
             return self.item_id
+        except NoItemException:
+            raise
         except Exception as e:
             logger.error(e.message)
             return None
@@ -114,7 +116,7 @@ class WQMsg(ThirdMsg):
                 self.item_source = WQMsg.item_sources.other
                 self.__get_301_urls(url)
         if self.item_url is None:
-            raise ThirdMsgException('Unable To Catch Item URL.')
+            raise NoItemException('Unable To Catch Item URL.')
 
     def __get_301_urls(self, url):
         cap = webdriver.DesiredCapabilities.PHANTOMJS
@@ -308,5 +310,7 @@ class ThirdMsgException(Exception):
         Exception.__init__(self, self.message)
 
 
-class NoItemException(ThirdMsgException):
-    pass
+class NoItemException(Exception):
+    def __init__(self, msg):
+        self.message = msg
+        Exception.__init__(self, self.message)
