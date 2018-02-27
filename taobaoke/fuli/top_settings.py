@@ -11,6 +11,7 @@ host = "http://sv.pkq.qunzhu666.com"
 
 platform_list_url = host + "/api/robot/platform_user_list?platform_id="
 send_msg_url = host + "/api/robot/send_msg/"
+send_group_msg_url = host + "/api/robot/send_group_msg"
 send_mmt_msg_url = host + "/api/robot/send_mmt_msg"
 get_chatroom_qrcode_url = host + "/api/robot/get_chatroom_qrcode/"
 

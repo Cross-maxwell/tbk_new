@@ -28,9 +28,9 @@ from broadcast.models.entry_models import PushRecord, SearchKeywordMapping
 from broadcast.utils.image_connect import generate_image, generate_qrcode
 from broadcast.utils.entry_utils import HandlePushFIFO, FIFOTooLongException
 import fuli.top_settings
-from broadcast.utils.third_msg_utils import MsgManager
+from broadcast.utils.third_msg_utils import MsgManager, NoItemException, ThirdMsgException
 
-from fuli.top_settings import platform_list_url, send_msg_url
+from fuli.top_settings import platform_list_url, send_msg_url, send_group_msg_url
 from fuli.oss_utils import beary_chat
 
 # 07服务器
@@ -842,6 +842,16 @@ class AcceptThirdMsgView(View):
             if item_id is not None:
                 requests.post('http://localhost:9090/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
             return HttpResponse('ok')
+        except NoItemException:
+            # Data here should be a list.
+            data = msg.reorganize()
+            if data is not None:
+                request_data = {
+                    "platform_id": "make_money_together",
+                    "data": data,
+                    "priority": True,
+                }
+                requests.post(send_group_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
         except Exception as e:
             logger.error(e)
             return  HttpResponse(json.dumps({"data":"{}".format(e)}))
