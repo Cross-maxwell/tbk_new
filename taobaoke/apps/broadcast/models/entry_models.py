@@ -170,8 +170,9 @@ class Product(Entry):
                 # com = re.compile(r'http.+?jpg', re.DOTALL)
                 com = re.compile(r'(?:http|https):.+?\.(?:jpg|png)', re.DOTALL)
                 img_list = com.findall(img_str)
-                product_url_list.append(img_list[0])
-                product_url_list.append(img_list[1])
+                if len(img_list) > 2:
+                    product_url_list.append(img_list[0])
+                    product_url_list.append(img_list[1])
         except Exception as e:
             logger.error(e)
         return generate_image(product_url_list, qrcode_flow, price_list, title=self.title)
