@@ -836,6 +836,9 @@ class SendCaiGameProduct(View):
 
 class AcceptThirdMsgView(View):
     def post(self, request):
+        third_msg_status = cache.get('third_msg_switch', 'on')
+        if third_msg_status == 'off':
+            return HttpResponse('Third Msg Switch Off')
         try:
             msg = MsgManager(request.body)
             item_id = msg.parse() # 完成消息解析及存库
@@ -857,6 +860,19 @@ class AcceptThirdMsgView(View):
             logger.error(e)
             return  HttpResponse(json.dumps({"data":"{}".format(e)}))
 
+
+class ThirdMsgSwitchView(View):
+    """
+    第三方消息跟单的开关
+    """
+    def get(self, request):
+        status = cache.get('third_msg_switch', 'on')
+        return HttpResponse(json.dumps({'data':{'status':status}}))
+    def post(self, request):
+        req_dict = json.loads(request.body)
+        status_to_switch = req_dict.get('status', 'on')
+        cache.set('third_msg_switch', status_to_switch, 60*60*24*7)
+        return HttpResponse(json.dumps({'data':{'status':status_to_switch}}))
 
 # class SendSignNotice(View):
 #     """
