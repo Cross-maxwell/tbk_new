@@ -836,11 +836,15 @@ class SendCaiGameProduct(View):
 
 class AcceptThirdMsgView(View):
     def post(self, request):
-        third_msg_status = cache.get('third_msg_switch', 'on')
+        third_msg_status = cache.get('third_msg_switch', 'off')
         if third_msg_status == 'off':
             return HttpResponse('Third Msg Switch Off')
         try:
             msg = MsgManager(request.body)
+            forbidden_keywords = ['私聊群主', '免费拿', '@']
+            for i in forbidden_keywords:
+                if i in msg:
+                    return HttpResponse('Forbidden by Keywords: {}'.format(i))
             item_id = msg.parse() # 完成消息解析及存库
             if item_id is not None:
                 requests.post('http://s-prod-07.qunzhu666.com/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
@@ -866,12 +870,12 @@ class ThirdMsgSwitchView(View):
     第三方消息跟单的开关
     """
     def get(self, request):
-        status = cache.get('third_msg_switch', 'on')
+        status = cache.get('third_msg_switch', 'off')
         return HttpResponse(json.dumps({'data':{'status':status}}))
     def post(self, request):
         req_dict = json.loads(request.body)
-        status_to_switch = req_dict.get('status', 'on')
-        cache.set('third_msg_switch', status_to_switch, 60*60*24*7)
+        status_to_switch = req_dict.get('status', 'off')
+        cache.set('third_msg_switch', status_to_switch, None)
         return HttpResponse(json.dumps({'data':{'status':status_to_switch}}))
 
 # class SendSignNotice(View):
