@@ -847,8 +847,7 @@ class AcceptThirdMsgView(View):
             msg = MsgManager(request.body)
             item_id = msg.parse() # 完成消息解析及存库
             if item_id is not None:
-                # requests.post('http://s-prod-07.qunzhu666.com/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
-                pass
+                requests.post('http://s-prod-07.qunzhu666.com/tk/send_artifical_msg', data=json.dumps({"item_id": item_id, "data":""}))
             return HttpResponse('ok')
         except NoItemException:
             # Data here should be a list.
@@ -859,7 +858,7 @@ class AcceptThirdMsgView(View):
                     "data": data,
                     "priority": True,
                 }
-                # requests.post(send_group_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
+                requests.post(send_group_msg_url, data=json.dumps(request_data), headers={'Connection': 'close'})
             return HttpResponse('ok')
         except Exception as e:
             logger.error(e)
