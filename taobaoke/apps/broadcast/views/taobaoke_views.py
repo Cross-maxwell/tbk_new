@@ -875,7 +875,7 @@ class ThirdMsgSwitchView(View):
     def post(self, request):
         req_dict = json.loads(request.body)
         status_to_switch = req_dict.get('status', 'off')
-        cache.set('third_msg_switch', status_to_switch, 60*60*24*7)
+        cache.set('third_msg_switch', status_to_switch, None)
         return HttpResponse(json.dumps({'data':{'status':status_to_switch}}))
 
 # class SendSignNotice(View):
