@@ -844,6 +844,7 @@ class AcceptThirdMsgView(View):
             for i in forbidden_keywords:
                 if i in request.body:
                     return HttpResponse('Forbidden by Keywords: {}'.format(i))
+            logger.info("Third Msg: {}".format(request.body))
             msg = MsgManager(request.body)
             item_id = msg.parse() # 完成消息解析及存库
             if item_id is not None:
@@ -876,6 +877,7 @@ class ThirdMsgSwitchView(View):
         req_dict = json.loads(request.body)
         status_to_switch = req_dict.get('status', 'off')
         cache.set('third_msg_switch', status_to_switch, None)
+        logger.info('third_msg_switch switch to {}.'.format(status_to_switch))
         return HttpResponse(json.dumps({'data':{'status':status_to_switch}}))
 
 # class SendSignNotice(View):
