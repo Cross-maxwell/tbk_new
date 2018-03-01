@@ -170,7 +170,7 @@ class WQMsg(ThirdMsg):
             self.img_url = None
 
     def __get_item_id(self):
-        item_id_pattern = re.compile('item.htm\?id=(\d+)')
+        item_id_pattern = re.compile('item.htm\?.*?id=(\d+)')
         try:
             self.item_id = item_id_pattern.findall(self.item_url)[0]
         except IndexError:
