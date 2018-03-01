@@ -41,11 +41,59 @@ class WQMsg(ThirdMsg):
     """
     针对万群粑粑的，发出消息是商品、领券双链接的淘宝客推广
     每个WQMsg实例代表一个商品
+
+    场景：
+    A. 消息形式：
+            [CQ:img file=http://some.img.url]
+            纯棉品质，卡通图案！
+            可爱有活力，多颜色可选！
+            【一米半糖】儿童开衫外套
+            【原价69元】券后【39元】
+            领券：http://shop.m.taobao.com/shop/coupon.htm?seller_id=1135287324&activity_id=0526b688e7b24194a338576e6b4c94a6
+            抢购：https://detail.tmall.com/item.htm?id=563557952476
+
+        标准商品链接，直达淘宝详情页，可从中取出item_id
+
+    B. 消息形式：
+            [CQ:img file=http://some.img.url]
+            无糖粗粮曲奇饼干268g*2袋
+            19.89
+            9.89
+            https://s.click.taobao.com/HcBXgTw
+
+        二合一短链，需使用phantomjs进入短链，获取item_id和activity_id
+
+    调用parse方法的Process:
+    0. 从消息中获取url，
+        0.1 消息中没有链接， 即无图片、无链接的纯文字消息。
+    1. 根据链接内容确定url类型，是否领券链接及商品链接。
+        1.1 找到商品链接，确定来源为懒懒，对应场景A
+            1.1.1 从消息中获取商品图片
+                1.1.1.1 从商品链接中获取商品id，
+                    1.1.1.1.1 从懒懒的接口获取到详情，包括商品详情和优惠券详情，赋值给self.product_dict
+                        1.1.1.1.1.1 使用self.product_dict，将商品存库
+                            final 最终返回item_id
+                    1.1.1.1.2 懒懒未查询到此商品，抛出ThirdMsgException
+                1.1.1.2 未能获取到商品id， 抛出NoItemException
+        1.2 未找到商品链接，抛出NoItemException
+        1.3 s.click.taobao形式的短链，确定为其他来源，对应场景B
+            1.3.1 打开短链，获取coupon_url
+                1.3.1.1 从coupon_url 中获取activity_id（用于后续使用淘宝sdk获取优惠券详情）
+                1.3.1.2 未获取到activity_id, 从优惠券页面解析到优惠券详情， 并赋值到self.cupon_info
+                    1.3.1.1.1 进入商品详情页，获取商品链接
+                        1.1.1 从消息中获取商品图片
+                            1.1.1.1 从商品链接中获取商品id
+                                1.3.1.1.1.1 使用淘宝sdk分别获取商品详情（使用item_id），优惠券详情（若有，使用activity_id），拼接成self.product_dict
+                                    1.1.1.1.1.1 使用self.product_dict，将商品存库
+                                        final 最终返回item_id
+                            1.1.1.2 未能获取到商品id， 抛出NoItemException
     """
+
     # 使用此枚举类用以维护商品来源
     item_sources = Enum('item_source', ('lanlan', 'other'))
 
     def __init__(self, msg):
+        # 调用基类构造方法，将msg绑定到实例属性
         super(WQMsg, self).__init__(msg)
         self.item_url = None
         self.img_url = None
@@ -55,7 +103,7 @@ class WQMsg(ThirdMsg):
 
     def reorganize(self):
         """
-        若未解析到商品，调用此方法，将消息重组并转发
+        若未解析到商品，调用此方法，将消息重组并返回由图片url和文本组成的列表
         :return: data, 由图片url和文字组合形成的消息列表
         """
         data = []
@@ -68,6 +116,7 @@ class WQMsg(ThirdMsg):
     def __get_img_and_remove(self):
         """
         仅用于消息转发， 获取图片链接并删除代表图片的文本
+
         :return:
         """
         img_url_pattern = re.compile('\[CQ:image,file=(.*?)\]')
@@ -86,7 +135,7 @@ class WQMsg(ThirdMsg):
     def parse(self):
         """
         解析商品并存库
-        :return:
+        :return: 解析成功返回item_id, 解析失败返回None, 或者抛出NoItemException错误
         """
         try:
             self.__get_urls()
@@ -98,24 +147,30 @@ class WQMsg(ThirdMsg):
         except NoItemException:
             raise
         except Exception as e:
-            logger.error(e.message)
+            logger.error(e)
             return None
 
     def __get_urls(self):
+        # process 0
         url_pattern = re.compile('(https?://[.\d\w\./\?=&;\\%~]+)')
         urls = url_pattern.findall(self.msg)
         if not urls:
+            # process 0.1
             raise ThirdMsgException('None of URL Exists In Msg.')
         for url in urls:
+            # process 1
             if 'coupon' in url:
                 self.cupon_url = url
             elif 'item.htm' in url:
+                # process 1.1
                 self.item_url = url
                 self.item_source = WQMsg.item_sources.lanlan
             elif 's.click.taobao' in url:
+                # process 1.3
                 self.item_source = WQMsg.item_sources.other
                 self.__get_301_urls(url)
         if self.item_url is None:
+            # process 1.2
             raise NoItemException('Unable To Catch Item URL.')
 
     def __get_301_urls(self, url):
@@ -124,15 +179,19 @@ class WQMsg(ThirdMsg):
         cap["phantomjs.page.customHeaders.User-Agent"] = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0'
         self.driver = webdriver.PhantomJS(PHANTOMJS_PATH, desired_capabilities=cap)
         try:
+            # process 1.3.1
             self.driver.get(url)
             self.cupon_url = self.driver.current_url
             # 这里需要activity_id使用sdk查询优惠券相关信息
             try:
+                # process 1.3.1.1
                 self.activity_id = re.findall('activityId=([\d\w]+)', self.cupon_url)[0]
             except IndexError:
                 # raise ThirdMsgException('Unable To Parse Activity ID')
+                # process 1.3.1.2
                 self.activity_id = None
                 self.__get_cupon_info_from_cupon_url()
+            # process 1.3.1.1.1
             item_href = self.driver.find_element_by_class_name('item-detail')
             item_href.click()
             self.item_url = self.driver.current_url
@@ -143,6 +202,7 @@ class WQMsg(ThirdMsg):
             self.driver.quit()
 
     def __get_cupon_info_from_cupon_url(self):
+        # process 1.3.1.2
         self.cupon_info = {
             "coupon_remain_count": 100,  # 此法暂不能获得剩余券数，先写死
             "coupon_amount": 0,
@@ -163,6 +223,7 @@ class WQMsg(ThirdMsg):
             logger.warning('Cupon Parsing Error: {}'.format(e))
 
     def __get_img(self):
+        # p 1.1.1
         img_pattern = re.compile('\[CQ:image,file=(https?://[.\d\w\./\?=&;\\%~]+)\]')
         try:
             self.img_url = img_pattern.findall(self.msg)[0]
@@ -170,10 +231,12 @@ class WQMsg(ThirdMsg):
             self.img_url = None
 
     def __get_item_id(self):
+        # p 1.1.1.1
         item_id_pattern = re.compile('item.htm\?.*?id=(\d+)')
         try:
             self.item_id = item_id_pattern.findall(self.item_url)[0]
         except IndexError:
+            # p 1.1.1.2
             raise NoItemException('Unable To Catch Item Id')
 
     def __fetch_detail(self):
@@ -182,11 +245,14 @@ class WQMsg(ThirdMsg):
             if resp.status_code != 200 \
                     or resp.json()['status']['code'] != 1001 \
                     or resp.json()['result'] is None:
+                # p 1.1.1.1.2
                 raise ThirdMsgException('Unable To Fetch Detail From Lanlan.')
             else:
+                # p 1.1.1.1.1
                 self.product_dict = resp.json()['result']
 
         elif self.item_source == WQMsg.item_sources.other:
+            # process 1.3.1.1.1.1
             item_info = get_item_info(self.item_id)
 
             # 若已在__get_cupon_info_from_cupon_url中获取过优惠券详情
@@ -238,6 +304,7 @@ class WQMsg(ThirdMsg):
         return desc_imgs
 
     def save_from_product_dict(self, item):
+        # p 1.1.1.1.1.1
         product_dict = {
             'title': item['shortTitle'],
             'desc': '',
