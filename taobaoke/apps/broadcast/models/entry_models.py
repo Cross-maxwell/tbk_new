@@ -166,10 +166,8 @@ class Product(Entry):
         try:
             product_detail = ProductDetail.objects.filter(product_id=self.id).first()
             if product_detail:
-                img_str = product_detail.small_imgs
-                # com = re.compile(r'http.+?jpg', re.DOTALL)
-                com = re.compile(r'(?:http|https):.+?\.(?:jpg|png)', re.DOTALL)
-                img_list = com.findall(img_str)
+                small_img_list = json.loads(product_detail.small_imgs)
+                img_list = [item for item in small_img_list if item.endswith("png") or item.endswith("jpg")]
                 if len(img_list) > 2:
                     product_url_list.append(img_list[0])
                     product_url_list.append(img_list[1])
