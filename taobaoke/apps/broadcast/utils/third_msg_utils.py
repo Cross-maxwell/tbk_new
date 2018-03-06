@@ -181,20 +181,29 @@ class WQMsg(ThirdMsg):
         try:
             # process 1.3.1
             self.driver.get(url)
-            self.cupon_url = self.driver.current_url
-            # 这里需要activity_id使用sdk查询优惠券相关信息
-            try:
-                # process 1.3.1.1
-                self.activity_id = re.findall('activityId=([\d\w]+)', self.cupon_url)[0]
-            except IndexError:
-                # raise ThirdMsgException('Unable To Parse Activity ID')
-                # process 1.3.1.2
-                self.activity_id = None
-                self.__get_cupon_info_from_cupon_url()
-            # process 1.3.1.1.1
-            item_href = self.driver.find_element_by_class_name('item-detail')
-            item_href.click()
-            self.item_url = self.driver.current_url
+
+            if 'activityId' in self.driver.current_url:
+                self.cupon_url = self.driver.current_url
+                # 这里需要activity_id使用sdk查询优惠券相关信息
+                try:
+                    # process 1.3.1.1
+                    self.activity_id = re.findall('activityId=([\d\w]+)', self.cupon_url)[0]
+                except IndexError:
+                    # raise ThirdMsgException('Unable To Parse Activity ID')
+                    # process 1.3.1.2
+                    self.activity_id = None
+                    self.__get_cupon_info_from_cupon_url()
+                # process 1.3.1.1.1
+                item_href = self.driver.find_element_by_class_name('item-detail')
+                item_href.click()
+                self.item_url = self.driver.current_url
+            elif 'item.htm' in self.driver.current_url:
+                self.item_url = self.driver.current_url
+                self.item_source = WQMsg.item_sources.lanlan
+            elif 'edetail?' in self.driver.current_url:
+                self.driver.find_element_by_css_selector('.item-detail-view a').click()
+                self.item_url = self.driver.current_url
+                self.item_source = WQMsg.item_sources.lanlan
         except Exception as e:
             logger.error(e)
         finally:
