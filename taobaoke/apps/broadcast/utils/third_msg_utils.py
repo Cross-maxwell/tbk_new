@@ -174,10 +174,11 @@ class WQMsg(ThirdMsg):
             raise NoItemException('Unable To Catch Item URL.')
 
     def __get_301_urls(self, url):
-        cap = webdriver.DesiredCapabilities.PHANTOMJS
-        cap["phantomjs.page.settings.userAgent"] = "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0"
-        cap["phantomjs.page.customHeaders.User-Agent"] = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0'
-        self.driver = webdriver.PhantomJS(PHANTOMJS_PATH, desired_capabilities=cap)
+        # cap = webdriver.DesiredCapabilities.PHANTOMJS
+        # cap["phantomjs.page.settings.userAgent"] = "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0"
+        # cap["phantomjs.page.customHeaders.User-Agent"] = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0'
+        # self.driver = webdriver.PhantomJS(PHANTOMJS_PATH, desired_capabilities=cap)
+        self.driver = webdriver.Chrome('./chromedriver')
         try:
             # process 1.3.1
             self.driver.get(url)
