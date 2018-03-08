@@ -177,7 +177,7 @@ class Product(Entry):
 
     def get_tkl(self, pid):
         # tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
-        pattern = ".*activityId=(.*?)&.*"
+        pattern = ".*activityId=(.*)"
         result = re.match(pattern, self.cupon_url)
         if result:
             activityId = result.group(1)
@@ -219,7 +219,7 @@ class Product(Entry):
         tkl = res_dict["status"]["msg"]
         return tkl
 
-    def __get_tkl_from_sdk(self, pid):
+    def __get_tkl_from_sdk(self, activityId, pid):
         for _ in range(5):
             try:
                 req = top.api.TbkTpwdCreateRequest()
@@ -227,7 +227,9 @@ class Product(Entry):
 
                 req.text = self.title.encode('utf-8')
                 req.logo = self.img_url
-                req.url = re.sub('pid=([\d\w_]+)', pid, self.cupon_url)
+                req.url = "https://uland.taobao.com/coupon/edetail?activityId={}&itemId={}&pid=mm_15673656_20514221_106346582&src=qunmi"\
+                            .format(activityId, pid)
+                req.url = re.sub('pid=([\d\w_]+)', pid, req.url)
 
                 resp = req.getResponse()
                 tkl = resp['tbk_tpwd_create_response']['data']['model']
