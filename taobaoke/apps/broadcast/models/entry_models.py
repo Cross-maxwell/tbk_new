@@ -177,7 +177,7 @@ class Product(Entry):
 
     def get_tkl(self, pid):
         # tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
-        pattern = ".*activityId=(.*)"
+        pattern = ".*(?:activity_id|activityId)=(.*)"
         result = re.match(pattern, self.cupon_url)
         if result:
             activityId = result.group(1)
