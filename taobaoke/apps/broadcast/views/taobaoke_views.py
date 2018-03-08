@@ -786,7 +786,7 @@ class SendArtificialMsg(View):
 
 def get_tkl(p, pid):
     tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
-    pattern = ".*activityId=(.*?)&.*"
+    pattern = ".*(?:activity_id|activityId)=(.*?)&.*"
     result = re.match(pattern, p.cupon_url)
     if result:
         activityId = result.group(1)
