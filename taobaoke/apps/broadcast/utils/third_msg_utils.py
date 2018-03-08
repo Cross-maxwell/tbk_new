@@ -204,6 +204,7 @@ class WQMsg(ThirdMsg):
     def __process_shorturl(self, url):
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
         # options.add_argument('--timeout=90')
         self.driver = webdriver.Chrome('./chromedriver', chrome_options=options)
         self.driver.get(url)
