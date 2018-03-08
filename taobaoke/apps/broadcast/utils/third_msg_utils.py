@@ -200,6 +200,8 @@ class WQMsg(ThirdMsg):
             self.item_url = url
         if 'activityId' in url:
             self.activity_id = re.findall('activityId=([\d\w]+)', self.cupon_url)[0]
+        if 'activity_id' in url:
+            self.activity_id = re.findall('activity_id=([\d\w]+)', self.cupon_url)[0]
 
     def __process_shorturl(self, url):
         options = webdriver.ChromeOptions()
