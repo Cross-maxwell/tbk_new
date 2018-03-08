@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="787ba77d-18c1-4f1a-ac43-290a44c6bdba" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/taobaoke/apps/broadcast/utils/third_msg_utils.py" afterPath="$PROJECT_DIR$/taobaoke/apps/broadcast/utils/third_msg_utils.py" />
-    </list>
+    <list default="true" id="787ba77d-18c1-4f1a-ac43-290a44c6bdba" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,19 +19,6 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="entry_models.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/taobaoke/apps/broadcast/models/entry_models.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="370">
-              <caret line="197" column="39" lean-forward="false" selection-start-line="197" selection-start-column="39" selection-end-line="197" selection-end-column="39" />
-              <folding>
-                <marker date="1520486371943" expanded="true" signature="1749:6165" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="6010:6165" ph="..." />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="top_settings.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/taobaoke/fuli/top_settings.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -58,8 +42,8 @@
       <file leaf-file-name="third_msg_utils.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/taobaoke/apps/broadcast/utils/third_msg_utils.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="412">
-              <caret line="206" column="42" lean-forward="false" selection-start-line="206" selection-start-column="42" selection-end-line="206" selection-end-column="42" />
+            <state relative-caret-position="395">
+              <caret line="208" column="44" lean-forward="true" selection-start-line="208" selection-start-column="44" selection-end-line="208" selection-end-column="44" />
               <folding>
                 <element signature="e#80#89#0" expanded="true" />
               </folding>
@@ -84,17 +68,17 @@
               <caret line="828" column="51" lean-forward="false" selection-start-line="828" selection-start-column="51" selection-end-line="828" selection-end-column="51" />
               <folding>
                 <element signature="e#24#63#0" expanded="true" />
-                <marker date="1520486371943" expanded="true" signature="33141:33253" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33141:33858" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33285:33729" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33396:33691" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33429:33576" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33760:33858" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33892:34422" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="33897:33923" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-                <marker date="1520486371943" expanded="true" signature="33951:34073" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="34102:34422" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="34424:35846" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33141:33253" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33141:33858" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33285:33729" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33396:33691" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33429:33576" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33760:33858" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33892:34422" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="33897:33923" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+                <marker date="1520489376582" expanded="true" signature="33951:34073" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="34102:34422" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="34424:35846" ph="..." />
               </folding>
             </state>
           </provider>
@@ -116,15 +100,15 @@
             <state relative-caret-position="697">
               <caret line="41" column="31" lean-forward="false" selection-start-line="41" selection-start-column="31" selection-end-line="41" selection-end-column="31" />
               <folding>
-                <marker date="1520486371943" expanded="true" signature="183:1732" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="306:449" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="327:449" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="781:916" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="781:922" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="940:1234" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="961:1228" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="1280:1390" ph="..." />
-                <marker date="1520486371943" expanded="true" signature="1621:1732" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="183:1732" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="306:449" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="327:449" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="781:916" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="781:922" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="940:1234" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="961:1228" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="1280:1390" ph="..." />
+                <marker date="1520489376582" expanded="true" signature="1621:1732" ph="..." />
               </folding>
             </state>
           </provider>
@@ -242,6 +226,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -699,7 +684,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1110,34 +1094,54 @@
       <option name="project" value="LOCAL" />
       <updated>1520486171865</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Fuck taobao">
+      <created>1520489392486</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1520489392487</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="55" y="-4" width="1865" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18979704" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33481154" sideWeight="0.5019412" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22151224" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32800853" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36954206" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3268817" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3343983" sideWeight="0.4980588" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19144268" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3343983" sideWeight="0.4980588" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33481154" sideWeight="0.5019412" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="manage.py@master_taobaoke" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32903227" sideWeight="0.49806523" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.22151224" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32800853" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36954206" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3268817" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18979704" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3290735" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3343983" sideWeight="0.4980588" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -1191,7 +1195,8 @@
     <MESSAGE value="chrome" />
     <MESSAGE value="Merge branch 'new_prod' into mmt_3rd&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;taobaoke/apps/broadcast/utils/third_msg_utils.py" />
     <MESSAGE value="Use sdk instead of Lanlan." />
-    <option name="LAST_COMMIT_MESSAGE" value="Use sdk instead of Lanlan." />
+    <MESSAGE value="Fuck taobao" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fuck taobao" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1390,15 +1395,15 @@
         <state relative-caret-position="697">
           <caret line="41" column="31" lean-forward="false" selection-start-line="41" selection-start-column="31" selection-end-line="41" selection-end-column="31" />
           <folding>
-            <marker date="1520486371943" expanded="true" signature="183:1732" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="306:449" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="327:449" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="781:916" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="781:922" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="940:1234" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="961:1228" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="1280:1390" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="1621:1732" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="183:1732" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="306:449" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="327:449" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="781:916" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="781:922" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="940:1234" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="961:1228" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="1280:1390" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="1621:1732" ph="..." />
           </folding>
         </state>
       </provider>
@@ -1507,17 +1512,17 @@
           <caret line="828" column="51" lean-forward="false" selection-start-line="828" selection-start-column="51" selection-end-line="828" selection-end-column="51" />
           <folding>
             <element signature="e#24#63#0" expanded="true" />
-            <marker date="1520486371943" expanded="true" signature="33141:33253" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33141:33858" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33285:33729" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33396:33691" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33429:33576" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33760:33858" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33892:34422" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="33897:33923" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
-            <marker date="1520486371943" expanded="true" signature="33951:34073" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="34102:34422" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="34424:35846" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33141:33253" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33141:33858" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33285:33729" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33396:33691" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33429:33576" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33760:33858" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33892:34422" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="33897:33923" ph="&quot;&quot;&quot;...&quot;&quot;&quot;" />
+            <marker date="1520489376582" expanded="true" signature="33951:34073" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="34102:34422" ph="..." />
+            <marker date="1520489376582" expanded="true" signature="34424:35846" ph="..." />
           </folding>
         </state>
       </provider>
@@ -1526,17 +1531,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="370">
           <caret line="197" column="39" lean-forward="false" selection-start-line="197" selection-start-column="39" selection-end-line="197" selection-end-column="39" />
-          <folding>
-            <marker date="1520486371943" expanded="true" signature="1749:6165" ph="..." />
-            <marker date="1520486371943" expanded="true" signature="6010:6165" ph="..." />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/taobaoke/apps/broadcast/utils/third_msg_utils.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="206" column="42" lean-forward="false" selection-start-line="206" selection-start-column="42" selection-end-line="206" selection-end-column="42" />
+        <state relative-caret-position="395">
+          <caret line="208" column="44" lean-forward="true" selection-start-line="208" selection-start-column="44" selection-end-line="208" selection-end-column="44" />
           <folding>
             <element signature="e#80#89#0" expanded="true" />
           </folding>
