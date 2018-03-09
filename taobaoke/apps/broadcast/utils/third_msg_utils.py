@@ -194,7 +194,7 @@ class WQMsg(ThirdMsg):
             raise NoItemException('Unable To Catch Item URL.')
 
     def __resolve_urls(self, url):
-        if 'coupon' in url:
+        if 'coupon' in url or 'uland.taobao.com/quan' in url:
             self.cupon_url = url
         if 'item.htm' in url:
             self.item_url = url
