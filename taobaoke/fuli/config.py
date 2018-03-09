@@ -23,7 +23,7 @@ def getDB(mode='prod'):
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'OPTIONS': {'charset': 'utf8mb4'},
-            'NAME': 'new_taobaoke_sys',
+            'NAME': 'new_taobaoke',
             'USER': 'root',
             'PASSWORD': 'keyerror',
             "PORT": "3306",
@@ -47,7 +47,7 @@ def getDB(mode='prod'):
     hostname_mapping = {
         "default": db_prod,
         "adam-B250M-D3H": db_adam,
-        "zero": db_smart,
+        "smart": db_smart,
         "": {}
     }
 
@@ -55,6 +55,8 @@ def getDB(mode='prod'):
         return hostname_mapping.get('default')
     elif mode=='adam_test':
         return hostname_mapping.get('adam-B250M-D3H')
+    elif mode=='smart':
+        return hostname_mapping.get('smart')
     else:
         import socket
         hostname= socket.gethostname()

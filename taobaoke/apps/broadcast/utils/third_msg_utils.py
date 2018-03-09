@@ -39,6 +39,32 @@ class ThirdMsg(object):
 
 class WQMsg(ThirdMsg):
     """
+    ## 数据
+    一个产品需要补全下列信息
+    - 券信息
+    - 券链接
+    - 商品信息
+        - 主图
+        - 副图
+        - 介绍图
+    所有这些信息来自以下渠道
+    - 领券页面
+    - 商品数据接口页面
+    - Tbk接口
+        - TbkItemInfoGet
+        - TbkCouponGet
+        
+    ## 流程
+    1. 解析链接，获取券链接
+        - 若是短链，先解析短链
+        - 针对券链接，获取ActivityId
+        - 针对商品链接，获取ItemId
+        - 针对二合一链接，分别点击券和商品两个链接，获取ActivityId和ItemId
+    2. 根据链接，补全信息
+    3. 生成二合一领券
+    """
+
+    """
     针对万群粑粑的，发出消息是商品、领券双链接的淘宝客推广
     每个WQMsg实例代表一个商品
 
@@ -138,10 +164,11 @@ class WQMsg(ThirdMsg):
         :return: 解析成功返回item_id, 解析失败返回None, 或者抛出NoItemException错误
         """
         try:
-            self.__get_urls()
+            self.__parse_urls()
             self.__get_img()
             self.__get_item_id()
             self.__fetch_detail()
+            self.__update_cupon_url()
             self.save_from_product_dict(self.product_dict)
             return self.item_id
         except NoItemException:
@@ -150,7 +177,7 @@ class WQMsg(ThirdMsg):
             logger.error(e)
             return None
 
-    def __get_urls(self):
+    def __parse_urls(self):
         # process 0
         url_pattern = re.compile('(https?://[.\d\w\./\?=&;\\%~]+)')
         urls = url_pattern.findall(self.msg)
@@ -158,43 +185,41 @@ class WQMsg(ThirdMsg):
             # process 0.1
             raise ThirdMsgException('None of URL Exists In Msg.')
         for url in urls:
-            # process 1
-            if 'coupon' in url:
-                self.cupon_url = url
-            elif 'item.htm' in url:
-                # process 1.1
-                self.item_url = url
-                self.item_source = WQMsg.item_sources.lanlan
-            elif 's.click.taobao' in url:
-                # process 1.3
-                self.item_source = WQMsg.item_sources.other
-                self.__get_301_urls(url)
+            if 's.click.taobao' in url:
+                self.__process_shorturl(url)
+            else:
+                self.__resolve_urls(url)
         if self.item_url is None:
             # process 1.2
             raise NoItemException('Unable To Catch Item URL.')
 
-    def __get_301_urls(self, url):
-        cap = webdriver.DesiredCapabilities.PHANTOMJS
-        cap["phantomjs.page.settings.userAgent"] = "Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0"
-        cap["phantomjs.page.customHeaders.User-Agent"] = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64; rv:50.0) Gecko/20100101 Firefox/50.0'
-        self.driver = webdriver.PhantomJS(PHANTOMJS_PATH, desired_capabilities=cap)
+    def __resolve_urls(self, url):
+        if 'coupon' in url or 'uland.taobao.com/quan' in url:
+            self.cupon_url = url
+        if 'item.htm' in url:
+            self.item_url = url
+        if 'activityId' in url:
+            self.activity_id = re.findall('activityId=([\d\w]+)', self.cupon_url)[0]
+        if 'activity_id' in url:
+            self.activity_id = re.findall('activity_id=([\d\w]+)', self.cupon_url)[0]
+
+    def __process_shorturl(self, url):
+        options = webdriver.ChromeOptions()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        # options.add_argument('--timeout=90')
+        self.driver = webdriver.Chrome('./chromedriver', chrome_options=options)
+        self.driver.get(url)
         try:
-            # process 1.3.1
-            self.driver.get(url)
-            self.cupon_url = self.driver.current_url
-            # 这里需要activity_id使用sdk查询优惠券相关信息
-            try:
-                # process 1.3.1.1
-                self.activity_id = re.findall('activityId=([\d\w]+)', self.cupon_url)[0]
-            except IndexError:
-                # raise ThirdMsgException('Unable To Parse Activity ID')
-                # process 1.3.1.2
-                self.activity_id = None
-                self.__get_cupon_info_from_cupon_url()
-            # process 1.3.1.1.1
-            item_href = self.driver.find_element_by_class_name('item-detail')
-            item_href.click()
-            self.item_url = self.driver.current_url
+            # 二合一
+            if 'edetail?' in self.driver.current_url:
+                item_ele = self.driver.find_element_by_css_selector('.item-detail-view a')
+                # coupon = self.driver.find_element_by_css_selector('.coupons-container')
+                # 暂时只获取二合一中的商品链接
+                self.driver.get(item_ele.get_attribute('href'))
+                self.__resolve_urls(self.driver.current_url)
+            else:
+                self.__resolve_urls(self.driver.current_url)
         except Exception as e:
             logger.error(e)
         finally:
@@ -222,6 +247,10 @@ class WQMsg(ThirdMsg):
         except Exception as e:
             logger.warning('Cupon Parsing Error: {}'.format(e))
 
+    def __update_cupon_url(self):
+        self.cupon_url = "https://uland.taobao.com/coupon/edetail?activityId={}&itemId={}&pid=mm_15673656_20514221_106346582&src=qunmi"\
+                .format(self.activity_id, self.item_id)
+
     def __get_img(self):
         # p 1.1.1
         img_pattern = re.compile('\[CQ:image,file=(https?://[.\d\w\./\?=&;\\%~]+)\]')
@@ -240,18 +269,19 @@ class WQMsg(ThirdMsg):
             raise NoItemException('Unable To Catch Item Id')
 
     def __fetch_detail(self):
-        if self.item_source == WQMsg.item_sources.lanlan:
-            resp = requests.get('http://www.lanlanlife.com/product/itemInfo?apiKey={0}&itemId={1}'.format(lanlan_apikey, self.item_id))
-            if resp.status_code != 200 \
-                    or resp.json()['status']['code'] != 1001 \
-                    or resp.json()['result'] is None:
-                # p 1.1.1.1.2
-                raise ThirdMsgException('Unable To Fetch Detail From Lanlan.')
-            else:
-                # p 1.1.1.1.1
-                self.product_dict = resp.json()['result']
+        # if self.item_source == WQMsg.item_sources.lanlan:
+        #     resp = requests.get('http://www.lanlanlife.com/product/itemInfo?apiKey={0}&itemId={1}'.format(lanlan_apikey, self.item_id))
+        #     if resp.status_code != 200 \
+        #             or resp.json()['status']['code'] != 1001 \
+        #             or resp.json()['result'] is None:
+        #         # p 1.1.1.1.2
+        #         raise ThirdMsgException('Unable To Fetch Detail From Lanlan.')
+        #     else:
+        #         # p 1.1.1.1.1
+        #         self.product_dict = resp.json()['result']
+        #
+        # elif self.item_source == WQMsg.item_sources.other:
 
-        elif self.item_source == WQMsg.item_sources.other:
             # process 1.3.1.1.1.1
             item_info = get_item_info(self.item_id)
 
