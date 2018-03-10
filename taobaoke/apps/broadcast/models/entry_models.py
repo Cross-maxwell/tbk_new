@@ -7,6 +7,7 @@ import random
 import datetime
 import json
 import requests
+import urllib2
 
 from django.utils import timezone
 from django.db import models
@@ -167,13 +168,20 @@ class Product(Entry):
             product_detail = ProductDetail.objects.filter(product_id=self.id).first()
             if product_detail:
                 small_img_list = json.loads(product_detail.small_imgs)
-                img_list = [item for item in small_img_list if item.endswith("png") or item.endswith("jpg")]
-                if len(img_list) > 2:
-                    product_url_list.append(img_list[0])
-                    product_url_list.append(img_list[1])
+                img_list = [item for item in small_img_list if item.endswith("png") or item.endswith("jpg")][:2]
+                if len(img_list) == 2 and self.is_img_alive(img_list):
+                    product_url_list += img_list
         except Exception as e:
             logger.error(e)
         return generate_image(product_url_list, qrcode_flow, price_list, title=self.title)
+
+    def is_img_alive(self, img_list):
+        for i in range(2):
+            try:
+                test_data = urllib2.urlopen(img_list[i]).read()
+            except:
+                return False
+        return True
 
     def get_tkl(self, pid):
         # tkl_url = "http://dianjin.dg15.cn/a_api/index/getTpwd"
