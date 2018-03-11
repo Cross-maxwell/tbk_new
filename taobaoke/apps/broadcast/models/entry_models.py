@@ -235,9 +235,9 @@ class Product(Entry):
 
                 req.text = self.title.encode('utf-8')
                 req.logo = self.img_url
-                req.url = "https://uland.taobao.com/coupon/edetail?activityId={}&itemId={}&pid=mm_15673656_20514221_106346582&src=qunmi"\
-                            .format(activityId, pid)
-                req.url = re.sub('pid=([\d\w_]+)', pid, req.url)
+                req.url = "https://uland.taobao.com/coupon/edetail?activityId={}&itemId={}&pid={}&src=qunmi"\
+                            .format(activityId, self.item_id, pid)
+                req.url = re.sub('pid=([\d\w_]+)', 'pid=' + pid, req.url)
 
                 resp = req.getResponse()
                 tkl = resp['tbk_tpwd_create_response']['data']['model']
