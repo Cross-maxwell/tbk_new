@@ -8,6 +8,7 @@
 import re
 import requests
 import time
+import urllib
 from datetime import datetime, timedelta
 from selenium import webdriver
 # PHANTOMJS_PATH = '/home/adam/mydev/tools/phantomjs/bin/phantomjs'
@@ -262,8 +263,9 @@ class WQMsg(ThirdMsg):
     def __get_item_id(self):
         # p 1.1.1.1
         item_id_pattern = re.compile('item.htm\?.*?id=(\d+)')
+        item_url = urllib.unquote(urllib.unquote(self.item_url))
         try:
-            self.item_id = item_id_pattern.findall(self.item_url)[0]
+            self.item_id = item_id_pattern.findall(item_url)[0]
         except IndexError:
             # p 1.1.1.2
             raise NoItemException('Unable To Catch Item Id')
