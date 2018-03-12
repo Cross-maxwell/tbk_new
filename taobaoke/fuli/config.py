@@ -14,7 +14,7 @@ def getDB(mode='prod'):
             'NAME': 'mmt',
             'USER': 'root',
             'PASSWORD': 'Xiaozuanfeng',
-            'HOST': 's-prod-02.qunzhu666.com',
+            'HOST': 'intro.s-prod-02.qunzhu666.com',
             'PORT': '50001',
         }
     }
