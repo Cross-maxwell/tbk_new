@@ -840,7 +840,7 @@ class AcceptThirdMsgView(View):
         if third_msg_status == 'off':
             return HttpResponse('Third Msg Switch Off')
         try:
-            forbidden_keywords = ['私聊群主', '免费拿', '@']
+            forbidden_keywords = ['私聊', '免费拿', '@', '群主' ]
             for i in forbidden_keywords:
                 if i in request.body:
                     return HttpResponse('Forbidden by Keywords: {}'.format(i))
