@@ -23,7 +23,7 @@ def getDB(mode='prod'):
         'default': {
             'ENGINE': 'django.db.backends.mysql',
             'OPTIONS': {'charset': 'utf8mb4'},
-            'NAME': 'new_taobaoke',
+            'NAME': 'new_taobaoke_sys',
             'USER': 'root',
             'PASSWORD': 'keyerror',
             "PORT": "3306",
