@@ -42,4 +42,4 @@ while True:
     except Exception as e:
         logger.error("请求/tk/push_product出现异常--{}".format(e))
 
-    time.sleep(45)
+    time.sleep(60)
