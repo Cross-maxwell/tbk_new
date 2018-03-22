@@ -130,17 +130,17 @@ def generate_image(product_url_list, qrcode_flow, price_list, title=''):
             product_2_location = (300, 600)
             toImage.paste(product_2_size, product_2_location)
 
-        if len(price_list) == 2:
+        if len(price_list) == 3:
             # 填充券前券后价格
             price_img = image_update(price_list, title)
-            price_location = (200, 600 + extra)
+            price_location = (0, 600 + extra)
             toImage.paste(price_img, price_location)
 
             # 获取二维码
             qrcode_bytes = qrcode_flow
             qrcode_img = Image.open(BytesIO(qrcode_bytes))
             qrcode_size = qrcode_wrap(qrcode_img)
-            qrcode_location = (0, 600 + extra)
+            qrcode_location = (400, 600 + extra)
             toImage.paste(qrcode_size, qrcode_location)
 
         else:
@@ -148,14 +148,14 @@ def generate_image(product_url_list, qrcode_flow, price_list, title=''):
             BASE_DIR = os.getcwd()
             saomiao_img = Image.open(os.path.join(BASE_DIR, 'apps/broadcast/utils/lingqu.jpg'))
             saomiao_size = saomiao_img.resize((400, 200))
-            saomiao_location = (200, 600 + extra)
+            saomiao_location = (0, 600 + extra)
             toImage.paste(saomiao_size, saomiao_location)
 
             # 获取二维码
             qrcode_bytes = qrcode_flow
             qrcode_img = Image.open(BytesIO(qrcode_bytes))
             qrcode_size = qrcode_img.resize((200, 200))
-            qrcode_location = (0, 600 + extra)
+            qrcode_location = (400, 600 + extra)
             toImage.paste(qrcode_size, qrcode_location)
     except Exception as e:
         logger.error(e)
@@ -175,23 +175,35 @@ def generate_image(product_url_list, qrcode_flow, price_list, title=''):
 def image_update(price_list, title):
     image = Image.new('RGB', (400, 200), (255, 255, 255))
     truetype = os.path.join(font_path, 'hei.ttf')
-    font = ImageFont.truetype(truetype, 20)
+    font = ImageFont.truetype(truetype, 23)
     font1 = ImageFont.truetype(truetype, 20)
     font2 = ImageFont.truetype(truetype, 40)
     redColor = "#ff0000"
     blackColor = "#000000"
     whiteColor = '#ffffff'
-
-    title_wrap = '\n'.join(title[i:i + 19] for i in range(0, len(title), 19))
+    gray = "#808080"
+    # orange = "#FF8C00"
+    orange = "#FF6347"
+    title_wrap = '\n'.join(title[i:i + 15] for i in range(0, len(title), 15))
 
     draw = ImageDraw.Draw(image)
-    draw.multiline_text((10, 5), title_wrap, font=font, fill=blackColor, align='left', spacing=5)
+    draw.multiline_text((20, 0), title_wrap, font=font, fill=blackColor, align='left', spacing=5)
     # draw.rectangle([(5, 118), (90, 170)], fill=redColor)
-    draw.text((10, 80), u'优选价:￥', font=font2, fill=redColor)
-    draw.text((180, 80), str(price_list[1]), font=font2, fill=redColor)
-    draw.text((10, 140), u'市场价:￥' + str(price_list[0]), font=font1, fill=blackColor)
-    draw.line([(10, 155), (130 + (len(str(price_list[0])) - 3) * 15, 155)], fill=blackColor, width=3)
+    draw.text((130, 150), u'券后价:', font=font1, fill=gray)
+    draw.text((200, 150), u'￥', font=font1, fill=orange)
+    draw.text((220, 130), str(price_list[1]), font=font2, fill=orange)
+    draw.text((20, 110), u'销售价:￥' + str(price_list[0]), font=font1, fill=gray)
+    # draw.line([(10, 155), (130 + (len(str(price_list[0])) - 3) * 15, 155)], fill=blackColor, width=3)
+    quan_img(image)
+    draw.text((56, 147), str(int(price_list[2]))+u'元', font=font1, fill=orange)
     return image
+
+
+def quan_img(org_img):
+    BASE_DIR = os.getcwd()
+    org_quan_img = Image.open(os.path.join(BASE_DIR, 'apps/broadcast/utils/quan.png'))
+    saomiao_size = org_quan_img.resize((100, 35))
+    org_img.paste(saomiao_size, (20, 145))
 
 
 def qrcode_wrap(qrcode_img):
@@ -218,7 +230,13 @@ def qrcode_wrap(qrcode_img):
 
 
 if __name__ == '__main__':
-    product_url = "http://oss3.lanlanlife.com/eed86f7a8731d12c3a8173cff019a309_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
-    # product_url_list = [product_url, product_url, product_url]
-    # qrcode_flow = generate_qrcode(1006013, "heihei")
-    # generate_image(product_url_list, qrcode_flow)
+    product_url = "http://oss1.lanlanlife.com/5b485f3ba40bdfd97507cdc6da24ad25_800x800.jpg?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80"
+    # product_url_list = [product_url]
+    # req_data = {
+    #     "page": "pages/goods/goods",
+    #     "scene": "{0}${1}${2}".format("68263", "￥Tjcf0RcyHYS￥", "2369")
+    # }
+    # # qrcode_flow = generate_qrcode(req_data)
+    # price_list = [round(100.00, 2), round(80.00, 2), round(20.00, 2)]
+    # title = u'竹炭超级柔软牙刷，你值得拥有！！！超级无敌好用，差点就不想卖了'.encode('utf-8')
+    # generate_image(product_url_list, bytes("1"), price_list, title)

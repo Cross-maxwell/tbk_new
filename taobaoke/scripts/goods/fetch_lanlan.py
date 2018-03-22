@@ -46,7 +46,7 @@ def update_products():
             try:
                 for item in resp.json()['result']:
                     product_dict = {
-                        'title': item['shortTitle'],
+                        'title': item['title'],
                         'desc': '',
                         'img_url': item['coverImage'].split('@')[
                                        0] + '?x-oss-process=image/resize,w_600/format,jpg/quality,Q_80',

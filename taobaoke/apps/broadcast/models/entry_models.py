@@ -115,32 +115,57 @@ class Product(Entry):
     def quality(self):
         return math.log(self.sold_qty)
 
+    # def get_text_msg_wxapp(self):
+    #     recommend = ''
+    #     try:
+    #         recommend = self.productdetail.recommend
+    #     except Exception as e:
+    #         logger.error(e.message)
+    #     key_title = random.choice(['折扣商品', '秒杀单品', '热门爆款'])
+    #     key_sold = random.choice(['销售数量', '已售出', '已抢购', '已疯抢'])
+    #     key_cupon = random.choice(['剩余券数', '优惠券还剩', '优惠券数量'])
+    #     key_recommend = random.choice(['推荐理由' ,'优质推荐'])
+    #     template = "【{key_title}】：{title}\n" \
+    #                 "【{key_sold}】：{sold_qty}\n" \
+    #                 "【{key_cupon}】：{cupon_left}\n"
+    #     if recommend:
+    #         template = template + "【{key_recommend}】：{recommend}\n"
+    #     if random.randrange(1, 5) == 1:
+    #         template = template + "===============\n" \
+    #                                   "下单方式：点开任意图片，长按识别图中小程序码\n" \
+    #                                   "===============\n" \
+    #                                   "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
+    #     return template.format(**dict(self.__dict__, **{
+    #         'key_title': key_title,
+    #         'key_sold': key_sold,
+    #         'key_cupon': key_cupon,
+    #         'key_recommend': key_recommend,
+    #         'recommend': recommend
+    #     }))
+
     def get_text_msg_wxapp(self):
         recommend = ''
         try:
             recommend = self.productdetail.recommend
         except Exception as e:
             logger.error(e.message)
-        key_title = random.choice(['折扣商品', '秒杀单品', '热门爆款'])
-        key_sold = random.choice(['销售数量', '已售出', '已抢购', '已疯抢'])
-        key_cupon = random.choice(['剩余券数', '优惠券还剩', '优惠券数量'])
-        key_recommend = random.choice(['推荐理由' ,'优质推荐'])
-        template = "【{key_title}】：{title}\n" \
-                    "【{key_sold}】：{sold_qty}\n" \
-                    "【{key_cupon}】：{cupon_left}\n"
+        key_org_price = '在售价'
+        key_price = '券后价'
+        template = "{title}\n" \
+                   "【{key_org_price}】：{org_price}\n" \
+                   "【{key_price}】：{price}\n"
         if recommend:
-            template = template + "【{key_recommend}】：{recommend}\n"
+            template = template + "{recommend}\n"
         if random.randrange(1, 5) == 1:
             template = template + "===============\n" \
                                       "下单方式：点开任意图片，长按识别图中小程序码\n" \
                                       "===============\n" \
                                       "在群里直接发送“找XXX（例如：找手机）”，我就会告诉你噢～"
         return template.format(**dict(self.__dict__, **{
-            'key_title': key_title,
-            'key_sold': key_sold,
-            'key_cupon': key_cupon,
-            'key_recommend': key_recommend,
-            'recommend': recommend
+            'key_org_price': key_org_price,
+            'key_price': key_price,
+            'recommend': recommend,
+            'org_price': self.org_price,
         }))
 
     def get_img_msg_wxapp(self, pid=None, tkuser_id=None):
@@ -163,16 +188,17 @@ class Product(Entry):
         logger.info("生成小程序二维码: product_id: {0}, tkl: {1}".format(self.id, self.tao_pwd))
         qrcode_flow = generate_qrcode(req_data)
         product_url_list = [self.img_url]
-        price_list = [round(self.org_price, 2), round(self.price, 2)]
-        try:
-            product_detail = ProductDetail.objects.filter(product_id=self.id).first()
-            if product_detail:
-                small_img_list = json.loads(product_detail.small_imgs)
-                img_list = [item for item in small_img_list if item.endswith("png") or item.endswith("jpg")][:2]
-                if len(img_list) == 2 and self.is_img_alive(img_list):
-                    product_url_list += img_list
-        except Exception as e:
-            logger.error(e)
+        # 原价，优选价，优惠卷价
+        price_list = [round(self.org_price, 2), round(self.price, 2), round(self.cupon_value, 2)]
+        # try:
+        #     product_detail = ProductDetail.objects.filter(product_id=self.id).first()
+        #     if product_detail:
+        #         small_img_list = json.loads(product_detail.small_imgs)
+        #         img_list = [item for item in small_img_list if item.endswith("png") or item.endswith("jpg")][:2]
+        #         if len(img_list) == 2 and self.is_img_alive(img_list):
+        #             product_url_list += img_list
+        # except Exception as e:
+        #     logger.error(e)
         return generate_image(product_url_list, qrcode_flow, price_list, title=self.title)
 
     def is_img_alive(self, img_list):

@@ -3,18 +3,20 @@
 """
 支付宝python sdk,第三方来源, 主页：https://github.com/fzlee/alipay/blob/master/README.zh-hans.md
 """
-import time
+import time, os
 from datetime import datetime
 from alipay import AliPay
 from fuli.top_settings import alipay_appid
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def pay(account, name, amount):
 
     alipay = AliPay(
         appid=alipay_appid,
         app_notify_url='',
-        app_private_key_path='apps/account/utils/ali_private_key.pem',
-        alipay_public_key_path='apps/account/utils/ali_public_key.pem',
+        app_private_key_path=os.path.join(BASE_DIR, 'utils/ali_private_key.pem'),
+        alipay_public_key_path=os.path.join(BASE_DIR, 'utils/ali_public_key.pem'),
         sign_type="RSA2"
     )
 
