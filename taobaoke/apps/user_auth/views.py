@@ -60,6 +60,23 @@ class LoginView(View):
         return HttpResponse(json.dumps({"ret": 0, "data": "无法识别的请求"}))
 
 
+class YunyingLoginView(View):
+    """
+    给运营人员所用登录接口
+    """
+    def post(self, request):
+        req_data = json.loads(request.body)
+        username = req_data.get("username", "")
+        password = req_data.get("password", "")
+        if username == "maxWellYunying":
+            if password == "MaxwellAdminPWD365!!!":
+                user = User.objects.get(username=username)
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                return HttpResponse(json.dumps({"ret": 1, "data": "登录成功", "username": username}))
+        return HttpResponse(json.dumps({"ret": 0, "data": "密码错误"}))
+
+
 class RegisterVIew(View):
     @csrf_exempt
     def post(self, request):

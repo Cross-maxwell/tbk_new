@@ -15,7 +15,8 @@ from broadcast.views.taobaoke_views import PushProduct, AcceptSearchView, Produc
 from broadcast.views.operating_views import GetProducts, EditProduct, ChangePushStatus, RefreshProducts, DeleteProductImg, \
     ParseImg, SelectCate, QueryOrder
 
-from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement
+from user_auth.views import LoginView, RegisterVIew, SendTextMessage, ResetPassword, Logout, JudgeIsAgreeStatement, \
+    YunyingLoginView
 
 from mini_program.views.wishwall_views import WishWallView, AddFavoriteWish
 
@@ -80,6 +81,7 @@ tk_urls = [
 
 auth_urls = [
     url(r'login/$', LoginView.as_view()),
+    url(r'yunying/$', YunyingLoginView.as_view()),
     url(r'register/$', RegisterVIew.as_view()),
     url(r'send_verifyNum/$', SendTextMessage.as_view()),
     url(r'reset/$', ResetPassword.as_view()),
