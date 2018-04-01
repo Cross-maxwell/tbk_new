@@ -31,7 +31,7 @@ SECRET_KEY = 'tdw1=k(f2=%^*9bj*_+h_05(!wk03^(_jto+m0t6322uo!2y-('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost', 'tmp.zhiqun365.com', "s-prod-07.qunzhu666.com"]
+ALLOWED_HOSTS = ['s-prod-04.qunzhu666.com', 'localhost', '127.0.0.1', 'tmp.zhiqun365.com', "s-prod-07.qunzhu666.com"]
 
 # Application definition
 
@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'user_auth',
     'account',
     'mini_program',
-    'raven.contrib.django.raven_compat',
+    # 'raven.contrib.django.raven_compat',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -106,12 +106,13 @@ CSRF_COOKIE_SECURE = True
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-from fuli.config import getDB
+# from fuli.config import getDB
+from .config import getDB
 
 # 可使用mode指定要使用的数据库。指定mode为'prod'，使用生产数据库; 指定为'test'或留空，将根据主机名进行选择。
 # 配置请查看fuli/config.py
 # TODO: 在做makemigrations以及migrate时请务必查看数据库是否为本地
-DATABASES = getDB(mode='smart')
+DATABASES = getDB(mode='yen')
 
 
 # Password validation

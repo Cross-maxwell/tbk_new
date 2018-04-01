@@ -6,10 +6,12 @@ import json
 from django.utils import timezone
 import requests
 from django.db import models
+# 这几个模块不是很熟悉
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from broadcast.utils import random_str
+
 import logging
 logger = logging.getLogger('django_models')
 
@@ -23,7 +25,7 @@ class TkUser(models.Model):
     invite_code = models.CharField(max_length=16, null=True, blank=True)
     inviter_id = models.CharField(max_length=16, null=True)
     inviter_backup_info = models.CharField(max_length=128, null=True)
-    openid = models.CharField(max_length=40,null=True,default='')
+    openid = models.CharField(max_length=40, null=True, default='')
     autopush = models.BooleanField(default=True)
 
     # 是否同意法律声明
@@ -60,7 +62,7 @@ class TkUser(models.Model):
         # if self.jdadzone is None:
         #     self.assign_pid()
         if self.invite_code is None:
-            self.invite_code=random_str(8)
+            self.invite_code = random_str(8)
         super(TkUser, self).save(*args, **kwargs)
 
     @classmethod
